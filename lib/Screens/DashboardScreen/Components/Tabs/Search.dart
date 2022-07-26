@@ -3,8 +3,23 @@ import 'package:venture/Constants.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 
-class SearchTab extends StatelessWidget {
+class SearchTab extends StatefulWidget {
   SearchTab({Key? key}) : super(key: key);
+
+  @override
+  _SearchTabState createState() => _SearchTabState();
+}
+
+class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixin<SearchTab> {
+  
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    print("SEARCH SCREEN");
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:venture/Constants.dart';
 
 // ThemeData theme() {
@@ -51,6 +52,8 @@ class Themes {
     primarySwatch: Colors.blue,
     brightness: Brightness.light,
     appBarTheme: AppBarTheme(
+      backwardsCompatibility: false,
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.grey.shade50,
       elevation: 0
     ),
@@ -144,6 +147,8 @@ class Themes {
     brightness: Brightness.dark,
     scaffoldBackgroundColor: ColorConstants.gray900,
     appBarTheme: AppBarTheme(
+      backwardsCompatibility: false,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
       backgroundColor: ColorConstants.gray900,
       elevation: 0
     ),

@@ -35,6 +35,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Stack(
         children: [
           Scaffold(
+            extendBodyBehindAppBar: true,
             floatingActionButton: Padding(
               padding: const EdgeInsets.only(top: 40.0),
               child: FloatingActionButton(
