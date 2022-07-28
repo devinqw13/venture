@@ -1,10 +1,10 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:venture/Constants.dart';
-import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Screens/DashboardScreen/Components/LoginOverlay.dart';
 import 'package:venture/Screens/DashboardScreen/Components/ProfileSkeleton.dart';
+import 'package:venture/Screens/SettingsScreen/SettingsScreen.dart';
+import 'package:venture/Models/User.dart';
 
 class ProfileTab extends StatefulWidget {
   ProfileTab({Key? key}) : super(key: key);
@@ -25,12 +25,40 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
     print("PROFILE SCREEN");
   }
 
+  void goToSettings() {
+    SettingsScreen settingsScreen = SettingsScreen();
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => settingsScreen));
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return SafeArea(
-      child: ProfileSkeleton()
+      child: User().userKey == 0 ?
+      Stack(
+        children: [
+          ProfileSkeleton(),
+          LoginOverlay(),
+          Positioned(
+            right: 15,
+            top: 5,
+            child: ElevatedButton(
+              onPressed: () => goToSettings(),
+              child: Text("Settings"),
+              style: ElevatedButton.styleFrom(
+                elevation: 3,
+                shadowColor: primaryOrange,
+                primary: primaryOrange,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                )
+              ),
+            )
+          ),
+        ]
+      ) : 
+      Container()
       // child: CustomScrollView(
       //   physics: ClampingScrollPhysics(),
       //   slivers: [

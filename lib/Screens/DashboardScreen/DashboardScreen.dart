@@ -4,6 +4,7 @@ import 'package:iconly/iconly.dart';
 import 'package:venture/Constants.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
+import 'package:venture/Controllers/ThemeController.dart';
 
 class DashboardScreen extends StatefulWidget {
   DashboardScreen({Key? key}) : super(key: key);
@@ -14,6 +15,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final HomeController _homeController = Get.find();
+  final ThemesController _themesController = Get.find();
 
   @override
   void initState() {
@@ -35,7 +37,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Stack(
         children: [
           Scaffold(
+            resizeToAvoidBottomInset: false,
             extendBodyBehindAppBar: true,
+            extendBody: true,
             floatingActionButton: Padding(
               padding: const EdgeInsets.only(top: 40.0),
               child: FloatingActionButton(
@@ -54,7 +58,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _bottomAppBarItem(icon: IconlyBroken.home, page: 0),
                     _bottomAppBarItem(icon: IconlyBroken.search, page: 1),
                     const SizedBox.shrink(),
-                    // _bottomAppBarItem(icon: IconlyBroken.location, page: 2),
                     _bottomAppBarItem(icon: IconlyBroken.more_circle, page: 3),
                     _bottomAppBarItem(icon: IconlyBroken.profile, page: 4)
                   ],

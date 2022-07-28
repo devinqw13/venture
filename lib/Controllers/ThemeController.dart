@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:venture/Constants.dart';
 
 class ThemesController extends GetxController {
   final storage = GetStorage();
@@ -20,6 +21,14 @@ class ThemesController extends GetxController {
     } 
     
     setTheme('light');
+  }
+
+  Color getContainerBgColor() {
+    if (Get.isDarkMode) {
+      return ColorConstants.gray900;
+    } else {
+      return Colors.grey.shade50;
+    }
   }
 
   void setTheme(String value) {

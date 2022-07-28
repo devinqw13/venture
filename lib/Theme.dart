@@ -49,12 +49,14 @@ import 'package:venture/Constants.dart';
 
 class Themes {
   static ThemeData lightTheme = ThemeData(
+    fontFamily: 'Montserrat',
     primarySwatch: Colors.blue,
     brightness: Brightness.light,
     appBarTheme: AppBarTheme(
       backwardsCompatibility: false,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.grey.shade50,
+      iconTheme: IconThemeData(color: Colors.black),
       elevation: 0
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -142,6 +144,7 @@ class Themes {
   );
 
   static ThemeData darkTheme = ThemeData(
+    fontFamily: 'Montserrat',
     primaryColor: Colors.blue,
     primarySwatch: Colors.blue,
     brightness: Brightness.dark,

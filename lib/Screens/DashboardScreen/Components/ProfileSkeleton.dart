@@ -2,9 +2,13 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Components/Skeleton.dart';
+import 'package:venture/Controllers/ThemeController.dart';
+import 'package:get/get.dart';
 
 class ProfileSkeleton extends StatelessWidget {
   ProfileSkeleton({Key? key}) : super(key: key);
+
+  final ThemesController _themesController = Get.find();
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +43,7 @@ class ProfileSkeleton extends StatelessWidget {
                 child: Container(
                   height: 55,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: _themesController.getContainerBgColor(),
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(20),
                     ),
