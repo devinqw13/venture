@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/string_extension.dart';
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class SettingsScreen extends StatefulWidget {
   SettingsScreen({Key? key}) : super(key: key);
@@ -23,12 +24,12 @@ class _SettingsScreenState extends State<SettingsScreen>  {
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return <Widget>[
             SliverAppBar(
-              expandedHeight: 100.0,
+              // expandedHeight: 100.0,
               floating: false,
               pinned: true,
               flexibleSpace: FlexibleSpaceBar(
                 centerTitle: false,
-                titlePadding: EdgeInsets.symmetric(horizontal: 16),
+                // titlePadding: EdgeInsets.symmetric(horizontal: 16),
                 title: Text(
                   'Settings',
                   style: theme.textTheme.headline6,
@@ -48,30 +49,33 @@ class _SettingsScreenState extends State<SettingsScreen>  {
                   SizedBox(height: 16),
                   Text("Account", style: theme.textTheme.headline6?.copyWith(fontWeight: FontWeight.w400)),
                   SizedBox(height: 16),
-                  Container(
-                    height: 80,
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Get.isDarkMode ? ColorConstants.gray700 : Colors.grey.shade200
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Get.isDarkMode ? ColorConstants.gray500 : Colors.grey.shade300
+                  ZoomTapAnimation(
+                    onTap: () => print("LOGIN PRESSED"),
+                    child: Container(
+                      height: 80,
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: Get.isDarkMode ? ColorConstants.gray700 : Colors.grey.shade200
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Get.isDarkMode ? ColorConstants.gray500 : Colors.grey.shade300
+                            ),
+                            child: Center(
+                              child: Icon(Icons.person, size: 32, color: Colors.grey.shade500),
+                            ),
                           ),
-                          child: Center(
-                            child: Icon(Icons.person, size: 32, color: Colors.grey.shade500),
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Text("Login / Register", style: theme.textTheme.subtitle1?.copyWith(fontWeight: FontWeight.w400, color: Colors.blue)),
-                      ],
-                    ),
+                          SizedBox(width: 16),
+                          Text("Login / Register", style: theme.textTheme.subtitle1?.copyWith(fontWeight: FontWeight.w400, color: Colors.blue)),
+                        ],
+                      ),
+                    )
                   ),
                   SizedBox(height: 32),
                   Text("Settings", style: theme.textTheme.headline6?.copyWith(fontWeight: FontWeight.w400)),

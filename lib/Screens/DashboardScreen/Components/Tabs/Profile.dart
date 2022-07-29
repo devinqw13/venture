@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:venture/Constants.dart';
-import 'package:iconly/iconly.dart';
 import 'package:venture/Screens/DashboardScreen/Components/LoginOverlay.dart';
 import 'package:venture/Screens/DashboardScreen/Components/ProfileSkeleton.dart';
 import 'package:venture/Screens/SettingsScreen/SettingsScreen.dart';
@@ -22,7 +21,7 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
-    print("PROFILE SCREEN");
+    
   }
 
   void goToSettings() {
@@ -32,6 +31,7 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final theme = Theme.of(context);
 
     return SafeArea(

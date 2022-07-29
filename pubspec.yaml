@@ -37,6 +37,7 @@ dependencies:
   zoom_tap_animation: ^1.1.0
   iconly: ^1.0.1
   google_maps_flutter: ^2.1.8
+  custom_info_window: ^1.0.1
   firebase_core: ^1.10.6
   firebase_analytics: ^9.0.4
   firebase_remote_config: ^2.0.4
@@ -86,6 +87,9 @@ flutter:
     - family: Montserrat
       fonts:
         - asset: assets/fonts/Montserrat-Regular.ttf
+    - family: LeagueSpartan
+      fonts:
+        - asset: assets/fonts/LeagueSpartan-Bold.ttf
   # example:
   # fonts:
   #   - family: Schyler

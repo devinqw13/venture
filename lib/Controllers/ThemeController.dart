@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:venture/Constants.dart';
+import 'package:venture/Models/MapThemes.dart';
+import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 
 class ThemesController extends GetxController {
   final storage = GetStorage();
+  GoogleMapController? googleMapController;
 
   String theme = 'light';
 
@@ -38,6 +42,16 @@ class ThemesController extends GetxController {
     if (value == 'system') Get.changeThemeMode(ThemeMode.system);
     if (value == 'light') Get.changeThemeMode(ThemeMode.light);
     if (value == 'dark') Get.changeThemeMode(ThemeMode.dark);
+
+    if (value == 'light') googleMapController?.setMapStyle(MapThemes().themes[0]['style']);
+    if (value == 'dark') googleMapController?.setMapStyle(MapThemes().themes[1]['style']);
+
+    update();
+  }
+
+  void setMapStyle() {
+    if (theme == 'light') googleMapController?.setMapStyle(MapThemes().themes[0]['style']);
+    if (theme == 'dark') googleMapController?.setMapStyle(MapThemes().themes[1]['style']);
 
     update();
   }

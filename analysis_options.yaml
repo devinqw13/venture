@@ -22,6 +22,7 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
+    sized_box_for_whitespace: false
     avoid_unnecessary_containers: false
     prefer_final_fields: false
     prefer_const_literals_to_create_immutables: false

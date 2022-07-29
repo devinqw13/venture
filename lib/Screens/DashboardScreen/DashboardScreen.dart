@@ -50,6 +50,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
             bottomNavigationBar: BottomAppBar(
+              elevation: 1.0,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
                 child: Obx(() => Row(

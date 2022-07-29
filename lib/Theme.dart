@@ -59,7 +59,11 @@ class Themes {
       iconTheme: IconThemeData(color: Colors.black),
       elevation: 0
     ),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: ColorConstants.gray400,
+    ),
     inputDecorationTheme: InputDecorationTheme(
+      fillColor: Colors.grey.shade200,
       border: OutlineInputBorder(
         borderSide: BorderSide.none,
         borderRadius: BorderRadius.circular(10)
@@ -140,13 +144,15 @@ class Themes {
         fontWeight: FontWeight.w400,
         letterSpacing: -0.5
       )
+    ).apply(
+      bodyColor: Colors.black,
+      displayColor: Colors.black
     )
   );
 
   static ThemeData darkTheme = ThemeData(
     fontFamily: 'Montserrat',
     primaryColor: Colors.blue,
-    primarySwatch: Colors.blue,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: ColorConstants.gray900,
     appBarTheme: AppBarTheme(
@@ -156,7 +162,11 @@ class Themes {
       elevation: 0
     ),
     bottomAppBarColor: ColorConstants.gray800,
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: ColorConstants.gray100,
+    ),
     inputDecorationTheme: InputDecorationTheme(
+      fillColor: ColorConstants.gray600,
       border: OutlineInputBorder(
         borderSide: BorderSide.none,
         borderRadius: BorderRadius.circular(10)
@@ -236,6 +246,9 @@ class Themes {
         fontSize: 10,
         fontWeight: FontWeight.w400
       )
+    ).apply(
+      bodyColor: Colors.white,
+      displayColor: Colors.white
     ),
   );
 }
