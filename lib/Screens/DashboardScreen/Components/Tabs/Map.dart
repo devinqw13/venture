@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:venture/Components/ExpandableFab.dart';
+import 'package:venture/Components/CustomPopupMenu.dart';
+import 'package:venture/Components/NeumorphContainer.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Models/MapThemes.dart';
-import 'package:venture/Components/Test.dart';
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class MapTab extends StatefulWidget {
   MapTab({Key? key}) : super(key: key);
@@ -86,23 +87,6 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     );
   }
 
-  PopupMenuItem _buildPopupMenuItem(
-      String title, IconData iconData, int position) {
-    return PopupMenuItem(
-      value: position,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Icon(
-            iconData,
-            color: Colors.black,
-          ),
-          Text(title),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -120,30 +104,26 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
           }
         ),
         Positioned(
-          top: 50.0,
-          right: 16.0,
-          child: SimpleAccountMenu(
-            icons: [
-              Icon(Icons.person),
-              Icon(Icons.settings),
-              Icon(Icons.credit_card),
-            ],
-            iconColor: Colors.white,
-            onChange: (index) {
-              print(index);
-            },
+          top: 60,
+          right: MediaQuery.of(context).size.width * .05,
+          child: CustomPopupMenu()
+        ),
+        Positioned(
+          top: 120,
+          right: MediaQuery.of(context).size.width * .05,
+          child: ZoomTapAnimation(
+            onTap: () => _showMapThemeModal(theme),
+            child: NeumorphContainer.convex(
+              borderRadius: 10.0,
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Icon(IconlyBroken.more_square, size: 25)
+                )
+              )
+            )
           )
-          // child: ExpandableFab(
-          //   actions: [
-          //     TabAction(
-          //       icon: Icons.star,
-          //       onTap: () {
-
-          //       }
-          //     )
-          //   ],
-          // ),
-        )
+        ),
         // Positioned(
         //   top: 70,
         //   right: 15,
