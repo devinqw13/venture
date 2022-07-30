@@ -86,7 +86,6 @@ class NeumorphContainer extends StatelessWidget {
 
   
   List<Color> kColors(NeumorphStyle style) {
-    print("HERE");
     if (style == NeumorphStyle.concave) { // CONCAVE
       if (Get.isDarkMode) {
         return [ColorConstants.gray900, ColorConstants.gray600];

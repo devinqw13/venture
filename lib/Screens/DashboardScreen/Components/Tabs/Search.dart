@@ -49,11 +49,11 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                       child: Container(
                         width: 40,
                         decoration: BoxDecoration(
-                          color: Get.isDarkMode ? ColorConstants.gray900 : Colors.grey.shade300,
+                          color: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey.shade300,
                           borderRadius: BorderRadius.circular(10)
                         ),
                         child: Center(
-                          child: Icon(IconlyLight.filter, color: Colors.grey,),
+                          child: Icon(IconlyLight.filter, color: Colors.grey),
                         ),
                       ),
                     )

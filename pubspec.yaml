@@ -90,6 +90,9 @@ flutter:
     - family: LeagueSpartan
       fonts:
         - asset: assets/fonts/LeagueSpartan-Bold.ttf
+    - family: GrandHotel
+      fonts:
+        - asset: assets/fonts/GrandHotel-Regular.ttf
   # example:
   # fonts:
   #   - family: Schyler
