@@ -49,20 +49,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
               )
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-            bottomNavigationBar: BottomAppBar(
-              elevation: 1.0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-                child: Obx(() => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _bottomAppBarItem(icon: IconlyBroken.home, page: 0),
-                    _bottomAppBarItem(icon: IconlyBroken.search, page: 1),
-                    const SizedBox.shrink(),
-                    _bottomAppBarItem(icon: IconlyBroken.more_circle, page: 3),
-                    _bottomAppBarItem(icon: IconlyBroken.profile, page: 4)
-                  ],
-                ))
+            bottomNavigationBar: Container(
+              color: Colors.transparent,
+              child: BottomAppBar(
+                elevation: 1.0,
+                child: Container(
+                  color: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                  child: Obx(() => Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _bottomAppBarItem(icon: IconlyBroken.home, page: 0),
+                      _bottomAppBarItem(icon: IconlyBroken.search, page: 1),
+                      const SizedBox.shrink(),
+                      _bottomAppBarItem(icon: IconlyBroken.more_circle, page: 3),
+                      _bottomAppBarItem(icon: IconlyBroken.profile, page: 4)
+                    ],
+                  ))
+                )
               )
             ),
             body: PageView(

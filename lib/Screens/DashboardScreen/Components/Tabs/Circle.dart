@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Constants.dart';
+import 'package:venture/Screens/CreateCircleScreen/CreateCircleScreen.dart';
 import 'package:venture/Screens/DashboardScreen/Components/CircleCard.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
@@ -106,6 +108,10 @@ class _CircleTabState extends State<CircleTab> with AutomaticKeepAliveClientMixi
                     child: Row(
                       children: [
                         ZoomTapAnimation(
+                          onTap: () {
+                            final CreateCircleScreen screen = CreateCircleScreen();
+                            Navigator.of(context).push(SlideUpDownPageRoute(page: screen));
+                          },
                           child: Container(
                             constraints: BoxConstraints(
                               minWidth: 90,

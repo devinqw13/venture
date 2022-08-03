@@ -108,22 +108,22 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
           right: MediaQuery.of(context).size.width * .05,
           child: CustomPopupMenu()
         ),
-        Positioned(
-          top: 120,
-          right: MediaQuery.of(context).size.width * .05,
-          child: ZoomTapAnimation(
-            onTap: () => _showMapThemeModal(theme),
-            child: NeumorphContainer.convex(
-              borderRadius: 10.0,
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Icon(IconlyBroken.more_square, size: 25)
-                )
-              )
-            )
-          )
-        ),
+        // Positioned(
+        //   top: 120,
+        //   right: MediaQuery.of(context).size.width * .05,
+        //   child: ZoomTapAnimation(
+        //     onTap: () => _showMapThemeModal(theme),
+        //     child: NeumorphContainer.convex(
+        //       borderRadius: 10.0,
+        //       child: Center(
+        //         child: Padding(
+        //           padding: EdgeInsets.all(10),
+        //           child: Icon(IconlyBroken.more_square, size: 25)
+        //         )
+        //       )
+        //     )
+        //   )
+        // ),
         // Positioned(
         //   top: 70,
         //   right: 15,

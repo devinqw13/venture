@@ -1,9 +1,11 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Components/DismissKeyboard.dart';
 import 'package:get/get.dart';
+import 'package:venture/Screens/CreateUserScreen.dart/CreateUserScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Components/PointedLine.dart';
 
@@ -44,6 +46,7 @@ class _LoginOverlay extends State<LoginOverlay>  {
               child: Padding(
                 padding: EdgeInsets.all(10.0),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Center(
                       child: Text("Venture",
@@ -101,7 +104,7 @@ class _LoginOverlay extends State<LoginOverlay>  {
                       onPressed: () => print("START LOGIN PROCESS"),
                       child: Text("Login"),
                       style: ElevatedButton.styleFrom(
-                        elevation: 3,
+                        elevation: 1,
                         shadowColor: primaryOrange,
                         primary: primaryOrange,
                         minimumSize: const Size.fromHeight(40),
@@ -114,6 +117,24 @@ class _LoginOverlay extends State<LoginOverlay>  {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: PointedLine()
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("Don't have an account? "),
+                        ZoomTapAnimation(
+                          onTap: () {
+                            final CreateUserScreen screen = CreateUserScreen();
+                            Navigator.of(context).push(SlideUpDownPageRoute(page: screen));
+                          },
+                          child: Text("Create",
+                            style: TextStyle(
+                              color: primaryOrange
+                            )
+                          )
+                        )
+                      ],
                     )
                   ]
                 )
