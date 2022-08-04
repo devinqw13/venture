@@ -47,37 +47,64 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
 
   _createUser() {
     KeyboardUtil.hideKeyboard(context);
+    // Username checks
+    if(usernameTextController.text.isEmpty) {
+      promptErrorToast("Username field must not be empty.");
+      return;
+    }
+    if(usernameTextController.text.length < 5) {
+      promptErrorToast("Username must be 5 or more characters.");
+      return;
+    }
+    if(usernameTextController.text.length > 20) {
+      promptErrorToast("Username must be lower than 20 characters.");
+      return;
+    }
+    if(!RegExp(r'^[a-zA-Z0-9_]*$').hasMatch(usernameTextController.text)) {
+      promptErrorToast("Username must not contain spaces or special characters except underscores (_).");
+      return;
+    }
+
+    // Email Checks
+    if(emailTextController.text.isEmpty) {
+      promptErrorToast("Email field must not be empty.");
+      return;
+    }
+    if(!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(emailTextController.text)) {
+      promptErrorToast("Please enter a valid email address.");
+      return;
+    }
+
+    // Password Checks
     if(pwdTextController.text.isEmpty || pwdRepeatTextController.text.isEmpty) {
-      promptMatchingPwdError("Password fields must not be empty.");
+      promptErrorToast("Password fields must not be empty.");
       return;
     }
-
     if(!_isPasswordEightCharacters || !_hasPasswordOneNumber) {
-      promptMatchingPwdError("Password does not follow all criteria.");
+      promptErrorToast("Password does not follow all criteria.");
       return;
     }
-
     if(pwdTextController.text != pwdRepeatTextController.text) {
-      promptMatchingPwdError("The password fields doesn't match.");
+      promptErrorToast("Password fields does not match.");
       return;
     }
 
-    
+
   }
 
-  promptMatchingPwdError(String msg) async {
+  promptErrorToast(String msg) async {
     Widget toast = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10.0),
         color: Colors.red,
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         children: [
           Icon(Icons.close),
           SizedBox(width: 12.0),
-          Text(msg),
+          Flexible(child: Text(msg)),
         ],
       ),
     );
@@ -97,9 +124,9 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
         body: CustomScrollView(
           slivers: [
             SliverAppBar(
-              leading: IconButton(
-                icon: Icon(Icons.close, size: 28),
-                onPressed: () => Navigator.of(context).pop(),
+              leading: ZoomTapAnimation(
+                child: Icon(Icons.close, size: 28),
+                onTap: () => Navigator.of(context).pop(),
               ),
               floating: false,
               pinned: true,
@@ -119,6 +146,11 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text("Username & email", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 10),
+                    Text("Please set a unique username and email that can use to identify you.", 
+                      style: TextStyle(fontSize: 16, height: 1.5, color: Colors.grey.shade600)),
+                    SizedBox(height: 30),
                     TextField(
                       controller: usernameTextController,
                       readOnly: isLoading,
@@ -156,8 +188,8 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                     Text("Set a password", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
                     SizedBox(height: 10),
                     Text("Please create a secure password including the following criteria below.", 
-                      style: TextStyle(fontSize: 16, height: 1.5, color: Colors.grey.shade600),),
-                    SizedBox(height: 30,),
+                      style: TextStyle(fontSize: 16, height: 1.5, color: Colors.grey.shade600)),
+                    SizedBox(height: 30),
                     TextField(
                       controller: pwdTextController,
                       readOnly: isLoading,
