@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:venture/Models/User.dart';
 import 'package:venture/Theme.dart';
 import 'package:venture/Constants.dart';
 import 'package:get/get.dart';
@@ -33,6 +34,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Future<bool>? future;
+  final storage = GetStorage();
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
   final ThemesController themeController = Get.put(ThemesController());
@@ -60,6 +62,11 @@ class _MyAppState extends State<MyApp> {
 
   _initializeAsyncDependencies() async {
     await getKeys();
+    // var box = storage.read('user');
+    // User().fromJson(box);
+    var userKey = storage.read('user_key');
+    print(userKey);
+    User().userKey.value = userKey ?? 0;
 
     setState(() {
       future = Future.value(true);

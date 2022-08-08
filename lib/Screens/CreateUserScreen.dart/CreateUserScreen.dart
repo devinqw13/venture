@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:venture/Calls.dart';
 import 'package:venture/Components/DismissKeyboard.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/Keyboard.dart';
+import 'package:venture/Helpers/Toast.dart';
+import 'package:venture/Models/User.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -45,51 +48,59 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     });
   }
 
-  _createUser() {
+  _createUser() async {
+    if (isLoading) return;
     KeyboardUtil.hideKeyboard(context);
     // Username checks
     if(usernameTextController.text.isEmpty) {
-      promptErrorToast("Username field must not be empty.");
+      showToast(context: context, msg: "Username field must not be empty.");
       return;
     }
     if(usernameTextController.text.length < 5) {
-      promptErrorToast("Username must be 5 or more characters.");
+      showToast(context: context, msg: "Username must be 5 or more characters.");
       return;
     }
     if(usernameTextController.text.length > 20) {
-      promptErrorToast("Username must be lower than 20 characters.");
+      showToast(context: context, msg: "Username must be lower than 20 characters.");
       return;
     }
     if(!RegExp(r'^[a-zA-Z0-9_]*$').hasMatch(usernameTextController.text)) {
-      promptErrorToast("Username must not contain spaces or special characters except underscores (_).");
+      showToast(context: context, msg: "Username must not contain spaces or special characters except underscores (_).");
       return;
     }
 
     // Email Checks
     if(emailTextController.text.isEmpty) {
-      promptErrorToast("Email field must not be empty.");
+      showToast(context: context, msg: "Email field must not be empty.");
       return;
     }
     if(!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(emailTextController.text)) {
-      promptErrorToast("Please enter a valid email address.");
+      showToast(context: context, msg: "Please enter a valid email address.");
       return;
     }
 
     // Password Checks
     if(pwdTextController.text.isEmpty || pwdRepeatTextController.text.isEmpty) {
-      promptErrorToast("Password fields must not be empty.");
+      showToast(context: context, msg: "Password fields must not be empty.");
       return;
     }
     if(!_isPasswordEightCharacters || !_hasPasswordOneNumber) {
-      promptErrorToast("Password does not follow all criteria.");
+      showToast(context: context, msg: "Password does not follow all criteria.");
       return;
     }
     if(pwdTextController.text != pwdRepeatTextController.text) {
-      promptErrorToast("Password fields does not match.");
+      showToast(context: context, msg: "Password fields does not match.");
       return;
     }
 
+    setState(() => isLoading = true);
+    bool? results = await createUser(context, usernameTextController.text, emailTextController.text, pwdTextController.text);
 
+    if (results != null && results) {
+      User().onChange();
+      Navigator.pop(context, true);
+    }
+    setState(() => isLoading = false);
   }
 
   promptErrorToast(String msg) async {
@@ -239,7 +250,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                           ),
                           child: Center(child: Icon(Icons.check, color: Get.isDarkMode ? ColorConstants.gray900 : Colors.grey.shade50, size: 15)),
                         ),
-                        SizedBox(width: 10,),
+                        SizedBox(width: 10),
                         Text("Contains at least 8 characters")
                       ],
                     ),
@@ -299,7 +310,9 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                     SizedBox(height: 30),
                     ElevatedButton(
                       onPressed: () => _createUser(),
-                      child: Text("Create Account"),
+                      child: isLoading ? 
+                      SizedBox(width: 30, height: 30, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                      : Text("Create Account"),
                       style: ElevatedButton.styleFrom(
                         elevation: 1,
                         shadowColor: primaryOrange,

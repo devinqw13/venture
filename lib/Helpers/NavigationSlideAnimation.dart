@@ -2,14 +2,20 @@ import 'package:flutter/material.dart';
 
 class SlideUpDownPageRoute extends PageRouteBuilder {
   final Widget? page;
-  SlideUpDownPageRoute({@required this.page}) : super(pageBuilder: (BuildContext context, Animation<double> animation,
+  final int openDuration;
+  final int closeDuration;
+  SlideUpDownPageRoute({
+    @required this.page, 
+    this.openDuration = 200,
+    this.closeDuration = 200
+  }) : super(pageBuilder: (BuildContext context, Animation<double> animation,
       Animation<double> secondaryAnimation) => page!);
 
   @override
-  Duration get transitionDuration => const Duration(milliseconds: 200);
+  Duration get transitionDuration => Duration(milliseconds: openDuration);
   
   @override
-  Duration get reverseTransitionDuration => Duration(milliseconds: 200);
+  Duration get reverseTransitionDuration => Duration(milliseconds: closeDuration);
 
   // OPTIONAL IF YOU WISH TO HAVE SOME EXTRA ANIMATION WHILE ROUTING
   @override
