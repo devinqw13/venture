@@ -159,7 +159,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                   children: [
                     Text("Username & email", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
                     SizedBox(height: 10),
-                    Text("Please set a unique username and email that can use to identify you.", 
+                    Text("Please set a unique username and email that can be used to identify you.", 
                       style: TextStyle(fontSize: 16, height: 1.5, color: Colors.grey.shade600)),
                     SizedBox(height: 30),
                     TextField(

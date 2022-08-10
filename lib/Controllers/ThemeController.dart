@@ -11,6 +11,7 @@ class ThemesController extends GetxController {
   GoogleMapController? googleMapController;
 
   String theme = 'light';
+  String mapStyle = 'standard';
 
   @override
   void onInit() {

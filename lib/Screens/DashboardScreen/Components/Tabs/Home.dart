@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:venture/Models/User.dart';
 import 'package:venture/Constants.dart';
 
 class HomeTab extends StatefulWidget {
@@ -51,15 +52,20 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
               ),
             ),
             actions: <Widget>[
-              Padding(
-                padding: EdgeInsetsDirectional.only(
-                  end: 16.0,
-                  bottom: 12.0,
-                ),
-                child: ZoomTapAnimation(
-                  onTap: () => print("ADD CONTENT"),
-                  child: Icon(IconlyBroken.plus, size: 32),
-                )
+              ValueListenableBuilder(
+                valueListenable: User().userKey, 
+                builder: (context, value, _) {
+                  return value != 0 ? Padding(
+                    padding: EdgeInsetsDirectional.only(
+                      end: 16.0,
+                      bottom: 12.0,
+                    ),
+                    child: ZoomTapAnimation(
+                      onTap: () => print("ADD CONTENT"),
+                      child: Icon(IconlyBroken.plus, size: 32),
+                    )
+                  ) : Container();
+                }
               )
             ],
           ),

@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/string_extension.dart';
+import 'package:venture/Models/User.dart';
+import 'package:venture/Screens/AccountSettingsScreen/AccountSettingsScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:venture/Models/MapThemes.dart';
 
 class SettingsScreen extends StatefulWidget {
   SettingsScreen({Key? key}) : super(key: key);
@@ -50,7 +53,14 @@ class _SettingsScreenState extends State<SettingsScreen>  {
                   Text("Account", style: theme.textTheme.headline6?.copyWith(fontWeight: FontWeight.w400)),
                   SizedBox(height: 16),
                   ZoomTapAnimation(
-                    onTap: () => print("LOGIN PRESSED"),
+                    onTap: () {
+                      if(User().userKey.value == 0) {
+                        Navigator.pop(context);
+                      } else {
+                        AccountSettingsScreen screen = AccountSettingsScreen();
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+                      }
+                    },
                     child: Container(
                       height: 80,
                       padding: EdgeInsets.all(16),
@@ -72,7 +82,24 @@ class _SettingsScreenState extends State<SettingsScreen>  {
                             ),
                           ),
                           SizedBox(width: 16),
-                          Text("Login / Register", style: theme.textTheme.subtitle1?.copyWith(fontWeight: FontWeight.w400, color: Colors.blue)),
+                          ValueListenableBuilder(
+                            valueListenable: User().userKey, 
+                            builder: (context, value, _) {
+                              return value == 0 ? Text("Login / Register", style: theme.textTheme.subtitle1?.copyWith(fontWeight: FontWeight.w400, color: Colors.blue)) :
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Your account",
+                                    style: theme.textTheme.subtitle1?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(height: 3),
+                                  Text("See information about your account",
+                                    style: theme.textTheme.subtitle2?.copyWith(color: Colors.grey),
+                                  )
+                                ],
+                              );
+                            }
+                          ),
                         ],
                       ),
                     )
@@ -84,6 +111,10 @@ class _SettingsScreenState extends State<SettingsScreen>  {
                     return _buildListTile('Appearance', Icons.dark_mode, _.theme.toCapitalized(), Colors.purple, theme, onTab: () => _showAppearanceModal(theme, _.theme));
                     // return Text(_.theme);
                   }),
+                  // GetBuilder<ThemesController>(builder: (_) {
+                  //   return _buildListTile('Map Style', Icons.map_rounded, '', Colors.blue, theme, onTab: () => _showMapThemeModal(theme));
+                  //   // return Text(_.theme);
+                  // }),
                   // SizedBox(height: 8),
                   // _buildListTile('Language', Icons.language, 'English', Colors.orange, theme, onTab: () {}),
                   // SizedBox(height: 8),
@@ -184,4 +215,73 @@ class _SettingsScreenState extends State<SettingsScreen>  {
       )
     );
   }
+
+  // _showMapThemeModal(ThemeData theme) {
+  //   Get.bottomSheet(
+  //     Container(
+  //       padding: EdgeInsets.all(16),
+  //       height: MediaQuery.of(context).size.height * 0.23,
+  //       decoration: BoxDecoration(
+  //         color: Get.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
+  //         borderRadius: BorderRadius.only(
+  //           topLeft: Radius.circular(16),
+  //           topRight: Radius.circular(16),
+  //         )
+  //       ),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text("Select a Theme", style: theme.textTheme.subtitle1,),
+  //           SizedBox(height: 20),
+  //           Container(
+  //             width: double.infinity,
+  //             height: 100,
+  //             child: ListView.builder(
+  //               scrollDirection: Axis.horizontal,
+  //               itemCount: MapThemes().themes.length,
+  //               itemBuilder: (context, index) {
+  //                 return GestureDetector(
+  //                   onTap: () {
+  //                     setState(() {
+  //                       _themesController.googleMapController?.setMapStyle(MapThemes().themes[index]['style']);
+  //                     });
+  //                     Get.back();
+  //                   },
+  //                   child: Container(
+  //                     width: 100,
+  //                     margin: EdgeInsets.only(right: 10),
+  //                     decoration: BoxDecoration(
+  //                       border: Border.all(
+  //                         color: MapThemes().themes[index]['name'] == _themesController.mapStyle ? Colors.blue : Colors.white.withOpacity(0),
+  //                         width: 2
+  //                       ),
+  //                       boxShadow: [
+  //                         MapThemes().themes[index]['name'] == _themesController.mapStyle ?
+  //                         BoxShadow(
+  //                           color: Colors.blue.shade100,
+  //                           offset: Offset(0, 1),
+  //                           blurRadius: 2
+  //                         ) : BoxShadow(
+  //                           color: Colors.grey.shade200,
+  //                           offset: Offset(0, 1),
+  //                           blurRadius: 2
+  //                         )
+  //                       ],
+  //                       borderRadius: BorderRadius.circular(10),
+  //                       image: DecorationImage(
+  //                         fit: BoxFit.cover,
+  //                         image: NetworkImage(MapThemes().themes[index]['image']),
+  //                       )
+  //                     ),
+  //                   ),
+  //                 );
+  //               }
+  //             ),
+  //           )
+  //         ],
+  //       ),
+  //     )
+  //   );
+  // }
 }

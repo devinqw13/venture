@@ -7,6 +7,7 @@ import 'package:venture/Components/NeumorphContainer.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Models/MapThemes.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:venture/Models/User.dart';
 
 class MapTab extends StatefulWidget {
   MapTab({Key? key}) : super(key: key);
@@ -103,11 +104,20 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
             // _customInfoWindowController.googleMapController = controller;
           }
         ),
-        Positioned(
-          top: 60,
-          right: MediaQuery.of(context).size.width * .05,
-          child: CustomPopupMenu()
-        ),
+        ValueListenableBuilder(
+          valueListenable: User().userKey, 
+          builder: (context, value, _) {
+            if (value != 0) {
+              return Positioned(
+                top: 60,
+                right: MediaQuery.of(context).size.width * .05,
+                child: CustomPopupMenu()
+              );
+            } else {
+              return Container();
+            }
+          }
+        )
         // Positioned(
         //   top: 120,
         //   right: MediaQuery.of(context).size.width * .05,
