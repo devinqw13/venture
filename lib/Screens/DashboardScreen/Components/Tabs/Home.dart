@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Helpers/NavigationSlideAnimation.dart';
+import 'package:venture/Models/Content.dart';
+import 'package:venture/Screens/DashboardScreen/Components/PostSkeleton.dart';
+import 'package:venture/Screens/UploadContentScreen/UploadContentScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Models/User.dart';
 import 'package:venture/Constants.dart';
@@ -14,6 +18,7 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<HomeTab> {
+  List<Content> content = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -22,6 +27,11 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   void initState() {
     super.initState();
 
+  }
+
+  goToUploadContent() {
+    UploadContentScreen screen = UploadContentScreen();
+    Navigator.of(context).push(SlideUpDownPageRoute(page: screen));
   }
 
   @override
@@ -61,7 +71,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
                       bottom: 12.0,
                     ),
                     child: ZoomTapAnimation(
-                      onTap: () => print("ADD CONTENT"),
+                      onTap: () => goToUploadContent(),
                       child: Icon(IconlyBroken.plus, size: 32),
                     )
                   ) : Container();
@@ -69,25 +79,37 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
               )
             ],
           ),
-
           CupertinoSliverRefreshControl(
         
             onRefresh: () async {
               await Future.delayed(Duration(seconds: 2));
             },
           ),
-          
-          SliverFixedExtentList(
-            itemExtent: 50.0,
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                return Container(
-                  alignment: Alignment.center,
-                  child: Text('List Item $index'),
-                );
-              },
+
+          SliverToBoxAdapter(
+            child: ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: 1,
+              shrinkWrap: true,
+              itemBuilder: (context, i) {
+                return PostSkeleton();
+              }
             ),
-          )
+          ),
+          
+          // SliverFixedExtentList(
+          //   itemExtent: 500.0,
+          //   delegate: SliverChildBuilderDelegate(
+          //     (BuildContext context, int index) {
+          //       return PostSkeleton();
+          //       // return PostSkeleton();
+          //       // return Container(
+          //       //   alignment: Alignment.center,
+          //       //   child: Text('List Item $index'),
+          //       // );
+          //     },
+          //   ),
+          // )
         ],
       )
     );

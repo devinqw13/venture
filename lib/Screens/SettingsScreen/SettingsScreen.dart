@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/string_extension.dart';
 import 'package:venture/Models/User.dart';
-import 'package:venture/Screens/AccountSettingsScreen/AccountSettingsScreen.dart';
+import 'package:venture/Screens/SettingsScreen/AccountSettingsScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Models/MapThemes.dart';
 

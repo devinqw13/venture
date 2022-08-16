@@ -247,24 +247,24 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
             children: [
               value != 0 ? _buildBody(value as int) : Container(),
               value == 0 ? ProfileSkeleton() : Container(),
-              value == 0 ? LoginOverlay() : Container(),
-              value == 0 ? Positioned(
-                right: 5,
-                top: 5,
-                child: ElevatedButton(
-                  onPressed: () => goToSettings(),
-                  child: Icon(IconlyLight.setting),
-                  style: ElevatedButton.styleFrom(
-                    elevation: 3,
-                    shadowColor: primaryOrange,
-                    primary: primaryOrange,
-                    // shape: RoundedRectangleBorder(
-                    //   borderRadius: BorderRadius.circular(20.0),
-                    // )
-                    shape: CircleBorder(),
-                  ),
-                )
-              ) : Container(),
+              value == 0 ? LoginOverlay(enableSettings: true) : Container(),
+              // value == 0 ? Positioned(
+              //   right: 5,
+              //   top: 5,
+              //   child: ElevatedButton(
+              //     onPressed: () => goToSettings(),
+              //     child: Icon(IconlyLight.setting),
+              //     style: ElevatedButton.styleFrom(
+              //       elevation: 3,
+              //       shadowColor: primaryOrange,
+              //       primary: primaryOrange,
+              //       // shape: RoundedRectangleBorder(
+              //       //   borderRadius: BorderRadius.circular(20.0),
+              //       // )
+              //       shape: CircleBorder(),
+              //     ),
+              //   )
+              // ) : Container(),
             ]
           );
         }

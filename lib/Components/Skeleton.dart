@@ -7,21 +7,29 @@ class Skeleton extends StatelessWidget {
 
   final double? width, height;
   final ShapeBorder shapeBorder;
+  final BoxShape boxShape;
+  final double? borderRadius;
   final int seconds;
 
   const Skeleton.rectangular({Key? key,
     this.width = double.infinity,
     required this.height,
-    this.shapeBorder = const RoundedRectangleBorder(),
+    this.borderRadius,
     this.seconds = 2
-  }) : super(key: key);
+  }) :
+      boxShape = BoxShape.rectangle,
+      shapeBorder = const RoundedRectangleBorder(),
+      super(key: key);
 
   const Skeleton.circular({Key? key, 
     this.width = double.infinity,
     required this.height,
-    this.shapeBorder = const CircleBorder(),
+    this.borderRadius,
     this.seconds = 2
-  }) : super(key: key);
+  }) : 
+      boxShape = BoxShape.circle,
+      shapeBorder = const CircleBorder(),
+      super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +40,16 @@ class Skeleton extends StatelessWidget {
       child: Container(
         width: width,
         height: height,
-        decoration: ShapeDecoration(
+        decoration: BoxDecoration(
           color: Colors.grey[400]!,
-          shape: shapeBorder,
-
+          borderRadius: borderRadius != null ? BorderRadius.circular(borderRadius!) : null,
+          shape: boxShape
         ),
+        // decoration: BoxDecoration(
+        //   color: Colors.grey[400]!,
+        //   shape: shapeBorder,
+
+        // ),
       ),
     );
   }

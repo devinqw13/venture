@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:venture/Helpers/Toast.dart';
+import 'package:venture/Models/Content.dart';
 import 'package:venture/Models/User.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Globals.dart' as globals;
@@ -81,7 +82,7 @@ Future<bool?> postLogin(BuildContext context, String identity, String password) 
   } else {
     jsonResponse = json.decode(response.body);
   } 
-  print(jsonResponse);
+  
   if (jsonResponse['results']['status'] == true) {
     final storage = GetStorage();
     User().userKey.value = jsonResponse['results']['user_key'];
@@ -120,13 +121,54 @@ Future<UserModel?> getUser(BuildContext context, int userKey) async {
     jsonResponse = json.decode(response.body);
   }
 
-  print(jsonResponse);
   if (jsonResponse['result'] == true) {
     UserModel user = UserModel(jsonResponse['results']);
     return user;
   }
   else {
-    // showToast(context: context, msg: "No user found");
+    showToast(context: context, msg: "User not found");
+    return null;
+  }
+}
+
+Future<Content?> uploadContent(BuildContext context, String path, int userKey, String contentName, String contentType, {String? contentCaption, int? pinKey, int? circleKey}) async {
+  Map<String, String> jsonMap = {
+    "user_key": userKey.toString(),
+    "content_name": contentName,
+    "upload_type": contentType
+  };
+
+  if(contentCaption != null) jsonMap['content_caption'] = contentCaption;
+  if(pinKey != null) jsonMap['pin_key'] = pinKey.toString();
+  if(circleKey != null) jsonMap['circle_key'] = circleKey.toString();
+
+  String url = "${globals.apiBaseUrl}/uploadContent";
+  var encodedUrl = Uri.encodeFull(url);
+
+  Map jsonResponse = {};
+  http.StreamedResponse response;
+  try {
+    var request = http.MultipartRequest("POST", Uri.parse(encodedUrl));
+    request.fields.addAll(jsonMap);
+    request.files.add(await http.MultipartFile.fromPath('file', path));
+    response = await request.send();
+    jsonResponse = await json.decode(await response.stream.bytesToString());
+  } on TimeoutException {
+    showToast(context: context, msg: "Connection timeout. Please try again.");
+    return null;
+  }
+  print(response.statusCode);
+  if (response.statusCode != 200) {
+    showToast(context: context, msg: "An error has occured. Please try again.");
+    return null;
+  }
+  print(jsonResponse);
+  if (jsonResponse['result'] == true) {
+    Content content = Content(jsonResponse['results']);
+    return content;
+  }
+  else {
+    showToast(context: context, msg: jsonResponse['results']);
     return null;
   }
 }
