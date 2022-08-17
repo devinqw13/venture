@@ -172,3 +172,46 @@ Future<Content?> uploadContent(BuildContext context, String path, int userKey, S
     return null;
   }
 }
+
+Future<List<Content>> getContent(BuildContext context, int userKey) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  String url = "${globals.apiBaseUrl}/getContent?user_key=$userKey";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.get(Uri.parse(url), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToast(context: context, msg: "Connection timeout.");
+    return [];
+  }
+
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  if (jsonResponse['result'] == 'true') {
+    List<Content>? contents = [];
+
+    for (var item in jsonResponse['results']) {
+      Content content = Content(item);
+      contents.add(content);
+    }
+
+    //TODO: CREATE CACHE OF RETRIEVED DATA AND SET EXPIRATION (24 hours)
+
+    return contents;
+  }
+  else {
+    showToast(context: context, msg: "An error has occured.");
+    return [];
+  }
+}

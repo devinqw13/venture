@@ -1,3 +1,5 @@
+import 'package:venture/Models/UserModel.dart';
+
 class Content {
   late int contentKey;
   late int relationshipKey;
@@ -7,8 +9,10 @@ class Content {
   late String contentUrl;
   bool? active;
   String? contentType;
-  String? timestamp;
+  late String timestamp;
   String? contentCaption;
+  UserModel? user;
+  String? contentLocation;
 
   Content(Map<String, dynamic> input) {
     contentKey = input['content_key'];
@@ -21,5 +25,7 @@ class Content {
     contentType = input['content_type'];
     timestamp = input['created_ts'];
     contentCaption = input['content_caption'];
+    user = input['user'][0] != null ? UserModel(input['user'][0]) : null;
+    contentLocation = input['content_location'];
   }
 }

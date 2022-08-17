@@ -1,14 +1,143 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:venture/Controllers/ThemeController.dart';
+import 'package:iconly/iconly.dart';
+import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Components/Skeleton.dart';
+import 'package:venture/Helpers/TimeFormat.dart';
+import 'package:venture/Models/Content.dart';
+import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
-class PostSkeleton extends StatelessWidget {
-  PostSkeleton({Key? key}) : super(key: key);
+class PostSkeleton extends StatefulWidget{
+  final Content content;
+  PostSkeleton({Key? key, required this.content}) : super(key: key);
 
-  // final ThemesController _themesController = Get.find();
+  @override
+  _PostSkeleton createState() => _PostSkeleton();
+}
+
+class _PostSkeleton extends State<PostSkeleton> {
+
+  Widget _buildHeaderDetails(Content content) {
+    return Row(
+      children: [
+        ZoomTapAnimation(
+          onTap: () => print("GO TO PROFILE"),
+          child: MyAvatar(
+            size: 25,
+            photo: content.user!.userAvatar!
+          )
+        ),
+        SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              content.user!.displayName != null ?
+              Text(content.user!.displayName!,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold
+                ),
+              ) :
+              Text('@'+content.user!.userName!,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+              Row(
+                children: [
+                  content.contentLocation != null ? Flexible(
+                    fit: FlexFit.loose,
+                    child: Text(
+                      content.contentLocation!,
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 13,
+                        decoration: TextDecoration.underline
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    )
+                  ) : Container(),
+                  content.contentLocation != null ? Text(
+                    " ${String.fromCharCode(0x00B7)} ",
+                    style: TextStyle(
+                      // fontSize: 25
+                    ),
+                  ) : Container(),
+                  TimeFormat().withDate(
+                    content.timestamp,
+                    numericDates: false,
+                    style: TextStyle(
+                      color: Colors.grey
+                    )
+                  )
+                ],
+              )
+            ],
+          )
+        ),
+        ElevatedButton(
+          onPressed: () => print("MORE OPTIONS"),
+          child: Icon(Icons.more_horiz),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.all(0),
+            // elevation: 0,
+            // shadowColor: primaryOrange,
+            primary: Colors.transparent,
+            // shape: RoundedRectangleBorder(
+            //   borderRadius: BorderRadius.circular(20.0),
+            // )
+            shape: CircleBorder(),
+          ),
+        )
+      ],
+    );
+  }
+
+  // _buildCaption(Content content) {
+  //   return Flexible(
+  //     child: Text(content.contentCaption!)
+  //   );
+  // }
+
+  _buildContent(Content content) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20.0),
+      child: Image.network(
+          content.contentUrl,
+          // height: 150.0,
+          // width: 100.0,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Colors.grey, width: 0.1)
+        )
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeaderDetails(widget.content),
+            // _buildCaption(widget.content),
+            SizedBox(height: 10),
+            _buildContent(widget.content)
+          ],
+        )
+      )
+    );
+  }
+}
+
+class PostSkeletonShimmer extends StatelessWidget {
+  PostSkeletonShimmer({Key? key}) : super(key: key);
 
   Widget _buildHeaderDetails(BuildContext context) {
     return Row(
@@ -54,29 +183,11 @@ class PostSkeleton extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
         child: Column(
-          // crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeaderDetails(context),
             SizedBox(height: 10),
             _buildContent(context)
-            // ListTile(
-            //   // dense: true,
-            //   horizontalTitleGap: 0,
-            //   contentPadding: EdgeInsets.symmetric(horizontal: 0),
-            //   leading: Skeleton.circular(
-            //     width: 100,
-            //     height: 100
-            //   ),
-            //   title: Container(
-            //     color: Colors.red,
-            //     height: 20
-            //   ),
-            //   subtitle: Skeleton.rectangular(
-            //     height: 15,
-            //     width: 100
-            //   ),
-            // )
           ],
         )
       )

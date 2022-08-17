@@ -272,32 +272,3 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
     );
   }
 }
-
-class MyAvatar extends StatelessWidget {
-  final double? size;
-  final String? photo;
-
-  const MyAvatar({Key? key, this.size, @required this.photo}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8.0),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey[800]!,
-              width: 2.0,
-            ),
-            shape: BoxShape.circle),
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: CircleAvatar(
-            radius: size,
-            backgroundImage: NetworkImage("https://venture-content.s3.amazonaws.com/images/default-avatar.jpg"),
-          ),
-        ),
-      ),
-    );
-  }
-}

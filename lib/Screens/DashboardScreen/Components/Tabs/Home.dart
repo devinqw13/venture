@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Calls.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Screens/DashboardScreen/Components/PostSkeleton.dart';
@@ -19,6 +20,7 @@ class HomeTab extends StatefulWidget {
 
 class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<HomeTab> {
   List<Content> content = [];
+  bool isLoading = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -27,6 +29,33 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   void initState() {
     super.initState();
 
+    _initializeAsyncDependencies();
+  }
+
+  _initializeAsyncDependencies() async {
+    // await _fetchCache();
+    setState(() => isLoading = true);
+    List<Content> results = await getContent(context, 0);
+    setState(() => isLoading = false);
+
+    setState(() {
+      content = results;
+    });
+  }
+
+  _fetchCache() async {
+    //TODO: RETRIEVE CACHED DATA AND SET
+  }
+
+  _refresh() async {
+    if (isLoading) return;
+    setState(() => isLoading = true);
+    List<Content> results = await getContent(context, 0);
+    setState(() => isLoading = false);
+
+    setState(() {
+      content = results;
+    });
   }
 
   goToUploadContent() {
@@ -80,36 +109,23 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
             ],
           ),
           CupertinoSliverRefreshControl(
-        
-            onRefresh: () async {
-              await Future.delayed(Duration(seconds: 2));
-            },
+            onRefresh: () => _refresh(),
           ),
 
           SliverToBoxAdapter(
             child: ListView.builder(
               physics: NeverScrollableScrollPhysics(),
-              itemCount: 1,
+              itemCount: content.isEmpty ? 4 : content.length,
               shrinkWrap: true,
               itemBuilder: (context, i) {
-                return PostSkeleton();
+                if(content.isEmpty) {
+                  return PostSkeletonShimmer();
+                }else {
+                  return PostSkeleton(content: content[i]);
+                }
               }
             ),
-          ),
-          
-          // SliverFixedExtentList(
-          //   itemExtent: 500.0,
-          //   delegate: SliverChildBuilderDelegate(
-          //     (BuildContext context, int index) {
-          //       return PostSkeleton();
-          //       // return PostSkeleton();
-          //       // return Container(
-          //       //   alignment: Alignment.center,
-          //       //   child: Text('List Item $index'),
-          //       // );
-          //     },
-          //   ),
-          // )
+          ),      
         ],
       )
     );
