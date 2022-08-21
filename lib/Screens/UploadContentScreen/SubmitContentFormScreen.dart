@@ -23,11 +23,16 @@ class _SubmitContentFormState extends State<SubmitContentFormScreen> {
   _uploadContent() async {
     if (isLoading) return;
     String path = widget.file.path;
-    String contentName = path.substring(path.lastIndexOf('/') + 1) + '.png';
+    File file = widget.file;
+    String contentName = path.substring(path.lastIndexOf('/') + 1) + '-${User().userKey.value}' + '.png';
     
     setState(() => isLoading = true);
-    Content? result = await uploadContent(context, path, User().userKey.value, contentName, widget.contentType);
+    Content? result = await handleContentUpload(context, file, User().userKey.value, contentName, widget.contentType);
     setState(() => isLoading = false);
+
+    if(result != null) {
+      Navigator.of(context)..pop()..pop([result, file]);
+    }
   }
 
   _buildPreview() {
@@ -44,9 +49,14 @@ class _SubmitContentFormState extends State<SubmitContentFormScreen> {
                 width: 0.4
               )
             ),
-            child: Image.file(
-              widget.file,
-              scale: 8,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: 90
+              ),
+              child: Image.file(
+                widget.file,
+                scale: 8,
+              )
             )
           ),
           Expanded(

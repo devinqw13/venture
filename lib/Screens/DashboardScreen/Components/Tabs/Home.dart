@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:venture/Calls.dart';
+import 'package:venture/Helpers/DeleteContent.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
+import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Screens/DashboardScreen/Components/PostSkeleton.dart';
 import 'package:venture/Screens/UploadContentScreen/UploadContentScreen.dart';
@@ -49,18 +52,28 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
 
   _refresh() async {
     if (isLoading) return;
-    setState(() => isLoading = true);
-    List<Content> results = await getContent(context, 0);
-    setState(() => isLoading = false);
+    // setState(() => isLoading = true);
+    // List<Content> results = await getContent(context, 0);
+    // setState(() => isLoading = false);
 
-    setState(() {
-      content = results;
-    });
+    // setState(() {
+    //   content = results;
+    // });
+    Future.delayed(const Duration(milliseconds: 3000), () {});
   }
 
-  goToUploadContent() {
+  goToUploadContent() async {
     UploadContentScreen screen = UploadContentScreen();
-    Navigator.of(context).push(SlideUpDownPageRoute(page: screen));
+    var result = await Navigator.of(context).push(SlideUpDownPageRoute(page: screen));
+
+    if(result != null) {
+      Content item = result[0] as Content;
+      showToast(context: context, color: Colors.green, msg: "Posted to ${item.user!.userName}", type: ToastType.INFO);
+      setState(() {
+        content.insert(0, item);
+      });
+      deleteFile(result[1]);
+    }
   }
 
   @override

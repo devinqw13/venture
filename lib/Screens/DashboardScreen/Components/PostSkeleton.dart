@@ -6,6 +6,7 @@ import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class PostSkeleton extends StatefulWidget{
   final Content content;
@@ -103,11 +104,20 @@ class _PostSkeleton extends State<PostSkeleton> {
   _buildContent(Content content) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20.0),
-      child: Image.network(
-          content.contentUrl,
-          // height: 150.0,
-          // width: 100.0,
-      ),
+      // child: Image.network(
+      //     content.contentUrl,
+      //     // height: 150.0,
+      //     // width: 100.0,
+      // ),
+      child: CachedNetworkImage(
+        imageUrl: content.contentUrl,
+        progressIndicatorBuilder: (context, url, downloadProgress) {
+          return Skeleton.rectangular(
+            height: 250,
+            borderRadius: 20.0
+          );
+        }
+      )
     );
   }
 

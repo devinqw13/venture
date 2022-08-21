@@ -83,7 +83,7 @@ class TimeFormat {
     if (difference.inDays >= 7) {
       DateFormat format = date.year < date2.year ? DateFormat('MMM d, yyyy') : DateFormat('MMM d');
       return Text(format.format(date2), style: style);
-    } else if (difference.inDays >= 6) {
+    } else if (difference.inDays >= 1) {
       return (numericDates) ?
         Text('${difference.inDays}d', style: style) :
         Text('${difference.inDays} days ago', style: style);
