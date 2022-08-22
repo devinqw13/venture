@@ -47,6 +47,7 @@ dependencies:
   photo_manager: ^2.1.4
   image_editor: ^1.1.0
   extended_image: ^6.1.0
+  flutter_launcher_icons: ^0.9.2
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
@@ -62,6 +63,11 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^1.0.0
 
+flutter_icons:
+  image_path: 'assets/images/venture.png'
+  android: true
+  ios: true
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -75,7 +81,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   # assets:
-  #   - images/a_dot_burr.jpeg
+  #   - assets/images/venture.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

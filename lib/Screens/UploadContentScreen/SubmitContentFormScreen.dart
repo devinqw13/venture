@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:venture/Models/User.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Calls.dart';
@@ -117,44 +118,6 @@ class _SubmitContentFormState extends State<SubmitContentFormScreen> {
     final theme = Theme.of(context);
     return DismissKeyboard(
       child: Scaffold(
-      // body: NestedScrollView(
-      //   headerSliverBuilder: (context, innerBoxIsScrolled) {
-      //     return <Widget>[
-      //       SliverAppBar(
-      //         pinned: true,
-      //         elevation: 0.5,
-      //         shadowColor: Colors.grey,
-      //         forceElevated: true,
-      //         flexibleSpace: FlexibleSpaceBar(
-      //           centerTitle: true,
-      //           title: Text(
-      //             'New Post',
-      //             style: theme.textTheme.headline6,
-      //           ),
-      //         ),
-      //         actions: [
-      //           !isLoading ? Center(
-      //             child: Padding(
-      //               padding: EdgeInsets.symmetric(horizontal: 15),
-      //               child: ZoomTapAnimation(
-      //                 onTap: () => print("SUBMIT CONTENT"),
-      //                 child: Text("Share",
-      //                   style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold),
-      //                 ),
-      //               )
-      //             )
-      //           ):
-      //           CircularProgressIndicator(color: primaryOrange)
-      //         ],
-      //       ),
-      //     ];
-      //   },
-      //   body: Column(
-      //     children: [
-      //       _buildPreview()
-      //     ],
-      //   )
-      // ),
         appBar: AppBar(
           elevation: 0.8,
           shadowColor: Colors.grey,
@@ -178,7 +141,13 @@ class _SubmitContentFormState extends State<SubmitContentFormScreen> {
                 )
               )
             ):
-            CircularProgressIndicator(color: primaryOrange)
+            // CircularProgressIndicator(color: primaryOrange)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              child: CupertinoActivityIndicator(
+                radius: 13,
+              )
+            )
           ],
         ),
         body: Column(

@@ -12,7 +12,6 @@ import 'package:venture/Screens/DashboardScreen/Components/PostSkeleton.dart';
 import 'package:venture/Screens/UploadContentScreen/UploadContentScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Models/User.dart';
-import 'package:venture/Constants.dart';
 
 class HomeTab extends StatefulWidget {
   HomeTab({Key? key}) : super(key: key);

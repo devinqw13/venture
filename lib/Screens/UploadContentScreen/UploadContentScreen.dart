@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:venture/Helpers/DeleteContent.dart';
 import 'package:venture/Helpers/Toast.dart';
@@ -307,7 +308,13 @@ class _UploadContentScreenState extends State<UploadContentScreen> {
               )
             )
           ):
-          CircularProgressIndicator(color: primaryOrange)
+          // CircularProgressIndicator(color: primaryOrange)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15),
+            child: CupertinoActivityIndicator(
+              radius: 13,
+            )
+          )
         ],
       ),
       body: Stack(

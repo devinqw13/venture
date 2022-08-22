@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:venture/Components/CustomPopupMenu.dart';
+import 'package:venture/Components/CustomMapPopupMenu.dart';
 import 'package:venture/Components/NeumorphContainer.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Models/MapThemes.dart';
@@ -111,7 +111,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
               return Positioned(
                 top: 60,
                 right: MediaQuery.of(context).size.width * .05,
-                child: CustomPopupMenu()
+                child: CustomMapPopupMenu()
               );
             } else {
               return Container();

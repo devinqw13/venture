@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:venture/Components/Avatar.dart';
-import 'package:venture/Components/Skeleton.dart';
-import 'package:venture/Helpers/TimeFormat.dart';
-import 'package:venture/Models/Content.dart';
-import 'package:venture/Helpers/SizeConfig.dart';
+import 'package:venture/Components/CustomOptionsPopupMenu.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:venture/Components/Avatar.dart';
+import 'package:venture/Components/Skeleton.dart';
+import 'package:venture/Components/ExpandableText.dart';
+import 'package:venture/Helpers/TimeFormat.dart';
+import 'package:venture/Helpers/SizeConfig.dart';
+import 'package:venture/Models/Content.dart';
 
 class PostSkeleton extends StatefulWidget{
   final Content content;
@@ -18,7 +21,41 @@ class PostSkeleton extends StatefulWidget{
 
 class _PostSkeleton extends State<PostSkeleton> {
 
-  Widget _buildHeaderDetails(Content content) {
+  _showOptions(ThemeData theme) {
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(16),
+        height: 320,
+        decoration: BoxDecoration(
+          color: Get.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          )
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              title: Text("Delete", style: theme.textTheme.bodyText1!.copyWith(color: Colors.red)),
+              onTap: () {
+                // _showDeleteConfirmation();
+                Get.back();
+              },
+            ),
+            SizedBox(height: 16),
+          ],
+        ),
+      )
+    );
+  }
+
+  deletePost() {
+    print("DELETE POST");
+  }
+
+  Widget _buildHeaderDetails(ThemeData theme, Content content) {
     return Row(
       children: [
         ZoomTapAnimation(
@@ -77,39 +114,61 @@ class _PostSkeleton extends State<PostSkeleton> {
             ],
           )
         ),
-        ElevatedButton(
-          onPressed: () => print("MORE OPTIONS"),
-          child: Icon(Icons.more_horiz),
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.all(0),
-            // elevation: 0,
-            // shadowColor: primaryOrange,
-            primary: Colors.transparent,
-            // shape: RoundedRectangleBorder(
-            //   borderRadius: BorderRadius.circular(20.0),
-            // )
-            shape: CircleBorder(),
-          ),
+        CustomOptionsPopupMenu(
+          popupItems: [
+            CustomOptionPopupMenuItem(
+              text: Text(
+                "Delete Post",
+                style: theme.textTheme.subtitle1!.copyWith(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+              icon: Icon(IconlyLight.delete, color: Colors.red),
+              onTap: () => print("DELETE POST")
+            ),
+            CustomOptionPopupMenuItem(
+              text: Text(
+                "Edit",
+                style: theme.textTheme.subtitle1!,
+              ),
+              onTap: () => print("EDIT")
+            )
+          ],
         )
+        // ElevatedButton(
+        //   onPressed: () => _showOptions(theme),
+        //   child: Icon(Icons.more_horiz),
+        //   style: ElevatedButton.styleFrom(
+        //     padding: EdgeInsets.all(0),
+        //     // elevation: 0,
+        //     // shadowColor: primaryOrange,
+        //     primary: Colors.transparent,
+        //     // shape: RoundedRectangleBorder(
+        //     //   borderRadius: BorderRadius.circular(20.0),
+        //     // )
+        //     shape: CircleBorder(),
+        //   ),
+        // )
       ],
     );
   }
 
-  // _buildCaption(Content content) {
-  //   return Flexible(
-  //     child: Text(content.contentCaption!)
-  //   );
-  // }
+  _buildCaption(ThemeData theme, Content content) {
+    if (content.contentCaption != null) {
+      return ExpandableText(
+        content.contentCaption,
+        trimLines: 2,
+        // style: theme.textTheme.bodyText1
+      );
+    } else {
+      return Container();
+    }
+  }
 
   _buildContent(Content content) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20.0),
-      // child: Image.network(
-      //     content.contentUrl,
-      //     // height: 150.0,
-      //     // width: 100.0,
-      // ),
       child: CachedNetworkImage(
+        width: double.infinity,
+        fit: BoxFit.contain,
         imageUrl: content.contentUrl,
         progressIndicatorBuilder: (context, url, downloadProgress) {
           return Skeleton.rectangular(
@@ -123,6 +182,7 @@ class _PostSkeleton extends State<PostSkeleton> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     SizeConfig().init(context);
     return Container(
       decoration: BoxDecoration(
@@ -134,9 +194,11 @@ class _PostSkeleton extends State<PostSkeleton> {
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeaderDetails(widget.content),
-            // _buildCaption(widget.content),
+            _buildHeaderDetails(theme, widget.content),
+            SizedBox(height: 10),
+            _buildCaption(theme, widget.content),
             SizedBox(height: 10),
             _buildContent(widget.content)
           ],

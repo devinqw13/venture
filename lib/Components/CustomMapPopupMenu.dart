@@ -4,16 +4,16 @@ import 'package:venture/Components/NeumorphContainer.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 
-class CustomPopupMenu extends StatefulWidget {
-  const CustomPopupMenu({
+class CustomMapPopupMenu extends StatefulWidget {
+  const CustomMapPopupMenu({
     Key? key,
   })  :
         super(key: key);
   @override
-  _CustomPopupMenu createState() => _CustomPopupMenu();
+  _CustomMapPopupMenu createState() => _CustomMapPopupMenu();
 }
 
-class _CustomPopupMenu extends State<CustomPopupMenu> with TickerProviderStateMixin {
+class _CustomMapPopupMenu extends State<CustomMapPopupMenu> with TickerProviderStateMixin {
   GlobalKey _key = GlobalKey();
   late AnimationController _animationController;
   late Animation<double> _animateIcon;
