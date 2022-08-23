@@ -1,0 +1,8 @@
+app_identifier("com.ven.venture") # The bundle identifier of your app
+apple_id("venture.businesses1@gmail.com") # Your Apple Developer Portal username
+
+itc_team_id("125522487") # App Store Connect Team ID
+team_id("2HQH964XZ9") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile
