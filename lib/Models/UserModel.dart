@@ -8,6 +8,8 @@ class UserModel {
   String? userBio;
   String? userAvatar;
   String? userLocation;
+  int? followingCount;
+  int? followerCount;
 
   UserModel(Map<String, dynamic> input) {
     userKey = input['user_key'];
@@ -19,5 +21,7 @@ class UserModel {
     userBio = input['user_bio'];
     userAvatar = input['user_avatar'];
     userLocation = input['user_location'];
+    followingCount = input['following_count'];
+    followerCount = input['follower_count'];
   }
 }

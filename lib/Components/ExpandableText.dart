@@ -32,7 +32,7 @@ class ExpandableTextState extends State<ExpandableText> {
     final colorClickableText = primaryOrange;
     Color widgetColor = Get.isDarkMode ? Colors.white : Colors.black;
     TextSpan link = TextSpan(
-      text: _readMore ? " ...read more" : " read less",
+      text: _readMore ? " ...more" : " read less",
       style: TextStyle(
         color: colorClickableText,
       ),
