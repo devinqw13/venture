@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Helpers/Keyboard.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Components/NeumorphContainer.dart';
 import 'package:venture/Constants.dart';
 
 class CreatePin extends StatefulWidget {
   final ValueNotifier<bool> display;
+  final ValueNotifier<bool> canRemovePin;
   final ValueChanged? onAction;
   const CreatePin({
     Key? key,
     required this.display,
+    required this.canRemovePin,
     this.onAction
   })  : super(key: key);
   @override
@@ -21,6 +24,7 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
   late AnimationController controller, controller2;
   late Animation<Offset> offset, offset2;
   final TextEditingController textController = TextEditingController();
+  bool showRemovePin = false;
 
   @override
   void initState() {
@@ -47,6 +51,17 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
         case false:
           controller.reverse();
           controller2.reverse();
+          break;
+      }
+    });
+
+    widget.canRemovePin.addListener(() {
+      switch(widget.canRemovePin.value) {
+        case true:
+          setState(() => showRemovePin = true);
+          break;
+        case false:
+          setState(() => showRemovePin = false);
           break;
       }
     });
@@ -91,6 +106,7 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                     children: [
                       ZoomTapAnimation(
                         onTap: () {
+                          setState(() => textController.clear());
                           widget.onAction!('close');
                         },
                         child: NeumorphContainer.convex(
@@ -121,13 +137,20 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                               color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
                               borderRadius: BorderRadius.circular(10),
                               boxShadow: [
-                                BoxShadow(color: Colors.black.withOpacity(0.5), offset: Offset(0,3),
+                                BoxShadow(color: Colors.black.withOpacity(0.3), offset: Offset(0,3),
                                 blurRadius: 1
                                 ),
                               ]
                             ),
                             child: TextField(
                               controller: textController,
+                              keyboardType: TextInputType.streetAddress,
+                              textInputAction: TextInputAction.go,
+                              onSubmitted: (text) {
+                                if (textController.text.isNotEmpty) {
+                                  widget.onAction!('goto:${textController.text}');
+                                }
+                              },
                               decoration: InputDecoration(
                                 contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                                 hintText: "Enter location address",
@@ -135,6 +158,7 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                                   padding: const EdgeInsets.all(3.0),
                                   child: ZoomTapAnimation(
                                     onTap: () {
+                                      KeyboardUtil.hideKeyboard(context);
                                       if (textController.text.isNotEmpty) {
                                         widget.onAction!('goto:${textController.text}');
                                       }
@@ -161,8 +185,8 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                         children: [
                           ZoomTapAnimation(
                             onTap: () {
-                              // User pin drag and drop
-                              // widget.onAction!('dragdrop');
+                              KeyboardUtil.hideKeyboard(context);
+                              widget.onAction!('dragdrop');
                             },
                             child: NeumorphContainer.convex(
                               height: 45,
@@ -207,8 +231,8 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                           SizedBox(height: 15),
                           ZoomTapAnimation(
                             onTap: () {
-                              // Show map in satellite mode
-                              // widget.onAction!('satellite');
+                              KeyboardUtil.hideKeyboard(context);
+                              widget.onAction!('togglesatellite');
                             },
                             child: NeumorphContainer.convex(
                               height: 45,
@@ -226,7 +250,30 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                                 )
                               ),
                             )
-                          )
+                          ),
+                          SizedBox(height: 25),
+                          showRemovePin ? ZoomTapAnimation(
+                            onTap: () {
+                              // Remove init marker on map
+                              widget.onAction!('removemarker');
+                            },
+                            child: NeumorphContainer.convex(
+                              height: 45,
+                              width: 45,
+                              boxShadow: [
+                                BoxShadow(color: Colors.black.withOpacity(0.5), offset: Offset(0,1),
+                                blurRadius: 1
+                                ),
+                              ],
+                              borderRadius: 10.0,
+                              child: Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(10),
+                                  child: Icon(IconlyLight.delete)
+                                )
+                              ),
+                            )
+                          ) : Container()
                         ],
                       )
                     ],

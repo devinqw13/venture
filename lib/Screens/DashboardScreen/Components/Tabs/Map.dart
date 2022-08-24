@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
@@ -5,11 +6,11 @@ import 'package:iconly/iconly.dart';
 import 'package:venture/Components/CreatePin.dart';
 import 'package:venture/Components/CustomMapPopupMenu.dart';
 import 'package:venture/Components/DismissKeyboard.dart';
-import 'package:venture/Components/NeumorphContainer.dart';
 import 'package:venture/Controllers/ThemeController.dart';
+import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Models/MapThemes.dart';
-import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Models/User.dart';
+import 'package:venture/Helpers/LocationHandler.dart';
 
 class MapTab extends StatefulWidget {
   MapTab({Key? key}) : super(key: key);
@@ -21,8 +22,13 @@ class MapTab extends StatefulWidget {
 class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapTab>, TickerProviderStateMixin {
   final ThemesController _themesController = Get.find();
   ValueNotifier<bool> displayCreatePin = ValueNotifier<bool>(false);
+  ValueNotifier<bool> canRemovePin = ValueNotifier<bool>(false);
   late AnimationController controller;
   late Animation<Offset> offset;
+  MapType mapType = MapType.normal;
+  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  MarkerId? createdMarker;
+  LatLng? createdMarkerPos;
 
   @override
   bool get wantKeepAlive => true;
@@ -53,14 +59,21 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     zoom: 14.4746,
   );
 
-  createPinAction(String action) {
+  createPinAction(String action) async {
     if(action.contains('goto')) {
       final start = action.indexOf(':');
       String location = action.substring(start + 1);
-      print(location);
-      // setState(() {
-      //   _themesController.googleMapController.
-      // });
+
+      final loc = await LocationHandler.coordsFromAddress(context, location);
+
+      final _kLoc = CameraPosition(
+        target: LatLng(loc.first.latitude, loc.first.longitude),
+        zoom: 14.4746,
+      );
+
+      _themesController.googleMapController!.animateCamera(CameraUpdate.newCameraPosition(_kLoc));
+
+      generateInitMarker(LatLng(loc.first.latitude, loc.first.longitude));
       return;
     }
 
@@ -72,65 +85,183 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
 
         break;
       case "dragdrop":
+        final devicePixelRatio =
+          Platform.isAndroid ? MediaQuery.of(context).devicePixelRatio : 1.0;
 
+        final location = await _themesController.googleMapController!.getLatLng(
+          ScreenCoordinate(
+            x: (MediaQuery.of(context).size.width * devicePixelRatio) ~/
+                2.0,
+            y: (MediaQuery.of(context).size.height * devicePixelRatio) ~/
+                2.0,
+          )
+        );
+
+        generateInitMarker(location);
+
+        break;
+      case "removemarker":
+        _remove(createdMarker!);
+        break;
+      case "togglesatellite":
+        if (mapType == MapType.normal) {
+          setState(() => mapType = MapType.satellite);
+        } else {
+          setState(() => mapType = MapType.normal);
+        }
         break;
       default:
         break;
     }
   }
 
-  _showMapThemeModal(ThemeData theme) {
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(16),
-        height: MediaQuery.of(context).size.height * 0.23,
-        decoration: BoxDecoration(
-          color: Get.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Select a Theme", style: theme.textTheme.subtitle1,),
-            SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              height: 100,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: MapThemes().themes.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _themesController.googleMapController?.setMapStyle(MapThemes().themes[index]['style']);
-                      });
-                      Get.back();
-                    },
-                    child: Container(
-                      width: 100,
-                      margin: EdgeInsets.only(right: 10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: NetworkImage(MapThemes().themes[index]['image']),
-                        )
-                      ),
-                    ),
-                  );
-                }
-              ),
-            )
-          ],
-        ),
-      )
+  generateInitMarker(LatLng coords) {
+    if(createdMarker != null) _remove(createdMarker!);
+
+    final String key = '0';
+    final MarkerId markerKey = MarkerId(key);
+
+    final Marker marker = Marker(
+      markerId: markerKey,
+      position: coords,
+      draggable: true,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+      // onTap: () => _onMarkerTapped(markerKey),
+      // onDragEnd: (LatLng position) => _onMarkerDragEnd(markerKey, position),
+      onDrag: (LatLng position) => _onMarkerDrag(markerKey, position),
     );
+
+    setState(() {
+      markers[markerKey] = marker;
+      createdMarker = markerKey;
+      createdMarkerPos = coords;
+      canRemovePin.value = true;
+    });
   }
+
+  // void _onMarkerTapped(MarkerId key) {
+  //   final Marker? tappedMarker = markers[key];
+  //   if (tappedMarker != null) {
+  //     setState(() {
+  //       final MarkerId? previousMarkerId = selectedMarker;
+  //       if (previousMarkerId != null && markers.containsKey(previousMarkerId)) {
+  //         final Marker resetOld = markers[previousMarkerId]!
+  //             .copyWith(iconParam: BitmapDescriptor.defaultMarker);
+  //         markers[previousMarkerId] = resetOld;
+  //       }
+  //       selectedMarker = key;
+  //       final Marker newMarker = tappedMarker.copyWith(
+  //         iconParam: BitmapDescriptor.defaultMarkerWithHue(
+  //           BitmapDescriptor.hueGreen,
+  //         ),
+  //       );
+  //       markers[key] = newMarker;
+
+  //       initMarkerPosition = null;
+
+  //       canRemovePin.value = true;
+  //     });
+  //   }
+  // }
+
+  Future<void> _onMarkerDrag(MarkerId key, LatLng newPosition) async {
+    setState(() {
+      createdMarkerPos = newPosition;
+    });
+  }
+
+  // Future<void> _onMarkerDragEnd(MarkerId key, LatLng newPosition) async {
+  //   final Marker? tappedMarker = markers[key];
+  //   if (tappedMarker != null) {
+  //     setState(() {
+  //       initMarkerPosition = null;
+  //     });
+  //     await showDialog<void>(
+  //         context: context,
+  //         builder: (BuildContext context) {
+  //           return AlertDialog(
+  //               actions: <Widget>[
+  //                 TextButton(
+  //                   child: const Text('OK'),
+  //                   onPressed: () => Navigator.of(context).pop(),
+  //                 )
+  //               ],
+  //               content: Padding(
+  //                   padding: const EdgeInsets.symmetric(vertical: 66),
+  //                   child: Column(
+  //                     mainAxisSize: MainAxisSize.min,
+  //                     children: <Widget>[
+  //                       Text('Old position: ${tappedMarker.position}'),
+  //                       Text('New position: $newPosition'),
+  //                     ],
+  //                   )));
+  //         });
+  //   }
+  // }
+
+  void _remove(MarkerId key) {
+    setState(() {
+      if (markers.containsKey(key)) {
+        markers.remove(key);
+        canRemovePin.value = false;
+        createdMarker = null;
+        createdMarkerPos = null;
+      }
+    });
+  }
+
+  // _showMapThemeModal(ThemeData theme) {
+  //   Get.bottomSheet(
+  //     Container(
+  //       padding: EdgeInsets.all(16),
+  //       height: MediaQuery.of(context).size.height * 0.23,
+  //       decoration: BoxDecoration(
+  //         color: Get.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
+  //         borderRadius: BorderRadius.only(
+  //           topLeft: Radius.circular(16),
+  //           topRight: Radius.circular(16),
+  //         )
+  //       ),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text("Select a Theme", style: theme.textTheme.subtitle1,),
+  //           SizedBox(height: 20),
+  //           Container(
+  //             width: double.infinity,
+  //             height: 100,
+  //             child: ListView.builder(
+  //               scrollDirection: Axis.horizontal,
+  //               itemCount: MapThemes().themes.length,
+  //               itemBuilder: (context, index) {
+  //                 return GestureDetector(
+  //                   onTap: () {
+  //                     setState(() {
+  //                       _themesController.googleMapController?.setMapStyle(MapThemes().themes[index]['style']);
+  //                     });
+  //                     Get.back();
+  //                   },
+  //                   child: Container(
+  //                     width: 100,
+  //                     margin: EdgeInsets.only(right: 10),
+  //                     decoration: BoxDecoration(
+  //                       borderRadius: BorderRadius.circular(10),
+  //                       image: DecorationImage(
+  //                         fit: BoxFit.cover,
+  //                         image: NetworkImage(MapThemes().themes[index]['image']),
+  //                       )
+  //                     ),
+  //                   ),
+  //                 );
+  //               }
+  //             ),
+  //           )
+  //         ],
+  //       ),
+  //     )
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -141,13 +272,23 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
         children: [
           GoogleMap(
             initialCameraPosition: _kGooglePlex,
-            mapType: MapType.normal,
+            mapType: mapType,
             myLocationButtonEnabled: false,
             onMapCreated: (GoogleMapController controller) {
               _themesController.googleMapController = controller;
               _themesController.setMapStyle();
               // _customInfoWindowController.googleMapController = controller;
-            }
+            },
+            markers: Set<Marker>.of(markers.values),
+            onCameraMove: (position) {
+              KeyboardUtil.hideKeyboard(context);
+            },
+            onTap: (latlng) {
+              KeyboardUtil.hideKeyboard(context);
+            },
+            onLongPress: (latlng) {
+              KeyboardUtil.hideKeyboard(context);
+            },
           ),
           ValueListenableBuilder(
             valueListenable: User().userKey, 
@@ -191,6 +332,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
           CreatePin(
             display: displayCreatePin,
             onAction: (v) => createPinAction(v),
+            canRemovePin: canRemovePin
           )
           // Positioned(
           //   top: 120,
