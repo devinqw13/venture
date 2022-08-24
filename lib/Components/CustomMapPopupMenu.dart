@@ -4,9 +4,19 @@ import 'package:venture/Components/NeumorphContainer.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 
+class CustomMapPopupMenuItem {
+  Text text;
+  Icon? icon;
+  VoidCallback? onTap;
+
+  CustomMapPopupMenuItem({required this.text, this.icon, this.onTap});
+}
+
 class CustomMapPopupMenu extends StatefulWidget {
+  final List<CustomMapPopupMenuItem> popupItems;
   const CustomMapPopupMenu({
     Key? key,
+    required this.popupItems
   })  :
         super(key: key);
   @override
@@ -31,22 +41,18 @@ class _CustomMapPopupMenu extends State<CustomMapPopupMenu> with TickerProviderS
   }
 
   PopupMenuItem _buildPopupMenuItem(
-      String title, IconData iconData, int position) {
+      Widget title, Icon? icon, Function? onTap) {
     return PopupMenuItem(
-      value: position,
+      padding: EdgeInsets.only(left: 15.0, right: 15.0),
+      value: onTap,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 5.0,
-            ),
-            child: Icon(
-              iconData,
-              color: Get.isDarkMode ? Colors.white : Colors.black,
-            )
+            padding: EdgeInsets.only(right: 10.0),
+            child: icon
           ),
-          Text(title),
+          title,
         ],
       ),
     );
@@ -78,13 +84,14 @@ class _CustomMapPopupMenu extends State<CustomMapPopupMenu> with TickerProviderS
           topRight: Radius.circular(8.0),
         ),
       ),
-      items: <PopupMenuEntry>[
-        _buildPopupMenuItem('Add Pin', IconlyLight.location, 0),
-        _buildPopupMenuItem('Create Meet', IconlyLight.chat, 1),
-      ],
+      items: widget.popupItems.map<PopupMenuEntry<dynamic>>((s) =>
+        _buildPopupMenuItem(s.text, s.icon, s.onTap)
+      ).toList(),
       context: context,
       position: _getRelativeRect(_key, Offset(0.0, 48.0)),
     ).then((value) {
+      if(value != null) value();
+
       _animationController.reverse();
       
     });
@@ -104,6 +111,13 @@ class _CustomMapPopupMenu extends State<CustomMapPopupMenu> with TickerProviderS
         _showPopupMenu();
       },
       child: NeumorphContainer.convex(
+        height: 45,
+        width: 45,
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.5), offset: Offset(0,2),
+          blurRadius: 1
+          ),
+        ],
         borderRadius: 10.0,
         child: Center(
           child: Padding(

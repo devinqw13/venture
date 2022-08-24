@@ -42,6 +42,7 @@ class NeumorphContainer extends StatelessWidget {
   final double blurRadius;
   final List<BoxShadow>? boxShadow;
   final List<Color>? colors;
+  final EdgeInsets? padding;
   NeumorphStyle? style;
   bool isFlat = false;
 
@@ -52,7 +53,8 @@ class NeumorphContainer extends StatelessWidget {
     this.blurRadius = 0.0,
     this.boxShadow,
     this.colors,
-    this.child
+    this.child,
+    this.padding
   }): 
       // colors = const [Color(0xffe6e6e6), Color(0xffffffff)],
       style = NeumorphStyle.concave,
@@ -66,7 +68,8 @@ class NeumorphContainer extends StatelessWidget {
     this.blurRadius = 0.0,
     this.boxShadow,
     this.colors,
-    this.child
+    this.child,
+    this.padding
   }): 
       // colors = const [Color(0xffffffff),Color(0xffe6e6e6)],
       style = NeumorphStyle.convex,
@@ -79,7 +82,8 @@ class NeumorphContainer extends StatelessWidget {
     this.borderRadius = 0.0,
     this.blurRadius = 0.0,
     this.boxShadow,
-    this.child
+    this.child,
+    this.padding
   }): colors = const [],
       isFlat = true,
       super(key: key);
@@ -115,6 +119,7 @@ class NeumorphContainer extends StatelessWidget {
     return Container(
       width: width,
       height: height,
+      padding: padding,
       decoration: BoxDecoration(
         color: isFlat ? Colors.white : null,
         gradient: isFlat ? null : LinearGradient(

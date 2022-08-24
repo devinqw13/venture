@@ -10,6 +10,7 @@ import 'package:venture/Components/ExpandableText.dart';
 import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Models/Content.dart';
+import 'package:venture/Models/User.dart';
 
 class PostSkeleton extends StatefulWidget{
   final Content content;
@@ -114,24 +115,31 @@ class _PostSkeleton extends State<PostSkeleton> {
             ],
           )
         ),
-        CustomOptionsPopupMenu(
-          popupItems: [
-            CustomOptionPopupMenuItem(
-              text: Text(
-                "Delete Post",
-                style: theme.textTheme.subtitle1!.copyWith(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 16),
-              ),
-              icon: Icon(IconlyLight.delete, color: Colors.red),
-              onTap: () => print("DELETE POST")
-            ),
-            CustomOptionPopupMenuItem(
-              text: Text(
-                "Edit",
-                style: theme.textTheme.subtitle1!,
-              ),
-              onTap: () => print("EDIT")
-            )
-          ],
+        ValueListenableBuilder(
+          valueListenable: User().userKey, 
+          builder: (context, value, _) {
+            return value == 0 ? Container() : CustomOptionsPopupMenu(
+              popupItems: [
+                if(value == content.user!.userKey)
+                  CustomOptionPopupMenuItem(
+                    text: Text(
+                      "Delete Post",
+                      style: theme.textTheme.subtitle1!.copyWith(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    icon: Icon(IconlyLight.delete, color: Colors.red),
+                    onTap: () => print("DELETE POST")
+                  ),
+                if(value == content.user!.userKey)
+                  CustomOptionPopupMenuItem(
+                    text: Text(
+                      "Edit",
+                      style: theme.textTheme.subtitle1!,
+                    ),
+                    onTap: () => print("EDIT")
+                  )
+              ],
+            );
+          }
         )
         // ElevatedButton(
         //   onPressed: () => _showOptions(theme),
