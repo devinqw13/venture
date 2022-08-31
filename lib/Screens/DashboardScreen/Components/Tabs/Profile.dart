@@ -1,18 +1,13 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:async/async.dart';
-import 'package:iconly/iconly.dart';
 import 'package:venture/Calls.dart';
-import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Screens/DashboardScreen/Components/LoginOverlay.dart';
-import 'package:venture/Screens/DashboardScreen/Components/ProfileSkeleton.dart';
-import 'package:venture/Screens/SettingsScreen/SettingsScreen.dart';
+import 'package:venture/Components/ProfileSkeleton.dart';
 import 'package:venture/Models/User.dart';
-import 'package:venture/Controllers/ThemeController.dart';
-import 'package:get/get.dart';
+// import 'package:venture/Controllers/ThemeController.dart';
+// import 'package:get/get.dart';
 
 class ProfileTab extends StatefulWidget {
   ProfileTab({Key? key}) : super(key: key);
@@ -22,15 +17,8 @@ class ProfileTab extends StatefulWidget {
 }
 
 class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMixin<ProfileTab> {
-  final ThemesController _themesController = Get.find();
+  // final ThemesController _themesController = Get.find();
   AsyncMemoizer _memoizer = AsyncMemoizer();
-  static double avatarMaximumRadius = 40.0;
-  static double avatarMinimumRadius = 15.0;
-  double avatarRadius = avatarMaximumRadius;
-  double expandedHeader = 130.0;
-  double translate = -avatarMaximumRadius;
-  bool isExpanded = true;
-  double offset = 0.0;
   
   @override
   bool get wantKeepAlive => true;
@@ -72,7 +60,7 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
+    // final theme = Theme.of(context);
     SizeConfig().init(context);
     return SafeArea(
       child: ValueListenableBuilder(

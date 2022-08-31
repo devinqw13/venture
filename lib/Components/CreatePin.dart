@@ -99,7 +99,7 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                 //   }),
                 // ),
                 Container(
-                  padding: EdgeInsets.only(top: 45.0, bottom: 5.0, left: 15.0, right: 15.0),
+                  padding: EdgeInsets.only(top: 55.0, bottom: 5.0, left: 15.0, right: 15.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.start,

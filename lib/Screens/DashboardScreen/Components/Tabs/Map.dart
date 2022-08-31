@@ -80,6 +80,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     switch (action) {
       case "close":
         setState(() => displayCreatePin.value = false);
+        if(createdMarker != null) _remove(createdMarker!);
         break;
       case "currentlocation":
 
@@ -115,17 +116,24 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     }
   }
 
-  generateInitMarker(LatLng coords) {
+  generateInitMarker(LatLng coords) async {
     if(createdMarker != null) _remove(createdMarker!);
 
     final String key = '0';
     final MarkerId markerKey = MarkerId(key);
+    // BitmapDescriptor? mkr;
+
+    // await BitmapDescriptor.fromAssetImage(
+    //   createLocalImageConfiguration(context, size: Size(8, 8)),
+    //   'assets/images/marker-orange.png'
+    // ).then((value) => mkr = value);
 
     final Marker marker = Marker(
       markerId: markerKey,
       position: coords,
       draggable: true,
       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+      // icon: mkr!,
       // onTap: () => _onMarkerTapped(markerKey),
       // onDragEnd: (LatLng position) => _onMarkerDragEnd(markerKey, position),
       onDrag: (LatLng position) => _onMarkerDrag(markerKey, position),
