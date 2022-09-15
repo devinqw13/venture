@@ -205,11 +205,11 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                               ),
                             )
                           ),
-                          SizedBox(height: 15),
+                          SizedBox(height: 25),
                           ZoomTapAnimation(
                             onTap: () {
-                              // Navigate map to user location
-                              // widget.onAction!('currentlocation');
+                              KeyboardUtil.hideKeyboard(context);
+                              widget.onAction!('currentlocation');
                             },
                             child: NeumorphContainer.convex(
                               height: 45,
@@ -228,7 +228,7 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                               ),
                             )
                           ),
-                          SizedBox(height: 15),
+                          SizedBox(height: 25),
                           ZoomTapAnimation(
                             onTap: () {
                               KeyboardUtil.hideKeyboard(context);
@@ -251,7 +251,7 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                               ),
                             )
                           ),
-                          SizedBox(height: 25),
+                          SizedBox(height: 30),
                           showRemovePin ? ZoomTapAnimation(
                             onTap: () {
                               // Remove init marker on map
@@ -314,7 +314,9 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
                       child: Container(
                         padding: EdgeInsets.only(bottom: 25, left: 10, right: 10, top: 5),
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            widget.onAction!('continue');
+                          },
                           child: Text("Continue"),
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(360, 40),

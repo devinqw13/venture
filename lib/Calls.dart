@@ -7,6 +7,7 @@ import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Models/User.dart';
 import 'package:venture/Models/UserModel.dart';
+import 'package:venture/Models/Pin.dart';
 import 'package:venture/Globals.dart' as globals;
 import 'package:get_storage/get_storage.dart';
 
@@ -344,5 +345,90 @@ Future<List<Content>> getContent(BuildContext context, int userKey) async {
   else {
     showToast(context: context, color: Colors.red, msg: "An error has occured.");
     return [];
+  }
+}
+
+Future<List<Pin>> getMapPins(BuildContext context, String latlng) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  String url = "${globals.apiBaseUrl}/getPins?latlng=$latlng";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.get(Uri.parse(url), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToast(context: context, color: Colors.red, msg: "Connection timeout.");
+    return [];
+  }
+
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  if (jsonResponse['result'] == 'true') {
+    List<Pin> pins = [];
+
+    for (var item in jsonResponse['results']) {
+      Pin pin = Pin(item);
+      pins.add(pin);
+    }
+
+    return pins;
+  }
+  else {
+    showToast(context: context, color: Colors.red, msg: "An error has occured.");
+    return [];
+  }
+}
+
+Future<Pin?> createPin(BuildContext context, String name, String desc, String location, int userKey, {List<int>? circleKeys}) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "name": name,
+    "desc": desc,
+    "location": location,
+    "user_key": userKey
+  };
+
+  if(circleKeys != null) jsonMap['circle_keys'] = circleKeys.toString();
+
+  String url = "${globals.apiBaseUrl}/createPin";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToast(context: context, color: Colors.red, msg: "Connection timeout.");
+    return null;
+  }
+
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  if (jsonResponse['result'] == 'true') {
+    Pin pin = Pin(jsonResponse['results'][0]);
+    return pin;
+  }
+  else {
+    showToast(context: context, color: Colors.red, msg: "An error has occured.");
+    return null;
   }
 }

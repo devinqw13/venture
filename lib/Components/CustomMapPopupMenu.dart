@@ -88,7 +88,7 @@ class _CustomMapPopupMenu extends State<CustomMapPopupMenu> with TickerProviderS
         _buildPopupMenuItem(s.text, s.icon, s.onTap)
       ).toList(),
       context: context,
-      position: _getRelativeRect(_key, Offset(0.0, 48.0)),
+      position: _getRelativeRect(_key, Offset(0.0, 52.0)),
     ).then((value) {
       if(value != null) value();
 

@@ -1,16 +1,23 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Calls.dart';
+import 'package:venture/Helpers/Keyboard.dart';
+import 'package:venture/Helpers/Toast.dart';
+import 'package:venture/Helpers/LocationHandler.dart';
+import 'package:venture/Helpers/NavigationSlideAnimation.dart';
+import 'package:venture/Screens/CreatePinScreen/CreatePinScreen.dart';
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:venture/Constants.dart';
 import 'package:venture/Components/CreatePin.dart';
 import 'package:venture/Components/CustomMapPopupMenu.dart';
 import 'package:venture/Components/DismissKeyboard.dart';
 import 'package:venture/Controllers/ThemeController.dart';
-import 'package:venture/Helpers/Keyboard.dart';
-import 'package:venture/Models/MapThemes.dart';
+import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/User.dart';
-import 'package:venture/Helpers/LocationHandler.dart';
 
 class MapTab extends StatefulWidget {
   MapTab({Key? key}) : super(key: key);
@@ -20,6 +27,7 @@ class MapTab extends StatefulWidget {
 }
 
 class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapTab>, TickerProviderStateMixin {
+  final TextEditingController textController = TextEditingController();
   final ThemesController _themesController = Get.find();
   ValueNotifier<bool> displayCreatePin = ValueNotifier<bool>(false);
   ValueNotifier<bool> canRemovePin = ValueNotifier<bool>(false);
@@ -29,6 +37,8 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   MarkerId? createdMarker;
   LatLng? createdMarkerPos;
+  Timer? mapFetchTimer;
+  bool isLoading = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -52,8 +62,6 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     });
   }
 
-  // GoogleMapController? _controller;
-
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
     zoom: 14.4746,
@@ -64,16 +72,9 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       final start = action.indexOf(':');
       String location = action.substring(start + 1);
 
-      final loc = await LocationHandler.coordsFromAddress(context, location);
+      LatLng latLng = await mapNavigate(location);
 
-      final _kLoc = CameraPosition(
-        target: LatLng(loc.first.latitude, loc.first.longitude),
-        zoom: 14.4746,
-      );
-
-      _themesController.googleMapController!.animateCamera(CameraUpdate.newCameraPosition(_kLoc));
-
-      generateInitMarker(LatLng(loc.first.latitude, loc.first.longitude));
+      generateInitMarker(latLng);
       return;
     }
 
@@ -83,7 +84,16 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
         if(createdMarker != null) _remove(createdMarker!);
         break;
       case "currentlocation":
+        var results = await LocationHandler.determineDeviceLocation();
 
+        if(results != null) {
+          final _kLoc = CameraPosition(
+            target: LatLng(results.latitude, results.longitude),
+            zoom: 15,
+          );
+
+          _themesController.googleMapController!.animateCamera(CameraUpdate.newCameraPosition(_kLoc));
+        }
         break;
       case "dragdrop":
         final devicePixelRatio =
@@ -111,9 +121,52 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
           setState(() => mapType = MapType.normal);
         }
         break;
+      case "continue":
+        if(createdMarker == null || createdMarkerPos == null) {
+          showToast(context: context, type: ToastType.INFO, msg: 'Place a marker to continue');
+          break;
+        }
+
+        final CreatePinScreen screen = CreatePinScreen(location: createdMarkerPos!);
+        var result = await Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 400));
+
+        if(result != null) {
+          setState(() => displayCreatePin.value = false);
+          _remove(createdMarker!);
+
+          final MarkerId markerKey = MarkerId(result.pinKey.toString());
+          List loc = result.latLng.split(',');
+          final Marker marker = Marker(
+            markerId: markerKey,
+            position: LatLng(double.parse(loc[0]), double.parse(loc[1])),
+            draggable: false,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+            // icon: mkr!,
+            // onTap: () => _onMarkerTapped(markerKey),
+          );
+
+          setState(() {
+            markers[markerKey] = marker;
+          });
+        }
+
+        break;
       default:
         break;
     }
+  }
+
+  Future<LatLng> mapNavigate(String location) async {
+    final loc = await LocationHandler.coordsFromAddress(context, location);
+
+    final _kLoc = CameraPosition(
+      target: LatLng(loc.first.latitude, loc.first.longitude),
+      zoom: 15,
+    );
+
+    _themesController.googleMapController!.animateCamera(CameraUpdate.newCameraPosition(_kLoc));
+
+    return LatLng(loc.first.latitude, loc.first.longitude);
   }
 
   generateInitMarker(LatLng coords) async {
@@ -145,6 +198,33 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       createdMarkerPos = coords;
       canRemovePin.value = true;
     });
+  }
+
+  displayGatheredPins(List<Pin> pins) {
+    List<Pin> newPins = pins.where((e) => !markers.keys.map((f) => int.parse(f.value)).toList().contains(e.pinKey)).toList();
+
+    setState(() {
+      markers.removeWhere((k, v) => !pins.map((e) => e.pinKey).toList().contains(int.parse(k.value)) && k.value != '0');
+    });
+
+    for(Pin item in newPins) {
+      final MarkerId markerKey = MarkerId(item.pinKey.toString());
+      List loc = item.latLng.split(',');
+      final Marker marker = Marker(
+        markerId: markerKey,
+        position: LatLng(double.parse(loc[0]), double.parse(loc[1])),
+        draggable: false,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        // icon: mkr!,
+        // onTap: () => _onMarkerTapped(markerKey),
+      );
+
+      setState(() {
+        markers[markerKey] = marker;
+      });
+    }
+
+    print("MARKERS DISPLAYED: ${markers.length}");
   }
 
   // void _onMarkerTapped(MarkerId key) {
@@ -211,9 +291,12 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     setState(() {
       if (markers.containsKey(key)) {
         markers.remove(key);
-        canRemovePin.value = false;
-        createdMarker = null;
-        createdMarkerPos = null;
+
+        if(key.value == '0') {
+          canRemovePin.value = false;
+          createdMarker = null;
+          createdMarkerPos = null;
+        }
       }
     });
   }
@@ -282,14 +365,48 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
             initialCameraPosition: _kGooglePlex,
             mapType: mapType,
             myLocationButtonEnabled: false,
-            onMapCreated: (GoogleMapController controller) {
+            onMapCreated: (GoogleMapController controller) async {
               _themesController.googleMapController = controller;
               _themesController.setMapStyle();
+              
+              var results = await LocationHandler.determineDeviceLocation();
+              if(results != null) {
+                final _kLoc = CameraPosition(
+                  target: LatLng(results.latitude, results.longitude),
+                  zoom: 15,
+                );
+
+                _themesController.googleMapController!.animateCamera(CameraUpdate.newCameraPosition(_kLoc));
+              }
               // _customInfoWindowController.googleMapController = controller;
             },
             markers: Set<Marker>.of(markers.values),
             onCameraMove: (position) {
               KeyboardUtil.hideKeyboard(context);
+              if(mapFetchTimer != null) mapFetchTimer!.cancel();
+
+              // setState(() {
+              //   markers.removeWhere((key, value) => key.value != '0');
+              // });
+            },
+            onCameraIdle: () async {
+              LatLngBounds visibleRegion = await _themesController.googleMapController!.getVisibleRegion();
+
+              LatLng centerLatLng = LatLng(
+                (visibleRegion.northeast.latitude + visibleRegion.southwest.latitude) / 2,
+                (visibleRegion.northeast.longitude + visibleRegion.southwest.longitude) / 2,
+              );
+
+              String latlng = "${centerLatLng.latitude},${centerLatLng.longitude}";
+
+              mapFetchTimer = Timer(Duration(seconds: 1), () async {
+                setState(() => isLoading = true);
+                var results = await getMapPins(context, latlng);
+                setState(() => isLoading = false);
+
+                displayGatheredPins(results);
+              });
+
             },
             onTap: (latlng) {
               KeyboardUtil.hideKeyboard(context);
@@ -303,31 +420,92 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
             builder: (context, value, _) {
               if (value != 0) {
                 return Align(
-                  alignment: Alignment.topRight,
+                  alignment: Alignment.topCenter,
                   child: SlideTransition(
                     position: offset,
                     child: Padding(
-                      padding: EdgeInsets.only(top: 60, right: 15),
-                      child: CustomMapPopupMenu(
-                        popupItems: [
-                          CustomMapPopupMenuItem(
-                            text: Text(
-                              "Create Pin",
-                              style: theme.textTheme.subtitle1!,
+                      padding: EdgeInsets.only(top: 60, right: 15, left: 15),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10.0,
+                              ),
+                              child: Container(
+                                height: 45,
+                                decoration: BoxDecoration(
+                                  color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.black.withOpacity(0.3), offset: Offset(0,3),
+                                    blurRadius: 1
+                                    ),
+                                  ]
+                                ),
+                                child: TextField(
+                                  controller: textController,
+                                  keyboardType: TextInputType.streetAddress,
+                                  textInputAction: TextInputAction.go,
+                                  onSubmitted: (text) {
+                                    KeyboardUtil.hideKeyboard(context);
+                                    if (textController.text.isNotEmpty) {
+                                      mapNavigate(textController.text);
+                                      textController.clear();
+                                    }
+                                  },
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                                    hintText: "Enter location address",
+                                    suffixIcon: Padding(
+                                      padding: const EdgeInsets.all(3.0),
+                                      child: ZoomTapAnimation(
+                                        onTap: () {
+                                          KeyboardUtil.hideKeyboard(context);
+                                          if (textController.text.isNotEmpty) {
+                                            mapNavigate(textController.text);
+                                            textController.clear();
+                                          }
+                                        },
+                                        child: Container(
+                                          width: 40,
+                                          decoration: BoxDecoration(
+                                            color: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey.shade300,
+                                            borderRadius: BorderRadius.circular(10)
+                                          ),
+                                          child: Center(
+                                            child: Icon(IconlyLight.arrow_right, color: Colors.grey),
+                                          ),
+                                        )
+                                      ),
+                                    )
+                                  ),
+                                )
+                              )
                             ),
-                            icon: Icon(
-                              IconlyLight.location,
-                              color: Get.isDarkMode ? Colors.white : Colors.black
-                            ),
-                            onTap: () {
-                              if (!displayCreatePin.value) {
-                                setState(() => displayCreatePin.value = true);
-                              } else {
-                                setState(() => displayCreatePin.value = false);
-                              }
-                            }
+                          ),
+                          CustomMapPopupMenu(
+                            popupItems: [
+                              CustomMapPopupMenuItem(
+                                text: Text(
+                                  "Create Pin",
+                                  style: theme.textTheme.subtitle1!,
+                                ),
+                                icon: Icon(
+                                  IconlyLight.location,
+                                  color: Get.isDarkMode ? Colors.white : Colors.black
+                                ),
+                                onTap: () {
+                                  if (!displayCreatePin.value) {
+                                    setState(() => displayCreatePin.value = true);
+                                  } else {
+                                    setState(() => displayCreatePin.value = false);
+                                  }
+                                }
+                              )
+                            ],
                           )
-                        ],
+                        ]
                       )
                     )
                   )
@@ -341,7 +519,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
             display: displayCreatePin,
             onAction: (v) => createPinAction(v),
             canRemovePin: canRemovePin
-          )
+          ),
           // Positioned(
           //   top: 120,
           //   right: MediaQuery.of(context).size.width * .05,
@@ -385,6 +563,16 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
           //     )
           //   )
           // )
+          isLoading ? Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 79),
+              child: LinearProgressIndicator(
+                backgroundColor: Colors.transparent,
+                color: primaryOrange
+              )
+            ),
+          ) : Container()
         ],
       )
     );
