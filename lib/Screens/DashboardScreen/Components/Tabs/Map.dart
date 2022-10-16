@@ -569,7 +569,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
           isLoading ? Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
-              padding: EdgeInsets.only(bottom: 79),
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * .0798),
               child: LinearProgressIndicator(
                 backgroundColor: Colors.transparent,
                 color: primaryOrange

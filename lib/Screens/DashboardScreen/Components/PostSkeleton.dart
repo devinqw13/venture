@@ -141,70 +141,6 @@ class _PostSkeleton extends State<PostSkeleton> {
               ],
             )
           ),
-          // Column(
-          //   crossAxisAlignment: CrossAxisAlignment.end,
-          //   children: [
-          //     Row(
-          //       children: [
-          //         CustomIcon(
-          //           icon: 'assets/icons/star.svg',
-          //           size: 23,
-          //           color: primaryOrange,
-          //         ),
-          //         SizedBox(width: 2),
-          //         Text(
-          //           content.rating == null ? "No Rating" : content.rating.toString(),
-          //           style: TextStyle(
-          //             fontWeight: FontWeight.w600
-          //           ),
-          //         )
-          //       ],
-          //     ),
-          //     Text(
-          //       "${content.totalReviews} reviews"
-          //     )
-          //   ],
-          // )
-          // ValueListenableBuilder(
-          //   valueListenable: User().userKey, 
-          //   builder: (context, value, _) {
-          //     return value == 0 ? Container() : CustomOptionsPopupMenu(
-          //       popupItems: [
-          //         if(value == content.user!.userKey)
-          //           CustomOptionPopupMenuItem(
-          //             text: Text(
-          //               "Delete Post",
-          //               style: theme.textTheme.subtitle1!.copyWith(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 16),
-          //             ),
-          //             icon: Icon(IconlyLight.delete, color: Colors.red),
-          //             onTap: () => print("DELETE POST")
-          //           ),
-          //         if(value == content.user!.userKey)
-          //           CustomOptionPopupMenuItem(
-          //             text: Text(
-          //               "Edit",
-          //               style: theme.textTheme.subtitle1!,
-          //             ),
-          //             onTap: () => print("EDIT")
-          //           )
-          //       ],
-          //     );
-          //   }
-          // )
-          // ElevatedButton(
-          //   onPressed: () => _showOptions(theme),
-          //   child: Icon(Icons.more_horiz),
-          //   style: ElevatedButton.styleFrom(
-          //     padding: EdgeInsets.all(0),
-          //     // elevation: 0,
-          //     // shadowColor: primaryOrange,
-          //     primary: Colors.transparent,
-          //     // shape: RoundedRectangleBorder(
-          //     //   borderRadius: BorderRadius.circular(20.0),
-          //     // )
-          //     shape: CircleBorder(),
-          //   ),
-          // )
         ],
       )
     );
@@ -330,53 +266,58 @@ class _PostSkeleton extends State<PostSkeleton> {
 
 class PostSkeletonShimmer extends StatelessWidget {
   PostSkeletonShimmer({Key? key}) : super(key: key);
+  final ThemesController _themesController = Get.find();
 
   Widget _buildHeaderDetails(BuildContext context) {
-    return Row(
-      children: [
-        Skeleton.circular(
-          width: 60,
-          height: 60
-        ),
-        SizedBox(width: 20),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Skeleton.rectangular(
-              height: 20,
-              width: MediaQuery.of(context).size.width * 0.6
-            ),
-            SizedBox(height: 5),
-            Skeleton.rectangular(
-              height: 15,
-              width: MediaQuery.of(context).size.width * 0.3
-            )
-          ],
-        )
-      ],
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 18),
+        child: Row(
+        children: [
+          Skeleton.circular(
+            width: 45,
+            height: 45
+          ),
+          SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Skeleton.rectangular(
+                height: 20,
+                width: MediaQuery.of(context).size.width * 0.6
+              ),
+              SizedBox(height: 5),
+              Skeleton.rectangular(
+                height: 15,
+                width: MediaQuery.of(context).size.width * 0.3
+              )
+            ],
+          )
+        ],
+      )
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    return Skeleton.rectangular(
-      height: 250,
-      borderRadius: 20.0
+    return Expanded(
+      child: Skeleton.rectangular(
+        height: double.infinity,
+      )
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-        child: Column(
-          // mainAxisSize: MainAxisSize.max,
-          children: [
-            _buildHeaderDetails(context),
-            SizedBox(height: 10),
-            _buildContent(context)
-          ],
-        )
+      decoration: BoxDecoration(
+        color: _themesController.getContainerBgColor(),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeaderDetails(context),
+          SizedBox(height: 10),
+          _buildContent(context)
+        ],
       )
     );
   }

@@ -464,7 +464,7 @@ Future<List<DynamicItem>?> searchVenture(BuildContext context, String text, List
   } else {
     jsonResponse = json.decode(response.body);
   }
-
+  
   if (jsonResponse['result'] == 'true') {
     List<DynamicItem> dynamicItems = [];
     for(Map<String, dynamic> item in jsonResponse['results']) {
@@ -473,6 +473,16 @@ Future<List<DynamicItem>?> searchVenture(BuildContext context, String text, List
           for(Map<String, dynamic> user in item['users_json']) {
             UserModel userItem = UserModel(user);
             DynamicItem dItem = DynamicItem(user: userItem);
+            dynamicItems.add(dItem);
+          }
+        }
+      }
+
+      if(item.containsKey('pins_json')) {
+        if(item['pins_json'] != null) {
+          for(Map<String, dynamic> pin in item['pins_json']) {
+            Pin pinItem = Pin(pin);
+            DynamicItem dItem = DynamicItem(pin: pinItem);
             dynamicItems.add(dItem);
           }
         }

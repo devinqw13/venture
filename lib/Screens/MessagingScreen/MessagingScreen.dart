@@ -255,9 +255,9 @@ class MessagingScreenState extends State<MessagingScreen> {
                   constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * .7),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    color: message.isSender ? accentBlue : Colors.grey.shade200
+                    color: message.isSender ? primaryOrange : Colors.grey.shade200
                   ),
-                  padding: EdgeInsets.all(16),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Text(message.messageText, style: TextStyle(fontSize: 15, color: message.isSender ? Colors.white : Colors.black))
                 ),
                 Padding(
@@ -435,66 +435,5 @@ class MessagingScreenState extends State<MessagingScreen> {
         )
       ),
     );
-  }
-}
-
-class MessageWidget extends StatelessWidget {
-  final Message message;
-  const MessageWidget({Key? key, required this.message}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    if (message.isSender) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: 250
-            ),
-            padding: EdgeInsets.all(8),
-            margin: EdgeInsets.only(right: 8, bottom: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: Color(0xff1972F5),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(message.messageText, style: theme.textTheme.bodyText2?.copyWith(color: Colors.white)),
-                SizedBox(height: 4,),
-                // Text(message.timestamp, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade300)),
-              ],
-            ),
-          ),
-        ],
-      );
-    } else {
-      return Row(
-        children: [
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: 250
-            ),
-            padding: EdgeInsets.all(8),
-            margin: EdgeInsets.only(left: 8, bottom: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: Color.fromARGB(255, 225, 231, 236),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(message.messageText, style: theme.textTheme.bodyText2),
-                SizedBox(height: 4,),
-                // Text(message.timestamp, style: theme.textTheme.bodySmall),
-              ],
-            ),
-          ),
-        ],
-      );
-    }
   }
 }

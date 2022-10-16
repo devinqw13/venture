@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
+import 'package:iconly/iconly.dart';
 import 'package:venture/Calls.dart';
+import 'package:venture/Constants.dart';
+import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Components/ProfileSkeleton.dart';
+import 'package:venture/Models/VenUser.dart';
 
 class ProfileScreen extends StatefulWidget {
   final int userKey;
@@ -26,16 +30,16 @@ class _ProfileScreenState extends State<ProfileScreen>  {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     var apiCall = _fetch(widget.userKey);
-    // SizeConfig().init(context);
-    return SafeArea(
-      child: FutureBuilder(
+    SizeConfig().init(context);
+    return Scaffold(
+      body: FutureBuilder(
         future: apiCall,
         builder: (context, snapshot) {
           if(!snapshot.hasData) {
             return ProfileSkeletonShimmer();
           }else {
             UserModel data = snapshot.data as UserModel;
-            return ProfileSkeleton(user: data);
+            return ProfileSkeleton(user: data, isUser: VenUser().userKey.value == widget.userKey, enableBackButton: true, enableSettingsButton: VenUser().userKey.value == widget.userKey);
           }
         },
       )

@@ -306,7 +306,7 @@ class UserWidget extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(user.displayName != null && user.displayName != '' ? user.displayName! : "@${user.userName}", style: TextStyle(fontSize: 16)),
+                          Text(user.displayName != null && user.displayName != '' ? user.displayName! : user.userName!, style: TextStyle(fontSize: 16)),
                         ],
                       ),
                     ),

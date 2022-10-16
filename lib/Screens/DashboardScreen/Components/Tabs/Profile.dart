@@ -51,7 +51,7 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
           return ProfileSkeletonShimmer();
         }else {
           UserModel data = snapshot.data as UserModel;
-          return ProfileSkeleton(user: data);
+          return ProfileSkeleton(user: data, isUser: true, enableBackButton: false, enableSettingsButton: true);
         }
       },
     );
@@ -62,8 +62,7 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
     super.build(context);
     // final theme = Theme.of(context);
     SizeConfig().init(context);
-    return SafeArea(
-      child: ValueListenableBuilder(
+    return ValueListenableBuilder(
         valueListenable: VenUser().userKey, 
         builder: (context, value, _) {
           return Stack(
@@ -74,7 +73,7 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
             ]
           );
         }
-      )
+      );
       // child: Stack(
       //   children: [
       //     // value != 0 ? _buildBody(value as int) : Container(),
@@ -82,6 +81,5 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
       //     // LoginOverlay(enableSettings: true),
       //   ]
       // )
-    );
   }
 }

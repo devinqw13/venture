@@ -3,6 +3,7 @@ class UserModel {
   String? userEmail;
   bool? isPrivate;
   bool? isVerified;
+  bool? isFollowing;
   String? userName;
   String? displayName;
   String? userBio;
@@ -17,6 +18,7 @@ class UserModel {
     userEmail = input['user_email'];
     isPrivate = input['user_is_private'] == 'Y' ? true : false;
     isVerified = input['user_is_verified'] == 'Y' ? true : false;
+    isFollowing = input['following_user'] == 'Y' ? true : false;
     userName = input['user_name'];
     displayName = input['user_display_name'];
     userBio = input['user_bio'];

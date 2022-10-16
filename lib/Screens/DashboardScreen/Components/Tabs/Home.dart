@@ -89,101 +89,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    // final theme = Theme.of(context);
-    // return SafeArea(
-    //   child: CustomScrollView(
-    //     // physics: ClampingScrollPhysics(),
-    //     slivers: [
-    //       // SliverAppBar(
-    //       //   elevation: 0.5,
-    //       //   shadowColor: Colors.grey,
-    //       //   pinned: true,
-    //       //   flexibleSpace: FlexibleSpaceBar(
-    //       //     titlePadding: EdgeInsetsDirectional.only(
-    //       //       start: 16.0,
-    //       //       bottom: 16.0,
-    //       //     ),
-    //       //     centerTitle: false,
-    //       //     title: Text("Home",
-    //       //       style: TextStyle(
-    //       //         color: Get.isDarkMode ? Colors.white : Colors.black,
-    //       //         fontFamily: 'LeagueSpartan',
-    //       //         fontWeight: FontWeight.bold,
-    //       //         fontSize: 24.0,
-    //       //       )
-    //       //     ),
-    //       //   ),
-    //       //   actions: <Widget>[
-    //       //     ValueListenableBuilder(
-    //       //       valueListenable: User().userKey, 
-    //       //       builder: (context, value, _) {
-    //       //         return value != 0 ? Padding(
-    //       //           padding: EdgeInsetsDirectional.only(
-    //       //             end: 16.0,
-    //       //             bottom: 12.0,
-    //       //           ),
-    //       //           child: ZoomTapAnimation(
-    //       //             onTap: () => goToMessaging(),
-    //       //             child: Icon(IconlyBroken.more_circle, size: 32),
-    //       //           )
-    //       //         ) : Container();
-    //       //       }
-    //       //     ),
-    //       //     ValueListenableBuilder(
-    //       //       valueListenable: User().userKey, 
-    //       //       builder: (context, value, _) {
-    //       //         return value != 0 ? Padding(
-    //       //           padding: EdgeInsetsDirectional.only(
-    //       //             end: 16.0,
-    //       //             bottom: 12.0,
-    //       //           ),
-    //       //           child: ZoomTapAnimation(
-    //       //             onTap: () => goToUploadContent(),
-    //       //             child: Icon(IconlyBroken.plus, size: 32),
-    //       //           )
-    //       //         ) : Container();
-    //       //       }
-    //       //     ),
-    //       //   ],
-    //       // ),
-    //       // CupertinoSliverRefreshControl(
-    //       //   onRefresh: () => _refresh(),
-    //       // ),
-
-    //       // SliverToBoxAdapter(
-    //       //   child: ListView.builder(
-    //       //     physics: NeverScrollableScrollPhysics(),
-    //       //     itemCount: content.isEmpty ? 4 : content.length,
-    //       //     shrinkWrap: true,
-    //       //     itemBuilder: (context, i) {
-    //       //       if(content.isEmpty) {
-    //       //         return PostSkeletonShimmer();
-    //       //       }else {
-    //       //         return PostSkeleton(content: content[i]);
-    //       //       }
-    //       //     }
-    //       //   ),
-    //       // ),
-
-    //       // =================== V2 ===================   
-    //       header(),
-    //       SliverToBoxAdapter(
-    //         child: ListView.builder(
-    //           physics: NeverScrollableScrollPhysics(),
-    //           itemCount: content.isEmpty ? 4 : content.length,
-    //           shrinkWrap: true,
-    //           itemBuilder: (context, i) {
-    //             if(content.isEmpty) {
-    //               return PostSkeletonShimmer();
-    //             }else {
-    //               return PostSkeleton(content: content[i]);
-    //             }
-    //           }
-    //         ),
-    //       ),
-    //     ],
-    //   )
-    // );
+    final theme = Theme.of(context);
 
     return Scaffold(
       extendBody: true,
@@ -231,105 +137,28 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
           ],
         ),
       ),
-        // leading: Padding(
-        //   padding: const EdgeInsets.only(left: 20.0, top: 8.0, bottom: 8.0),
-        //   child: ZoomTapAnimation(
-        //     onTap: () => goToCircles(),
-        //     child: Container(
-        //       // width: 20,
-        //       decoration: BoxDecoration(
-        //         color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.3),
-        //         borderRadius: BorderRadius.circular(10)
-        //       ),
-        //       child: Center(
-        //         child: CustomIcon(
-        //           icon: 'assets/icons/people.svg',
-        //           color: primaryOrange,
-        //           size: 27,
-        //         ),
-        //       ),
-        //     )
-        //   ),
-        // ),
-      //   actions: [
-      //     Padding(
-      //       padding: const EdgeInsets.only(right: 20.0, top: 8.0, bottom: 8.0),
-      //       child: ZoomTapAnimation(
-      //         onTap: () => goToMessaging(),
-      //         child: Container(
-      //           padding: EdgeInsets.only(left: 8, right: 8),
-      //           decoration: BoxDecoration(
-      //             color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.3),
-      //             borderRadius: BorderRadius.circular(10)
-      //           ),
-      //           child: Center(
-      //             child: CustomIcon(
-      //               icon: 'assets/icons/send.svg',
-      //               color: primaryOrange,
-      //               size: 27,
-      //             )
-      //           ),
-      //         )
-      //       ),
-      //     )
-      //   ],
-      // ),
       body: Stack(
         children: [
           PageView.builder(
             physics: AlwaysScrollableScrollPhysics(),
             scrollDirection: Axis.vertical,
-            itemCount: content.length,
+            itemCount: content.isEmpty ? 1 : content.length,
             itemBuilder: (context, i) {
               if(content.isEmpty) {
-                return PostSkeletonShimmer();
+                return Padding(
+                  padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
+                  child: PostSkeletonShimmer()
+                );
               }else {
                 return Padding(
-                  padding: EdgeInsets.only(top: 100),
+                  padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
                   child: PostSkeleton(content: content[i])
                 );
               }
-              // return Stack(
-              //   children: [
-              //     Container(
-              //       decoration: BoxDecoration(
-              //         image: DecorationImage(
-              //           image: CachedNetworkImageProvider(
-              //             content[i].contentUrl
-              //           ),
-              //           fit: BoxFit.cover,
-              //         ),
-              //       ),
-              //     ),
-              //     Positioned(
-              //       bottom: 0,
-              //       // alignment: Alignment.bottomCenter,
-              //       child: Padding(
-              //         padding: EdgeInsets.only(left: 20, right: 20, bottom: 80),
-              //         child: Row(
-              //           children: [
-              //             Column(
-              //               children: [
-              //                 Text(
-              //                   content[i].user!.userName!,
-              //                   style: TextStyle(
-              //                     color: Colors.white,
-              //                     fontWeight: FontWeight.w600
-              //                   ),
-              //                 )
-              //               ],
-              //             )
-              //           ],
-              //         ),
-              //       )
-              //     )
-              //   ],
-              // );
             }
           )
         ]
       )
     );
-
   }
 }

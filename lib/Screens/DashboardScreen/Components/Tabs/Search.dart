@@ -1,12 +1,19 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:venture/Constants.dart';
+import 'package:venture/Calls.dart';
+import 'package:venture/Components/Avatar.dart';
+import 'package:venture/Helpers/CustomIcon.dart';
+import 'package:venture/Models/Pin.dart';
+import 'package:venture/Models/UserModel.dart';
+import 'package:venture/Screens/ProfileScreen.dart/ProfileScreen.dart';
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Constants.dart';
 import 'package:venture/Components/DismissKeyboard.dart';
 import 'package:venture/Helpers/Keyboard.dart';
-import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:venture/Models/DynamicItem.dart';
 
 class SearchTab extends StatefulWidget {
   SearchTab({Key? key}) : super(key: key);
@@ -29,6 +36,10 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
   Timer? timer;
   bool searchFocused = false;
   ScrollController controller = ScrollController();
+  bool isSearching = false;
+  bool showSearchResults = false;
+  List<DynamicItem> searchResults = [];
+  StreamController<String> streamController = StreamController();
   
   @override
   bool get wantKeepAlive => true;
@@ -36,7 +47,17 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
   @override
   void initState() {
     super.initState();
-    
+    streamController.stream.listen((s) => performSearch(s));
+  }
+
+  performSearch(String text) async {
+    setState(() => isSearching = true);
+    List<DynamicItem>? results = await searchVenture(context, text, ["users", "pins"]);
+    setState(() => isSearching = false);
+
+    if(results != null) {
+      setState(() => searchResults = results);
+    }
   }
 
   hintTextCarousel(List<String> x) {
@@ -46,6 +67,35 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
       setState(() => hintText = x[index+1]);
     } else {
       setState(() => hintText = x.first);
+    }
+  }
+
+  Widget buildSearch() {
+    if(isSearching) {
+      return SizedBox(
+        height: 20,
+        width: 20,
+        child: CircularProgressIndicator(color: primaryOrange),
+      );
+    }else {
+      return searchResults.isNotEmpty ? ListView.builder(
+        padding: EdgeInsets.all(0),
+        itemCount: searchResults.length,
+        shrinkWrap: true,
+        itemBuilder: (context, i) {
+          if(searchResults[i].user != null) {
+            return UserSearched(ctx: context, user: searchResults[i].user!);
+          }
+          if(searchResults[i].pin != null) {
+            return PinSearched(ctx: context, pin: searchResults[i].pin!);
+          }
+
+          return Container();
+        }
+      ) : 
+      Center(
+        child: Text("No results found!"),
+      );
     }
   }
 
@@ -127,6 +177,17 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                             onSubmitted: (text) {
                               KeyboardUtil.hideKeyboard(context);
                             },
+                            onChanged: (value) {
+                              if (value.isEmpty) {
+                                setState(() {
+                                  searchResults = [];
+                                  showSearchResults = false;
+                                });
+                              } else {
+                                streamController.add(value);
+                                showSearchResults = true;
+                              }
+                            },
                             decoration: InputDecoration(
                               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                               hintText: "Search $hintText",
@@ -205,7 +266,8 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                         padding: EdgeInsets.only(top: 8),
                         child: Column(
                           children: [
-                            Divider(color: Colors.grey)
+                            Divider(color: Colors.grey),
+                            showSearchResults ? buildSearch() : Container() //TODO: show recent searches or GOTOs
                           ],
                         )
                       )
@@ -226,4 +288,131 @@ class SearchFilter {
   String name;
 
   SearchFilter({this.isSelected = false, required this.name});
+}
+
+class PinSearched extends StatelessWidget {
+  final Pin pin;
+  final BuildContext ctx;
+  const PinSearched({Key? key, required this.pin, required this.ctx}) : super(key: key);
+
+  goToPin() {
+    KeyboardUtil.hideKeyboard(ctx);
+    //TODO: EITHER GO TO PIN ON MAP OR PIN DETAIL SCREEN
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: () => goToPin(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        child: Row(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey,
+                            width: 0.1,
+                          ),
+                          shape: BoxShape.circle),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 20,
+                          child: CustomIcon(
+                            icon: 'assets/icons/location.svg',
+                            color: Get.isDarkMode ? Colors.white : Colors.black,
+                            size: 25,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Container(
+                      color: Colors.transparent,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(pin.title!, style: TextStyle(fontSize: 16)),
+                          //TODO: SHOW PIN LOCATION
+
+                          // Text(
+                          //   user.displayName != null && user.displayName != '' ? user.userName! : "SOMETHING HERE?",
+                          //   style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey)
+                          // ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        )
+      ),
+    );
+  }
+}
+
+class UserSearched extends StatelessWidget {
+  final BuildContext ctx;
+  final UserModel user;
+  const UserSearched({Key? key, required this.ctx, required this.user}) : super(key: key);
+
+  goToUserProfile() {
+    KeyboardUtil.hideKeyboard(ctx);
+    ProfileScreen screen = ProfileScreen(userKey: user.userKey!);
+    Navigator.of(ctx).push(MaterialPageRoute(builder: (context) => screen));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: () => goToUserProfile(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  MyAvatar(
+                    photo: user.userAvatar,
+                    size: 20,
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Container(
+                      color: Colors.transparent,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(user.displayName != null && user.displayName != '' ? user.displayName! : user.userName!, style: TextStyle(fontSize: 16)),
+
+                          Text(
+                            user.displayName != null && user.displayName != '' ? user.userName! : "SOMETHING HERE?",
+                            style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey)
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
 }

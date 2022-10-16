@@ -16,7 +16,10 @@ import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class ProfileSkeleton extends StatefulWidget {
   final UserModel user;
-  ProfileSkeleton({Key? key, required this.user}) : super(key: key);
+  final bool isUser;
+  final bool enableBackButton;
+  final bool enableSettingsButton;
+  ProfileSkeleton({Key? key, required this.user, required this.isUser, required this.enableBackButton, required this.enableSettingsButton}) : super(key: key);
 
   @override
   _ProfileSkeleton createState() => _ProfileSkeleton();
@@ -123,12 +126,17 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
     );
   }
 
+  _followAction(UserModel user) {
+    print("FOLLOW/UNFOLLOW");
+  }
+
   SliverAppBar _buildHeaderWithAvatar(UserModel user) {
     return SliverAppBar(
+      automaticallyImplyLeading: false,
       floating: true,
       stretch: true,
       pinned: false,
-      expandedHeight: MediaQuery.of(context).size.height * 0.15,
+      expandedHeight: MediaQuery.of(context).size.height * 0.22,
       flexibleSpace: Stack(
         children: [
           Positioned(
@@ -147,25 +155,40 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                   child: Container(
                     // alignment: Alignment.center,
                     color: Colors.white.withOpacity(0.3),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(),
-                        Padding(
-                          padding: EdgeInsets.only(top: (MediaQuery.of(context).size.height * 0.15) / 9),
-                          child: ElevatedButton(
-                            onPressed: () => goToSettings(),
-                            child: Icon(IconlyLight.setting),
+                    child: Padding(
+                      padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          widget.enableBackButton ?
+                          ElevatedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Icon(
+                              IconlyLight.arrow_left,
+                              color: primaryOrange,
+                            ),
                             style: ElevatedButton.styleFrom(
-                              elevation: 3,
+                              elevation: 0,
                               shadowColor: primaryOrange,
-                              primary: primaryOrange,
+                              primary: Colors.grey.shade50,
                               shape: CircleBorder(),
                             ),
-                          )
-                        )
-                      ],
+                          ): Container(),
+                          widget.enableSettingsButton ? ElevatedButton(
+                            onPressed: () => goToSettings(),
+                            child: Icon(
+                              IconlyLight.setting,
+                              color: primaryOrange,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              primary: Colors.grey.shade50,
+                              shape: CircleBorder(),
+                            ),
+                          ) : Container()
+                        ],
+                      )
                     ),
                   )
                 )
@@ -179,11 +202,11 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
 
           Positioned(
             child: Container(
-              height: 55,
+              height: 70,
               decoration: BoxDecoration(
                 color: _themesController.getContainerBgColor(),
                 borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(20),
+                  top: Radius.circular(35),
                 ),
               ),
             ),
@@ -195,11 +218,11 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              constraints: BoxConstraints(maxHeight: getProportionateScreenHeight(103)),
+              constraints: BoxConstraints(maxHeight: getProportionateScreenHeight(105)),
               decoration: BoxDecoration(
                 border: Border.all(
                   color: _themesController.getContainerBgColor(),
-                  width: 2.0
+                  width: 4.0
                 ),
                 shape: BoxShape.circle,
                 image: DecorationImage(
@@ -216,94 +239,78 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
 
   SliverToBoxAdapter _buildUserDetails(ThemeData theme, UserModel user) {
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: EdgeInsets.only(top: 10),
-        child: ListView(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          children: [
-            user.displayName == null ? Container() : Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 0.0),
-                child: Text(
-                  user.displayName!,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 25.0
-                  ),
-                )
-              )
-            ),
-            SizedBox(height: 5),
-            user.userBio == null ? Container() : Center(
+      child: ListView(
+        padding: EdgeInsets.all(0),
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        children: [
+          Center(
+            child: Padding(
+              padding: EdgeInsets.only(top: 10.0),
               child: Text(
-                user.userBio!,
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 15.0
-                ),
+                user.displayName != null && user.displayName != '' ? user.displayName! : user.userName!,
+                style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
               )
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ZoomTapAnimation(
-                  child: RichText(
-                    text: TextSpan(
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: NumberFormat.format(user.followerCount!),
-                          style: theme.textTheme.subtitle1!.copyWith(
-                            fontWeight: FontWeight.w900
-                          )
-                        ),
-                        TextSpan(
-                          text: ' followers',
-                          style: theme.textTheme.bodyText2
-                        )
-                      ],
-                    ),
-                  )
-                ),
-                ZoomTapAnimation(
-                  child: RichText(
-                    text: TextSpan(
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: NumberFormat.format(user.followingCount!),
-                          style: theme.textTheme.subtitle1!.copyWith(
-                            fontWeight: FontWeight.w900
-                          )
-                        ),
-                        TextSpan(
-                          text: ' following',
-                          style: theme.textTheme.bodyText2
-                        )
-                      ],
-                    ),
-                  )
-                ),
-                RichText(
-                  text: TextSpan(
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: NumberFormat.format(user.pinCount!),
-                        style: theme.textTheme.subtitle1!.copyWith(
-                          fontWeight: FontWeight.w900
-                        )
-                      ),
-                      TextSpan(
-                        text: ' pins',
-                        style: theme.textTheme.bodyText2
-                      )
-                    ],
-                  ),
-                )
-              ],
             )
-          ],
-        )
+          ),
+          user.userBio == null ? Container() : Center(
+            child: Text(
+              user.userBio!,
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 15.0
+              ),
+            )
+          ),
+          SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                children: [
+                  ZoomTapAnimation(
+                    child: Text(
+                      NumberFormat.format(user.followerCount!),
+                      style: theme.textTheme.headline5!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold),
+                    )
+                  ),
+                  Text(
+                    "Followers",
+                    style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey),
+                  )
+                ],
+              ),
+              Column(
+                children: [
+                  ZoomTapAnimation(
+                    child: Text(
+                      NumberFormat.format(user.followingCount!),
+                      style: theme.textTheme.headline5!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold),
+                    )
+                  ),
+                  Text(
+                    "Following",
+                    style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey),
+                  )
+                ],
+              ),
+              Column(
+                children: [
+                  ZoomTapAnimation(
+                    child: Text(
+                      NumberFormat.format(user.pinCount!),
+                      style: theme.textTheme.headline5!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold),
+                    )
+                  ),
+                  Text(
+                    "Pins",
+                    style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey),
+                  )
+                ],
+              ),
+            ],
+          )
+        ],
       )
     );
   }
@@ -311,7 +318,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
   SliverToBoxAdapter _buildRowButtons(UserModel user, ThemeData theme) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: EdgeInsets.only(top: 10),
+        padding: EdgeInsets.only(top: 15),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -324,12 +331,14 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
             //   ),
             // ),
             ElevatedButton(
-              onPressed: () => _showEditProfileModal(user, theme),
-              child: Text("Edit Profile"),
+              onPressed: () => widget.isUser ? _showEditProfileModal(user, theme) : _followAction(user),
+              child: Text(
+                widget.isUser ? "Edit Profile" :
+                user.isFollowing! ? "Following" : "Follow"
+              ),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(360, 40),
-                elevation: 10,
-                shadowColor: primaryOrange,
+                minimumSize: Size(180, 40),
+                elevation: 0,
                 primary: primaryOrange,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20.0),
@@ -345,7 +354,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
             //   ),
             // )
           ],
-        ),
+        )
       )
     );
   }
@@ -396,6 +405,7 @@ class ProfileSkeletonShimmer extends StatelessWidget {
       slivers: [
         SliverAppBar(
           pinned: false,
+          automaticallyImplyLeading: false,
           expandedHeight: MediaQuery.of(context).size.height * 0.15,
           flexibleSpace: Stack(
             children: [
