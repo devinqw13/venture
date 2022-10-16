@@ -20,6 +20,8 @@ platform :ios do
   lane :beta do
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
     upload_to_testflight(
+      team_id: "125522487",
+      itc_provider: "2HQH964XZ9",
       skip_waiting_for_build_processing: true
     )
   end
