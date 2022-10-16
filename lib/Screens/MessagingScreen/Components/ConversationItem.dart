@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:venture/Components/Avatar.dart';
+import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:venture/Models/Conversation.dart';
 import 'package:venture/Models/FirebaseUser.dart';
 import 'package:venture/Models/VenUser.dart';
@@ -106,25 +107,33 @@ class ConversationItemState extends State<ConversationItem> {
                               ),
                             ),
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                dateString,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: widget.conversation.showUnread! ? FontWeight.bold : FontWeight.normal
-                                )
-                              ),
-                              Text(
-                                timeString,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: widget.conversation.showUnread! ? FontWeight.bold : FontWeight.normal
-                                )
-                              ),
-                            ],
+                          TimeFormat().withDate(
+                            widget.conversation.messages.last.timestamp,
+                            numericDates: true,
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontWeight: widget.conversation.showUnread! ? FontWeight.bold : FontWeight.normal
+                            )
                           ),
+                          // Column(
+                          //   crossAxisAlignment: CrossAxisAlignment.end,
+                          //   children: [
+                          //     Text(
+                          //       dateString,
+                          //       style: TextStyle(
+                          //         fontSize: 12,
+                          //         fontWeight: widget.conversation.showUnread! ? FontWeight.bold : FontWeight.normal
+                          //       )
+                          //     ),
+                          //     Text(
+                          //       timeString,
+                          //       style: TextStyle(
+                          //         fontSize: 12,
+                          //         fontWeight: widget.conversation.showUnread! ? FontWeight.bold : FontWeight.normal
+                          //       )
+                          //     ),
+                          //   ],
+                          // ),
                           widget.conversation.showUnread! ?
                           Container(
                             margin: const EdgeInsets.only(left: 10),

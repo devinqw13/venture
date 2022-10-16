@@ -91,6 +91,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () => goToCreateConversation(),
+        elevation: 3,
         backgroundColor: primaryOrange,
         child: CustomIcon(
           icon: 'assets/icons/edit.svg',

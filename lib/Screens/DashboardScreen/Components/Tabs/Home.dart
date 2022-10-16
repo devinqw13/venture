@@ -190,33 +190,31 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.white.withOpacity(0),
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 20.0, top: 8.0, bottom: 8.0),
-          child: ZoomTapAnimation(
-            onTap: () => goToCircles(),
-            child: Container(
-              // width: 20,
-              decoration: BoxDecoration(
-                color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(10)
-              ),
-              child: Center(
-                child: CustomIcon(
-                  icon: 'assets/icons/people.svg',
-                  color: primaryOrange,
-                  size: 27,
+        title: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ZoomTapAnimation(
+              onTap: () => goToCircles(),
+              child: Container(
+                padding: EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(10)
                 ),
-              ),
-            )
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0, top: 8.0, bottom: 8.0),
-            child: ZoomTapAnimation(
+                child: Center(
+                  child: CustomIcon(
+                    icon: 'assets/icons/people.svg',
+                    color: primaryOrange,
+                    size: 27,
+                  )
+                ),
+              )
+            ),
+            ZoomTapAnimation(
               onTap: () => goToMessaging(),
               child: Container(
-                padding: EdgeInsets.only(left: 8, right: 8),
+                padding: EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(10)
@@ -230,9 +228,52 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
                 ),
               )
             ),
-          )
-        ],
+          ],
+        ),
       ),
+        // leading: Padding(
+        //   padding: const EdgeInsets.only(left: 20.0, top: 8.0, bottom: 8.0),
+        //   child: ZoomTapAnimation(
+        //     onTap: () => goToCircles(),
+        //     child: Container(
+        //       // width: 20,
+        //       decoration: BoxDecoration(
+        //         color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.3),
+        //         borderRadius: BorderRadius.circular(10)
+        //       ),
+        //       child: Center(
+        //         child: CustomIcon(
+        //           icon: 'assets/icons/people.svg',
+        //           color: primaryOrange,
+        //           size: 27,
+        //         ),
+        //       ),
+        //     )
+        //   ),
+        // ),
+      //   actions: [
+      //     Padding(
+      //       padding: const EdgeInsets.only(right: 20.0, top: 8.0, bottom: 8.0),
+      //       child: ZoomTapAnimation(
+      //         onTap: () => goToMessaging(),
+      //         child: Container(
+      //           padding: EdgeInsets.only(left: 8, right: 8),
+      //           decoration: BoxDecoration(
+      //             color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.3),
+      //             borderRadius: BorderRadius.circular(10)
+      //           ),
+      //           child: Center(
+      //             child: CustomIcon(
+      //               icon: 'assets/icons/send.svg',
+      //               color: primaryOrange,
+      //               size: 27,
+      //             )
+      //           ),
+      //         )
+      //       ),
+      //     )
+      //   ],
+      // ),
       body: Stack(
         children: [
           PageView.builder(

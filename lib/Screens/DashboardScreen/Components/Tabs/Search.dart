@@ -87,12 +87,12 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 15),
                       child: Container(
-                        height: 45,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: Get.isDarkMode ? ColorConstants.gray600 : Colors.white,
                           borderRadius: BorderRadius.circular(50),
                           boxShadow: [
-                            BoxShadow(color: Colors.black.withOpacity(0.3), offset: Offset(0,1.5),
+                            BoxShadow(color: Colors.grey.withOpacity(0.3), offset: Offset(0,1.5),
                             blurRadius: 2
                             ),
                           ]
@@ -154,7 +154,7 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                       )
                     ),
                     !searchFocused ? Padding(
-                      padding: EdgeInsets.only(top: 20),
+                      padding: EdgeInsets.only(top: 15),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -172,13 +172,11 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                                       setState(() => item.isSelected = true);
                                     },
                                     child: Container(
-                                      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                                       margin: EdgeInsets.symmetric(horizontal: 4),
                                       child: Text(
                                         item.name,
-                                        style: TextStyle(
-                                          color: item.isSelected ? Colors.white : Colors.black
-                                        ),
+                                        style: theme.textTheme.bodyText2!.copyWith(color: item.isSelected ? Colors.white : Colors.black)
                                       ),
                                       decoration: BoxDecoration(
                                         color: item.isSelected ? primaryOrange : Colors.grey.shade200,

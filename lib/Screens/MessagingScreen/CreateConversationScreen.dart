@@ -127,15 +127,15 @@ class _CreateConversationScreenState extends State<CreateConversationScreen> {
                 child: Column(
                   children: [
                     Container(
-                      height: 45,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: Get.isDarkMode ? ColorConstants.gray600 : Colors.white,
+                        color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(50),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.3), offset: Offset(0,1.5),
-                          blurRadius: 1
-                          ),
-                        ]
+                        // boxShadow: [
+                        //   BoxShadow(color: Colors.black.withOpacity(0.3), offset: Offset(0,1.5),
+                        //   blurRadius: 1
+                        //   ),
+                        // ]
                       ),
                       child: TextField(
                         autocorrect: false,

@@ -18,6 +18,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final HomeController _homeController = Get.find();
   final ThemesController _themesController = Get.find();
+  bool extendBody = true;
 
   @override
   void initState() {
@@ -36,7 +37,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       icon = Icon(icon, color: _homeController.currentPage == page ? primaryOrange : Colors.grey, size: iconSize);
     }
     return ZoomTapAnimation(
-      onTap: () => _homeController.goToTab(page),
+      onTap: () {
+        _homeController.goToTab(page);
+        setState(() => extendBody = page == 2 ? true : false);
+      },
       child: icon,
     );
   }
@@ -50,14 +54,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Scaffold(
             resizeToAvoidBottomInset: false,
             extendBodyBehindAppBar: true,
-            extendBody: true,
+            extendBody: extendBody,
             floatingActionButton: Padding(
               padding: const EdgeInsets.only(top: 30.0, bottom: 20),
               child: FloatingActionButton(
                 isExtended: true,
                 elevation: 0.0,
                 backgroundColor: primaryOrange,
-                onPressed: () => _homeController.goToTab(2),
+                onPressed: () {
+                  _homeController.goToTab(2);
+                  setState(() => extendBody = true);
+                },
                 // child: const Icon(IconlyBroken.location, color: Colors.white, size: 25,),
                 child: SvgPicture.asset(
                   'assets/icons/location.svg',

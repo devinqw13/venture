@@ -69,7 +69,7 @@ class _PostSkeleton extends State<PostSkeleton> {
           ZoomTapAnimation(
             onTap: () => print("GO TO PROFILE"),
             child: MyAvatar(
-              size: 20,
+              size: 18,
               photo: content.user!.userAvatar!
             )
           ),
@@ -80,9 +80,7 @@ class _PostSkeleton extends State<PostSkeleton> {
               children: [
                 content.user!.displayName != null ?
                 Text(content.user!.displayName!,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold
-                  ),
+                  style: theme.textTheme.bodyText2!.copyWith(fontWeight: FontWeight.bold),
                 ) :
                 Text('@'+content.user!.userName!,
                   style: TextStyle(
@@ -235,9 +233,9 @@ class _PostSkeleton extends State<PostSkeleton> {
     }
   }
 
-  _buildContentActions(Content content) {
+  _buildContentActions(ThemeData theme, Content content) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 18),
+      padding: EdgeInsets.symmetric(horizontal: 18, vertical: 5),
       child: Row(
         children: [
           FutureBuilder(
@@ -246,26 +244,40 @@ class _PostSkeleton extends State<PostSkeleton> {
               if(!snapshot.hasData) {
                 return Container();
               } else {
-                return ElevatedButton(
-                  onPressed: () => goToMaps(content.pinLocation!),
-                  child: Row(
-                    children: [
-                      Text(
-                        "${snapshot.data} miles",
-                        style: TextStyle(
-                          color: Colors.white
-                        ),
-                      )
-                    ],
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    primary: primaryOrange,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                    )
-                  ),
+                return ZoomTapAnimation(
+                  onTap: () => goToMaps(content.pinLocation!),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                    child: Text(
+                      "${snapshot.data} miles",
+                      style: theme.textTheme.bodyText2!.copyWith(color: Colors.white)
+                    ),
+                    decoration: BoxDecoration(
+                      color: primaryOrange,
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                  )
                 );
+                // return ElevatedButton(
+                //   onPressed: () => goToMaps(content.pinLocation!),
+                //   child: Row(
+                //     children: [
+                //       Text(
+                //         "${snapshot.data} miles",
+                //         style: TextStyle(
+                //           color: Colors.white
+                //         ),
+                //       )
+                //     ],
+                //   ),
+                //   style: ElevatedButton.styleFrom(
+                //     elevation: 0,
+                //     primary: primaryOrange,
+                //     shape: RoundedRectangleBorder(
+                //       borderRadius: BorderRadius.circular(20.0),
+                //     )
+                //   ),
+                // );
               }
             }
           )
@@ -307,8 +319,8 @@ class _PostSkeleton extends State<PostSkeleton> {
         children: [
           _buildHeaderDetails(theme, widget.content),
           _buildCaption(theme, widget.content),
-          _buildContentActions(widget.content),
-          SizedBox(height: 10),
+          _buildContentActions(theme, widget.content),
+          SizedBox(height: 5),
           _buildContent(widget.content)
         ],
       )
