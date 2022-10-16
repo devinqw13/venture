@@ -64,12 +64,26 @@ class LocationHandler {
 
   static Future<Position?> determineLastKnownDeviceLocation() async {
     bool results = await requestPermissions();
-    if(results) return null;
+    if(!results) return null;
     
     Position? position;
 
     position = await Geolocator.getLastKnownPosition();
 
     return position;
+  }
+
+  static Future<num?> getDistanceFromCoords(String latlng) async {
+    bool results = await requestPermissions();
+    if(!results) return null;
+
+    Position? position = await determineDeviceLocation();
+    List locList = latlng.split(',');
+
+    double distanceInMeters = Geolocator.distanceBetween(position!.latitude, position.longitude, double.parse(locList[0]), double.parse(locList[1]));
+
+    double miles = double.parse((distanceInMeters * 0.000621371).toStringAsFixed(1));
+
+    return miles % 1 == 0 ? miles.toInt() : miles;
   }
 }

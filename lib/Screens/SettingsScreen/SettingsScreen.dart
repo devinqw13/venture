@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/string_extension.dart';
-import 'package:venture/Models/User.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/SettingsScreen/AccountSettingsScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Models/MapThemes.dart';
@@ -54,7 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen>  {
                   SizedBox(height: 16),
                   ZoomTapAnimation(
                     onTap: () {
-                      if(User().userKey.value == 0) {
+                      if(VenUser().userKey.value == 0) {
                         Navigator.pop(context);
                       } else {
                         AccountSettingsScreen screen = AccountSettingsScreen();
@@ -83,7 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen>  {
                           ),
                           SizedBox(width: 16),
                           ValueListenableBuilder(
-                            valueListenable: User().userKey, 
+                            valueListenable: VenUser().userKey, 
                             builder: (context, value, _) {
                               return value == 0 ? Text("Login / Register", style: theme.textTheme.subtitle1?.copyWith(fontWeight: FontWeight.w400, color: Colors.blue)) :
                               Column(

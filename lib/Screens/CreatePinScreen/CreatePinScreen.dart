@@ -11,7 +11,7 @@ import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/MapPreview.dart';
 import 'package:venture/Models/Pin.dart';
-import 'package:venture/Models/User.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class CreatePinScreen extends StatefulWidget {
@@ -283,7 +283,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                           String location = "${widget.location.latitude},${widget.location.longitude}";
 
                           setState(() => isLoading = true);
-                          Pin? pin = await createPin(context, nameTxtController.text, descTxtController.text, location, User().userKey.value, circleKeys: circleKeys.isNotEmpty ? circleKeys : null);
+                          Pin? pin = await createPin(context, nameTxtController.text, descTxtController.text, location, VenUser().userKey.value, circleKeys: circleKeys.isNotEmpty ? circleKeys : null);
                           setState(() => isLoading = false);
 
                           if(pin != null) {

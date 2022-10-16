@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class User extends ChangeNotifier {
-  static final User _user = User._();
+class VenUser extends ChangeNotifier {
+  static final VenUser _user = VenUser._();
   ValueNotifier<int> userKey = ValueNotifier<int>(0);
   // int userKey = 0;
   String username = '';
@@ -9,9 +9,9 @@ class User extends ChangeNotifier {
   String email = '';
   String? photoUrl;
 
-  factory User() => _user;
+  factory VenUser() => _user;
 
-  User._();
+  VenUser._();
 
   Map<String, dynamic> toJson() => {
     'key': userKey.value,

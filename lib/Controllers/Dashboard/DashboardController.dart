@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:venture/Screens/DashboardScreen/Components/Tabs/Home.dart';
+import 'package:venture/Screens/DashboardScreen/Components/Tabs/Notification.dart';
 import 'package:venture/Screens/DashboardScreen/Components/Tabs/Profile.dart';
 import 'package:venture/Screens/DashboardScreen/Components/Tabs/Search.dart';
 import 'package:venture/Screens/DashboardScreen/Components/Tabs/Map.dart';
@@ -21,7 +22,8 @@ class HomeController extends GetxController {
    HomeTab(),
    SearchTab(),
    MapTab(),
-   CircleTab(),
+   NotificationTab(),
+  //  CircleTab(),
    ProfileTab()
   //  AccountTab()
   ];

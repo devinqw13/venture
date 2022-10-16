@@ -13,6 +13,9 @@ class Content {
   String? contentCaption;
   UserModel? user;
   String? contentLocation;
+  double? rating;
+  int? totalReviews;
+  String? pinLocation;
 
   Content(Map<String, dynamic> input) {
     contentKey = input['content_key'];
@@ -27,5 +30,8 @@ class Content {
     contentCaption = input['content_caption'];
     user = input['user'][0] != null ? UserModel(input['user'][0]) : null;
     contentLocation = input['content_location'];
+    rating = input['avg_rating'];
+    totalReviews = input['total_reviews'];
+    pinLocation = input['pin_location'];
   }
 }

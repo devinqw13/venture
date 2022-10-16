@@ -5,7 +5,7 @@ import 'package:iconly/iconly.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/Toast.dart';
-import 'package:venture/Models/User.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -97,7 +97,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     bool? results = await createUser(context, usernameTextController.text, emailTextController.text, pwdTextController.text);
 
     if (results != null && results) {
-      User().onChange();
+      VenUser().onChange();
       Navigator.pop(context, true);
     }
     setState(() => isLoading = false);

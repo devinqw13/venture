@@ -5,6 +5,8 @@ import 'package:venture/Constants.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class DashboardScreen extends StatefulWidget {
   DashboardScreen({Key? key}) : super(key: key);
@@ -23,10 +25,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   }
 
-  Widget _bottomAppBarItem({icon, page}) {
+  Widget _bottomAppBarItem({icon, page, double? iconSize}) {
+    if(icon.runtimeType == String) {
+      icon = SvgPicture.asset(
+        icon,
+        height: iconSize,
+        color: _homeController.currentPage == page ? primaryOrange : Colors.grey
+      );
+    } else {
+      icon = Icon(icon, color: _homeController.currentPage == page ? primaryOrange : Colors.grey, size: iconSize);
+    }
     return ZoomTapAnimation(
       onTap: () => _homeController.goToTab(page),
-      child: Icon(icon, color: _homeController.currentPage == page ? primaryOrange : Colors.grey, size: 27,),
+      child: icon,
     );
   }
 
@@ -41,11 +52,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             extendBodyBehindAppBar: true,
             extendBody: true,
             floatingActionButton: Padding(
-              padding: const EdgeInsets.only(top: 40.0),
+              padding: const EdgeInsets.only(top: 30.0, bottom: 20),
               child: FloatingActionButton(
+                isExtended: true,
+                elevation: 0.0,
                 backgroundColor: primaryOrange,
                 onPressed: () => _homeController.goToTab(2),
-                child: const Icon(IconlyBroken.location, color: Colors.white, size: 33,),
+                // child: const Icon(IconlyBroken.location, color: Colors.white, size: 25,),
+                child: SvgPicture.asset(
+                  'assets/icons/location.svg',
+                  height: 25,
+                  color: Colors.white
+                )
               )
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -55,15 +73,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 elevation: 1.0,
                 child: Container(
                   color: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                  padding: const EdgeInsets.only(left: 40, right: 40, top: 4),
                   child: Obx(() => Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _bottomAppBarItem(icon: IconlyBroken.home, page: 0),
-                      _bottomAppBarItem(icon: IconlyBroken.search, page: 1),
+                      _bottomAppBarItem(
+                        icon: 'assets/icons/home.svg',
+                        page: 0,
+                        iconSize: 27
+                      ),
+                      _bottomAppBarItem(
+                        icon: 'assets/icons/search.svg',
+                        page: 1,
+                        iconSize: 27
+                      ),
                       const SizedBox.shrink(),
-                      _bottomAppBarItem(icon: IconlyBroken.more_circle, page: 3),
-                      _bottomAppBarItem(icon: IconlyBroken.profile, page: 4)
+                      _bottomAppBarItem(
+                        icon: 'assets/icons/notification2.svg',
+                        page: 3,
+                        iconSize: 30
+                      ),
+                      _bottomAppBarItem(
+                        icon: 'assets/icons/avatar.svg',
+                        page: 4,
+                        iconSize: 27
+                      )
                     ],
                   ))
                 )

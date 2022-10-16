@@ -10,6 +10,7 @@ class UserModel {
   String? userLocation;
   int? followingCount;
   int? followerCount;
+  int? pinCount;
 
   UserModel(Map<String, dynamic> input) {
     userKey = input['user_key'];
@@ -23,5 +24,6 @@ class UserModel {
     userLocation = input['user_location'];
     followingCount = input['following_count'];
     followerCount = input['follower_count'];
+    pinCount = input['pin_count'];
   }
 }

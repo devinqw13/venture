@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:venture/Models/User.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -37,7 +37,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen>  {
               child:ZoomTapAnimation(
                 onTap: () {
                   final storage = GetStorage();
-                  User().userKey.value = 0;
+                  VenUser().userKey.value = 0;
                   storage.remove("user_key");
                   Navigator.pop(context);
                   // Get.toNamed('/home');

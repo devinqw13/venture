@@ -17,7 +17,7 @@ import 'package:venture/Components/CustomMapPopupMenu.dart';
 import 'package:venture/Components/DismissKeyboard.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Models/Pin.dart';
-import 'package:venture/Models/User.dart';
+import 'package:venture/Models/VenUser.dart';
 
 class MapTab extends StatefulWidget {
   MapTab({Key? key}) : super(key: key);
@@ -410,13 +410,16 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
             },
             onTap: (latlng) {
               KeyboardUtil.hideKeyboard(context);
+              if(displayCreatePin.value) {
+                generateInitMarker(latlng);
+              }
             },
             onLongPress: (latlng) {
               KeyboardUtil.hideKeyboard(context);
             },
           ),
           ValueListenableBuilder(
-            valueListenable: User().userKey, 
+            valueListenable: VenUser().userKey, 
             builder: (context, value, _) {
               if (value != 0) {
                 return Align(

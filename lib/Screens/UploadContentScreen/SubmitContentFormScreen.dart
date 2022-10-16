@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:venture/Models/User.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Components/DismissKeyboard.dart';
@@ -25,10 +25,10 @@ class _SubmitContentFormState extends State<SubmitContentFormScreen> {
     if (isLoading) return;
     String path = widget.file.path;
     File file = widget.file;
-    String contentName = path.substring(path.lastIndexOf('/') + 1) + '-${User().userKey.value}' + '.png';
+    String contentName = path.substring(path.lastIndexOf('/') + 1) + '-${VenUser().userKey.value}' + '.png';
     
     setState(() => isLoading = true);
-    Content? result = await handleContentUpload(context, file, User().userKey.value, contentName, widget.contentType);
+    Content? result = await handleContentUpload(context, file, VenUser().userKey.value, contentName, widget.contentType);
     setState(() => isLoading = false);
 
     if(result != null) {

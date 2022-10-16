@@ -5,7 +5,7 @@ import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Screens/DashboardScreen/Components/LoginOverlay.dart';
 import 'package:venture/Components/ProfileSkeleton.dart';
-import 'package:venture/Models/User.dart';
+import 'package:venture/Models/VenUser.dart';
 // import 'package:venture/Controllers/ThemeController.dart';
 // import 'package:get/get.dart';
 
@@ -64,7 +64,7 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
     SizeConfig().init(context);
     return SafeArea(
       child: ValueListenableBuilder(
-        valueListenable: User().userKey, 
+        valueListenable: VenUser().userKey, 
         builder: (context, value, _) {
           return Stack(
             children: [

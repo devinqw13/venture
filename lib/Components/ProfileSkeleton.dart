@@ -2,13 +2,16 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
 import 'package:get/get.dart';
+import 'package:venture/Components/DismissKeyboard.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Components/Skeleton.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Helpers/NumberFormat.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
+import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Screens/SettingsScreen/SettingsScreen.dart';
+import 'package:venture/Screens/EditProfileScreen/EditProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class ProfileSkeleton extends StatefulWidget {
@@ -21,10 +24,103 @@ class ProfileSkeleton extends StatefulWidget {
 
 class _ProfileSkeleton extends State<ProfileSkeleton> {
   final ThemesController _themesController = Get.find();
+  bool isLoading = false;
 
   void goToSettings() {
-    SettingsScreen settingsScreen = SettingsScreen();
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => settingsScreen));
+    SettingsScreen screen = SettingsScreen();
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+  }
+
+  // void goToEditProfile(int? userKey) {
+  //   final EditProfileScreen screen = EditProfileScreen(userKey: userKey!);
+  //   Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 400));
+  // }
+
+  _showEditProfileModal(UserModel user, ThemeData theme) {
+    Get.bottomSheet(
+      DismissKeyboard(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Get.isDarkMode ? ColorConstants.gray900 : Colors.grey.shade50,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            )
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  MaterialButton(
+                    onPressed: () => Get.back(),
+                    child: Text(
+                      "Cancel",
+                      style: theme.textTheme.subtitle1
+                    ),
+                  ),
+                  Text("Edit profile", style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.w500)),
+                  SizedBox(width: 90)
+                ],
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(
+                      user.userAvatar!,
+                    ),
+                    fit: BoxFit.cover
+                  )
+                ),
+                child: ClipRRect(
+                  child: BackdropFilter(
+                    filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      alignment: Alignment.center,
+                      color: Colors.white.withOpacity(0.3),
+                      child: Container(
+                        height: getProportionateScreenHeight(80),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: _themesController.getContainerBgColor(),
+                            width: 2.0
+                          ),
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            fit: BoxFit.contain,
+                            image: NetworkImage(user.userAvatar!)
+                          )
+                        )
+                      ),
+                    )
+                  )
+                )
+              ),
+
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(10)
+                ),
+                child: TextField(
+                  readOnly: isLoading,
+                  // controller: descTxtController,
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    hintText: "",
+                    prefixIcon: Text('Display Name')
+                  ),
+                ),
+              ),
+            ],
+          ),
+        )
+      )
+    );
   }
 
   SliverAppBar _buildHeaderWithAvatar(UserModel user) {
@@ -192,7 +288,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                   text: TextSpan(
                     children: <TextSpan>[
                       TextSpan(
-                        text: NumberFormat.format(0),
+                        text: NumberFormat.format(user.pinCount!),
                         style: theme.textTheme.subtitle1!.copyWith(
                           fontWeight: FontWeight.w900
                         )
@@ -212,7 +308,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
     );
   }
 
-  SliverToBoxAdapter _buildRowButtons(UserModel user) {
+  SliverToBoxAdapter _buildRowButtons(UserModel user, ThemeData theme) {
     return SliverToBoxAdapter(
       child: Padding(
         padding: EdgeInsets.only(top: 10),
@@ -228,7 +324,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
             //   ),
             // ),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () => _showEditProfileModal(user, theme),
               child: Text("Edit Profile"),
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(360, 40),
@@ -269,7 +365,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
       slivers: [
         _buildHeaderWithAvatar(widget.user),
         _buildUserDetails(theme, widget.user),
-        _buildRowButtons(widget.user),
+        _buildRowButtons(widget.user, theme),
         _buildUserSubDetails(widget.user)
         // SliverFixedExtentList(
         //   itemExtent: 50.0,

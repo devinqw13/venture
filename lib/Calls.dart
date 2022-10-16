@@ -5,7 +5,8 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/Content.dart';
-import 'package:venture/Models/User.dart';
+import 'package:venture/Models/DynamicItem.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Globals.dart' as globals;
@@ -44,9 +45,9 @@ Future<bool?> createUser(BuildContext context, String name, String email, String
 
   if (jsonResponse['user_key'] != 0) {
     final storage = GetStorage();
-    User().userKey.value = jsonResponse['user_key'];
+    VenUser().userKey.value = jsonResponse['user_key'];
 
-    storage.write('user_key', User().userKey.value);
+    storage.write('user_key', VenUser().userKey.value);
     return true;
   }
   else {
@@ -87,9 +88,9 @@ Future<bool?> postLogin(BuildContext context, String identity, String password) 
   
   if (jsonResponse['results']['status'] == true) {
     final storage = GetStorage();
-    User().userKey.value = jsonResponse['results']['user_key'];
+    VenUser().userKey.value = jsonResponse['results']['user_key'];
 
-    storage.write('user_key', User().userKey.value);
+    storage.write('user_key', VenUser().userKey.value);
     return true;
   }
   else {
@@ -426,6 +427,61 @@ Future<Pin?> createPin(BuildContext context, String name, String desc, String lo
   if (jsonResponse['result'] == 'true') {
     Pin pin = Pin(jsonResponse['results'][0]);
     return pin;
+  }
+  else {
+    showToast(context: context, color: Colors.red, msg: "An error has occured.");
+    return null;
+  }
+}
+
+Future<List<DynamicItem>?> searchVenture(BuildContext context, String text, List<String>? filter) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "token": VenUser().userKey.value,
+    "text": text,
+    "filters": filter
+  };
+
+  String url = "${globals.apiBaseUrl}/search";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToast(context: context, color: Colors.red, msg: "Connection timeout.");
+    return null;
+  }
+
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  if (jsonResponse['result'] == 'true') {
+    List<DynamicItem> dynamicItems = [];
+    for(Map<String, dynamic> item in jsonResponse['results']) {
+      if(item.containsKey('users_json')) {
+        if(item['users_json'] != null) {
+          for(Map<String, dynamic> user in item['users_json']) {
+            UserModel userItem = UserModel(user);
+            DynamicItem dItem = DynamicItem(user: userItem);
+            dynamicItems.add(dItem);
+          }
+        }
+      }
+    }
+
+    // dynamicItems.sort((a, b) => a.user!.displayName!.compareTo(b.pin!.title!));
+
+    return dynamicItems;
   }
   else {
     showToast(context: context, color: Colors.red, msg: "An error has occured.");

@@ -1,15 +1,17 @@
 import 'dart:async';
+// import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:venture/Models/User.dart';
-import 'package:venture/Theme.dart';
-import 'package:venture/Constants.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:venture/Models/VenUser.dart';
+import 'package:venture/Theme.dart';
+import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Routes.dart';
 import 'package:venture/Globals.dart' as globals;
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,17 +58,45 @@ class _MyAppState extends State<MyApp> {
     await remoteConfig.fetchAndActivate();
 
      globals.apiBaseUrl = remoteConfig.getString('api_base_url');
+     globals.googleMapsApi = remoteConfig.getString('google_maps_api');
 
      return;
   }
 
+  // Future<void> checkAppleSignIn() async {
+  //   globals.appleSignInAvailable = Platform.isIOS;
+  // }
+
+  // Future<void> checkUserLoginStatus() async {
+  //   globals.auth!.idTokenChanges().listen((User? user) async {
+  //     if (user == null) {
+  //       VenUser().clear();
+  //     } else {
+  //       print(user.uid);
+  //       // VenUser().userKey.value = userKey ?? 0;
+  //       // if (user.displayName != null) {
+  //       //   VenUser().displayName = user.displayName!;
+  //       // }
+  //       // VenUser().email = user.email!;
+  //       // if (!alreadyCalled) {
+  //       //   alreadyCalled = true;
+  //       //   await getUserInfo(user.email);
+  //       //   createUserDevice(user.email!);
+  //       // }
+  //     }
+  //   });
+  // }
+
   _initializeAsyncDependencies() async {
+    // globals.auth = FirebaseAuth.instance;
+    // await checkAppleSignIn();
+    // await checkUserLoginStatus();
     await getKeys();
     // var box = storage.read('user');
     // User().fromJson(box);
     var userKey = storage.read('user_key');
     print(userKey);
-    User().userKey.value = userKey ?? 0;
+    VenUser().userKey.value = userKey ?? 0;
 
     setState(() {
       future = Future.value(true);

@@ -8,9 +8,10 @@ const kTextColor = Color(0xff121212);
 const kLightGreyText = Color.fromARGB(255, 119, 119, 119);
 const Color backgroundGrey = Color.fromARGB(255, 238, 238, 243);
 const Color darkBackgroundGrey = Color(0xff121212);
-const Color primaryOrange = Color.fromRGBO(255, 85, 0, 1);
-const Color primaryBlue = Color.fromARGB(255, 0, 32, 92);
-const Color accentBlue = Color.fromARGB(255, 0, 92, 160);
+// const Color primaryOrange = Color.fromRGBO(255, 85, 0, 1);
+const Color primaryOrange = Color(0xfff57a2c);
+const Color primaryBlue = Color(0xff0a0c2a);
+const Color accentBlue = Color(0xff232540);
 const Color primaryGrey = Color.fromARGB(255, 138, 139, 138);
 
 
@@ -34,6 +35,7 @@ const String kAddressNullError = "Please Enter your address";
 Function unorderedEq = const DeepCollectionEquality.unordered().equals;
 
 class ColorConstants {
+  static Color gray25 = hexToColor('#f7f7f8');
   static Color gray50 = hexToColor('#e9e9e9');
   static Color gray100 = hexToColor('#bdbebe');
   static Color gray200 = hexToColor('#929293');

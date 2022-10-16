@@ -39,7 +39,7 @@ class CreatePinState extends State<CreatePin> with TickerProviderStateMixin {
     controller2 =
         AnimationController(vsync: this, duration: Duration(milliseconds: 200));
 
-    offset2 = Tween<Offset>(begin: Offset(0.0, 0.0), end: Offset(0.0, -1.0))
+    offset2 = Tween<Offset>(begin: Offset(0.0, 1.0), end: Offset(0.0, -1.0))
         .animate(controller2);
 
     widget.display.addListener(() {
