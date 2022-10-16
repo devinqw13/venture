@@ -77,7 +77,7 @@ class ConversationItemState extends State<ConversationItem> {
                         children: [
                           MyAvatar(
                             photo: messageUser.photoUrl != '' ? messageUser.photoUrl : 'https://www.mtsolar.us/wp-content/uploads/2020/04/avatar-placeholder.png',
-                            size: 27,
+                            size: 20,
                           ),
                           SizedBox(width: 16),
                           Expanded(
@@ -86,20 +86,20 @@ class ConversationItemState extends State<ConversationItem> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(messageUser.displayName != null &&messageUser.displayName != '' ? messageUser.displayName! : "@${messageUser.username!}", style: TextStyle(fontSize: 16)),
+                                  Text(messageUser.displayName != null &&messageUser.displayName != '' ? messageUser.displayName! : messageUser.username!, style: TextStyle(fontSize: 16)),
                                   SizedBox(height: 6),
                                   checkTypers() ? Text(
                                     "typing...", 
                                     style: TextStyle(
                                       fontSize: 13, 
-                                      color: Colors.grey.shade600, 
+                                      color: Colors.grey, 
                                       fontWeight: widget.conversation.showUnread! ? FontWeight.bold : FontWeight.normal
                                     )
                                   ) : Text(
                                     widget.conversation.messages.last.messageText, 
                                     style: TextStyle(
                                       fontSize: 13, 
-                                      color: Colors.grey.shade600, 
+                                      color: Colors.grey, 
                                       fontWeight: widget.conversation.showUnread! ? FontWeight.bold : FontWeight.normal
                                     )
                                   ),

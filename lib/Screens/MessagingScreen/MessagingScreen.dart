@@ -294,11 +294,11 @@ class MessagingScreenState extends State<MessagingScreen> {
           onTap: () {},
           leading: MyAvatar(
             photo: widget.newSendToUser != null ? widget.newSendToUser!.photoUrl : widget.existingConvoUser!.photoUrl ,
-            size: 20,
+            size: 16,
           ),
           title: Text(
-            widget.newSendToUser != null ? widget.newSendToUser!.displayName != null ? widget.newSendToUser!.displayName! : '@${widget.newSendToUser!.username}' : widget.existingConvoUser!.displayName != null ? widget.existingConvoUser!.displayName! : '@${widget.existingConvoUser!.username}',
-            style: theme.textTheme.headline6
+            widget.newSendToUser != null ? widget.newSendToUser!.displayName != null ? widget.newSendToUser!.displayName! : '@${widget.newSendToUser!.username}' : widget.existingConvoUser!.displayName != null ? widget.existingConvoUser!.displayName! : widget.existingConvoUser!.username!,
+            style: theme.textTheme.subtitle1
           ),
           // subtitle: Text('last seen yesterday at 21:05', style: theme.textTheme.bodySmall),
         ),
