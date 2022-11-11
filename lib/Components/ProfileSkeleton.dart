@@ -2,7 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
 import 'package:get/get.dart';
-import 'package:venture/Components/DismissKeyboard.dart';
+import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Components/Skeleton.dart';
 import 'package:venture/Controllers/ThemeController.dart';
@@ -156,7 +156,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                     // alignment: Alignment.center,
                     color: Colors.white.withOpacity(0.3),
                     child: Padding(
-                      padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
+                      padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.06),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,

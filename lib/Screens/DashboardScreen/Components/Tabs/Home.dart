@@ -105,7 +105,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
               child: Container(
                 padding: EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.3),
+                  color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(10)
                 ),
                 child: Center(
@@ -122,7 +122,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
               child: Container(
                 padding: EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.3),
+                  color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(10)
                 ),
                 child: Center(

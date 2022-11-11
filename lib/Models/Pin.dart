@@ -6,7 +6,10 @@ class Pin {
   UserModel? user;
   String? title;
   String? description;
+  String? featuredPhoto;
   DateTime? created;
+  double? rating;
+  int? totalReviews;
 
   Pin(Map<String, dynamic> input) {
     pinKey = input['pin_key'];
@@ -15,5 +18,8 @@ class Pin {
     title = input['title'];
     description = input['description'];
     created = DateTime.parse(input['created_ts2']);
+    featuredPhoto = input['featured_photo'];
+    rating = input['avg_rating'];
+    totalReviews = input['total_reviews'];
   }
 }

@@ -349,14 +349,14 @@ Future<List<Content>> getContent(BuildContext context, int userKey) async {
   }
 }
 
-Future<List<Pin>> getMapPins(BuildContext context, String latlng) async {
+Future<List<Pin>> getMapPins(BuildContext context, {String? latlng = "", String? pinKey = ""}) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
   };
 
-  String url = "${globals.apiBaseUrl}/getPins?latlng=$latlng";
-
+  String url = "${globals.apiBaseUrl}/getPins?pinKey=$pinKey&latlng=$latlng";
+  
   Map jsonResponse = {};
   http.Response response;
 
@@ -373,7 +373,7 @@ Future<List<Pin>> getMapPins(BuildContext context, String latlng) async {
   } else {
     jsonResponse = json.decode(response.body);
   }
-
+  
   if (jsonResponse['result'] == 'true') {
     List<Pin> pins = [];
 

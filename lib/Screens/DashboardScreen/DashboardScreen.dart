@@ -90,9 +90,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         iconSize: 27
                       ),
                       _bottomAppBarItem(
-                        icon: 'assets/icons/search.svg',
+                        icon: 'assets/icons/search4.svg',
                         page: 1,
-                        iconSize: 27
+                        iconSize: 28
                       ),
                       const SizedBox.shrink(),
                       _bottomAppBarItem(

@@ -12,7 +12,6 @@ import 'package:venture/Models/DynamicItem.dart';
 import 'package:venture/Models/FirebaseUser.dart';
 import 'package:venture/Models/Message.dart';
 import 'package:venture/Models/UserModel.dart';
-import 'package:venture/Components/DismissKeyboard.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/MessagingScreen/MessagingScreen.dart';

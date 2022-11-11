@@ -14,7 +14,6 @@ import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Components/CreatePin.dart';
 import 'package:venture/Components/CustomMapPopupMenu.dart';
-import 'package:venture/Components/DismissKeyboard.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/VenUser.dart';
@@ -401,7 +400,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
 
               mapFetchTimer = Timer(Duration(seconds: 1), () async {
                 setState(() => isLoading = true);
-                var results = await getMapPins(context, latlng);
+                var results = await getMapPins(context, latlng: latlng);
                 setState(() => isLoading = false);
 
                 displayGatheredPins(results);
