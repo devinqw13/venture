@@ -1,12 +1,10 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Components/DottedBorder.dart';
-import 'package:venture/Components/DismissKeyboard.dart';
+import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/MapPreview.dart';
