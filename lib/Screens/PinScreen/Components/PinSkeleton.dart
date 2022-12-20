@@ -267,7 +267,7 @@ class _PinSkeleton extends State<PinSkeleton> {
                             length: 2,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                              children: [ 
                                 TabBar(
                                   isScrollable: true,
                                   indicator: CircleTabIndicator(color: primaryOrange, radius: 3),
