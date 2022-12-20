@@ -91,73 +91,93 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
     super.build(context);
     final theme = Theme.of(context);
 
-    return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.white.withOpacity(0),
-        title: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            ZoomTapAnimation(
-              onTap: () => goToCircles(),
-              child: Container(
-                padding: EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(10)
-                ),
-                child: Center(
-                  child: CustomIcon(
-                    icon: 'assets/icons/people.svg',
-                    color: primaryOrange,
-                    size: 27,
-                  )
-                ),
-              )
-            ),
-            ZoomTapAnimation(
-              onTap: () => goToMessaging(),
-              child: Container(
-                padding: EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(10)
-                ),
-                child: Center(
-                  child: CustomIcon(
-                    icon: 'assets/icons/send.svg',
-                    color: primaryOrange,
-                    size: 27,
-                  )
-                ),
-              )
-            ),
-          ],
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        extendBody: true,
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.white.withOpacity(0),
+          title: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TabBar(
+                enableFeedback: true,
+                isScrollable: true,
+                // indicator: CircleTabIndicator(color: primaryOrange, radius: 3),
+                indicatorColor: Colors.transparent,
+                labelPadding: EdgeInsets.only(right: 10.0),
+                unselectedLabelColor: Colors.black,
+                labelColor: primaryOrange,
+                tabs: [
+                  Tab(
+                    child: Text(
+                      "Following",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16
+                      ),
+                    )
+                  ),
+                  Tab(
+                    child: Text(
+                      "Suggested",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16
+                      ),
+                    )
+                  ),
+                ],
+              ),
+              ZoomTapAnimation(
+                onTap: () => goToMessaging(),
+                child: Container(
+                  padding: EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(10)
+                  ),
+                  child: Center(
+                    child: CustomIcon(
+                      icon: 'assets/icons/send.svg',
+                      color: primaryOrange,
+                      size: 27,
+                    )
+                  ),
+                )
+              ),
+            ],
+          ),
         ),
-      ),
-      body: Stack(
-        children: [
-          PageView.builder(
-            physics: AlwaysScrollableScrollPhysics(),
-            scrollDirection: Axis.vertical,
-            itemCount: content.isEmpty ? 1 : content.length,
-            itemBuilder: (context, i) {
-              if(content.isEmpty) {
-                return Padding(
-                  padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
-                  child: PostSkeletonShimmer()
-                );
-              }else {
-                return Padding(
-                  padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
-                  child: PostSkeleton(content: content[i])
-                );
-              }
-            }
-          )
-        ]
+        body: Stack(
+          children: [
+            TabBarView(
+              children: [
+                Container(),
+                PageView.builder(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  scrollDirection: Axis.vertical,
+                  itemCount: content.isEmpty ? 1 : content.length,
+                  itemBuilder: (context, i) {
+                    if(content.isEmpty) {
+                      return Padding(
+                        padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
+                        child: PostSkeletonShimmer()
+                      );
+                    }else {
+                      return Padding(
+                        padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
+                        child: PostSkeleton(content: content[i])
+                      );
+                    }
+                  }
+                )
+              ]
+            )
+          ]
+        )
       )
     );
   }

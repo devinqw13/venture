@@ -39,7 +39,14 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
   //   Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 400));
   // }
 
+  _saveProfileData(String name, String bio) {
+    Get.back();
+  }
+
   _showEditProfileModal(UserModel user, ThemeData theme) {
+    TextEditingController nameController = TextEditingController(text: user.displayName);
+    TextEditingController bioController = TextEditingController(text: user.userBio);
+
     Get.bottomSheet(
       DismissKeyboard(
         child: Container(
@@ -65,60 +72,214 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                     ),
                   ),
                   Text("Edit profile", style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.w500)),
-                  SizedBox(width: 90)
+                  MaterialButton(
+                    onPressed: () => _saveProfileData(nameController.text, bioController.text),
+                    child: Text(
+                      "Save",
+                      style: theme.textTheme.subtitle1!.copyWith(
+                        fontWeight: FontWeight.bold
+                      )
+                    ),
+                  ),
                 ],
               ),
-              Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(
-                      user.userAvatar!,
-                    ),
-                    fit: BoxFit.cover
-                  )
-                ),
-                child: ClipRRect(
-                  child: BackdropFilter(
-                    filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      alignment: Alignment.center,
-                      color: Colors.white.withOpacity(0.3),
-                      child: Container(
-                        height: getProportionateScreenHeight(80),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: _themesController.getContainerBgColor(),
-                            width: 2.0
+              Expanded(
+                child: ListView(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(
+                            user.userAvatar!,
                           ),
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            fit: BoxFit.contain,
-                            image: NetworkImage(user.userAvatar!)
-                          )
+                          fit: BoxFit.cover
                         )
                       ),
-                    )
-                  )
+                      child: ClipRRect(
+                        child: BackdropFilter(
+                          filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            alignment: Alignment.center,
+                            color: Colors.white.withOpacity(0.3),
+                            child: Container(
+                              height: getProportionateScreenHeight(80),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: _themesController.getContainerBgColor(),
+                                  width: 2.0
+                                ),
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  fit: BoxFit.contain,
+                                  image: NetworkImage(user.userAvatar!)
+                                )
+                              )
+                            ),
+                          )
+                        )
+                      )
+                    ),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: ColorConstants.gray50,
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Name",
+                              style: theme.textTheme.bodyText2,
+                            ),
+                            Flexible(
+                              child: TextField(
+                                controller: nameController,
+                                readOnly: isLoading,
+                                // controller: descTxtController,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                                  hintText: "",
+                                ),
+                              )
+                            )
+                          ],
+                        ),
+                      )
+                    ),
+                    SizedBox(height: 10),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: ColorConstants.gray50,
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Bio",
+                              style: theme.textTheme.bodyText2,
+                            ),
+                            Flexible(
+                              child: TextField(
+                                maxLines: 5,
+                                readOnly: isLoading,
+                                // controller: descTxtController,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                                  hintText: "",
+                                ),
+                              )
+                            )
+                          ],
+                        ),
+                      )
+                    ),
+                    SizedBox(height: 50)
+                  ],
                 )
-              ),
-
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(10)
-                ),
-                child: TextField(
-                  readOnly: isLoading,
-                  // controller: descTxtController,
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                    hintText: "",
-                    prefixIcon: Text('Display Name')
-                  ),
-                ),
-              ),
+              )
+              // Container(
+              //   decoration: BoxDecoration(
+              //     image: DecorationImage(
+              //       image: NetworkImage(
+              //         user.userAvatar!,
+              //       ),
+              //       fit: BoxFit.cover
+              //     )
+              //   ),
+              //   child: ClipRRect(
+              //     child: BackdropFilter(
+              //       filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              //       child: Container(
+              //         padding: EdgeInsets.symmetric(vertical: 12),
+              //         alignment: Alignment.center,
+              //         color: Colors.white.withOpacity(0.3),
+              //         child: Container(
+              //           height: getProportionateScreenHeight(80),
+              //           decoration: BoxDecoration(
+              //             border: Border.all(
+              //               color: _themesController.getContainerBgColor(),
+              //               width: 2.0
+              //             ),
+              //             shape: BoxShape.circle,
+              //             image: DecorationImage(
+              //               fit: BoxFit.contain,
+              //               image: NetworkImage(user.userAvatar!)
+              //             )
+              //           )
+              //         ),
+              //       )
+              //     )
+              //   )
+              // ),
+              // SizedBox(height: 20),
+              // Padding(
+              //   padding: EdgeInsets.symmetric(horizontal: 10),
+              //   child: Container(
+              //     padding: EdgeInsets.symmetric(horizontal: 10),
+              //     decoration: BoxDecoration(
+              //       color: ColorConstants.gray50,
+              //       borderRadius: BorderRadius.circular(10)
+              //     ),
+              //     child: Row(
+              //       children: [
+              //         Text(
+              //           "Name",
+              //           style: theme.textTheme.bodyText2,
+              //         ),
+              //         Flexible(
+              //           child: TextField(
+              //             controller: nameController,
+              //             readOnly: isLoading,
+              //             // controller: descTxtController,
+              //             decoration: InputDecoration(
+              //               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+              //               hintText: "",
+              //             ),
+              //           )
+              //         )
+              //       ],
+              //     ),
+              //   )
+              // ),
+              // SizedBox(height: 10),
+              // Padding(
+              //   padding: EdgeInsets.symmetric(horizontal: 10),
+              //   child: Container(
+              //     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              //     decoration: BoxDecoration(
+              //       color: ColorConstants.gray50,
+              //       borderRadius: BorderRadius.circular(10)
+              //     ),
+              //     child: Row(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         Text(
+              //           "Bio",
+              //           style: theme.textTheme.bodyText2,
+              //         ),
+              //         Flexible(
+              //           child: TextField(
+              //             maxLines: 5,
+              //             readOnly: isLoading,
+              //             // controller: descTxtController,
+              //             decoration: InputDecoration(
+              //               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+              //               hintText: "",
+              //             ),
+              //           )
+              //         )
+              //       ],
+              //     ),
+              //   )
+              // ),
             ],
           ),
         )
@@ -271,7 +432,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                   ZoomTapAnimation(
                     child: Text(
                       NumberFormat.format(user.followerCount!),
-                      style: theme.textTheme.headline5!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold),
+                      style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 20),
                     )
                   ),
                   Text(
@@ -285,7 +446,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                   ZoomTapAnimation(
                     child: Text(
                       NumberFormat.format(user.followingCount!),
-                      style: theme.textTheme.headline5!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold),
+                      style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 20),
                     )
                   ),
                   Text(
@@ -299,7 +460,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                   ZoomTapAnimation(
                     child: Text(
                       NumberFormat.format(user.pinCount!),
-                      style: theme.textTheme.headline5!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold),
+                      style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 20),
                     )
                   ),
                   Text(
@@ -337,11 +498,11 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                 user.isFollowing! ? "Following" : "Follow"
               ),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(180, 40),
+                minimumSize: Size(170, 35),
                 elevation: 0,
                 primary: primaryOrange,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0),
+                  borderRadius: BorderRadius.circular(20),
                 )
               ),
             ),

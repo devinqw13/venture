@@ -8,7 +8,7 @@ import 'package:venture/Calls.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Models/Conversation.dart';
-import 'package:venture/Models/DynamicItem.dart';
+import 'package:venture/Models/VentureItem.dart';
 import 'package:venture/Models/FirebaseUser.dart';
 import 'package:venture/Models/Message.dart';
 import 'package:venture/Models/UserModel.dart';
@@ -34,7 +34,7 @@ class _CreateConversationScreenState extends State<CreateConversationScreen> {
   TextEditingController textController = TextEditingController();
   bool isSearching = false;
   bool showSearchResults = false;
-  List<DynamicItem> searchResults = [];
+  List<VentureItem> searchResults = [];
   StreamController<String> streamController = StreamController();
 
   @override
@@ -46,7 +46,7 @@ class _CreateConversationScreenState extends State<CreateConversationScreen> {
 
   performSearch(String text) async {
     setState(() => isSearching = true);
-    List<DynamicItem>? results = await searchVenture(context, text, ["users"]);
+    List<VentureItem>? results = await searchVenture(context, text, ["users"]);
     setState(() => isSearching = false);
 
     if(results != null) {

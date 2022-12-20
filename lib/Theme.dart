@@ -4,6 +4,8 @@ import 'package:venture/Constants.dart';
 
 class Themes {
   static ThemeData lightTheme = ThemeData(
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
     fontFamily: 'Montserrat',
     primarySwatch: Colors.blue,
     brightness: Brightness.light,
@@ -106,6 +108,8 @@ class Themes {
   );
 
   static ThemeData darkTheme = ThemeData(
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
     fontFamily: 'Montserrat',
     primaryColor: Colors.blue,
     brightness: Brightness.dark,

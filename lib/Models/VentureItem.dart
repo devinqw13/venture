@@ -1,11 +1,11 @@
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/UserModel.dart';
 
-class DynamicItem {
+class VentureItem {
   Pin? pin;
   UserModel? user;
 
-  DynamicItem({
+  VentureItem({
     this.pin,
     this.user
   });

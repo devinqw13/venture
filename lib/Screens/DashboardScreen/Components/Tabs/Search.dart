@@ -14,7 +14,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/Keyboard.dart';
-import 'package:venture/Models/DynamicItem.dart';
+import 'package:venture/Models/VentureItem.dart';
 
 class SearchTab extends StatefulWidget {
   SearchTab({Key? key}) : super(key: key);
@@ -39,7 +39,7 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
   ScrollController controller = ScrollController();
   bool isSearching = false;
   bool showSearchResults = false;
-  List<DynamicItem> searchResults = [];
+  List<VentureItem> searchResults = [];
   StreamController<String> streamController = StreamController();
   
   @override
@@ -53,7 +53,7 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
 
   performSearch(String text) async {
     setState(() => isSearching = true);
-    List<DynamicItem>? results = await searchVenture(context, text, ["users", "pins"]);
+    List<VentureItem>? results = await searchVenture(context, text, ["users", "pins"]);
     setState(() => isSearching = false);
 
     if(results != null) {

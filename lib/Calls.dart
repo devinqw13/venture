@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/Content.dart';
-import 'package:venture/Models/DynamicItem.dart';
+import 'package:venture/Models/VentureItem.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Models/Pin.dart';
@@ -434,7 +434,7 @@ Future<Pin?> createPin(BuildContext context, String name, String desc, String lo
   }
 }
 
-Future<List<DynamicItem>?> searchVenture(BuildContext context, String text, List<String>? filter) async {
+Future<List<VentureItem>?> searchVenture(BuildContext context, String text, List<String>? filter) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
@@ -466,13 +466,13 @@ Future<List<DynamicItem>?> searchVenture(BuildContext context, String text, List
   }
   
   if (jsonResponse['result'] == 'true') {
-    List<DynamicItem> dynamicItems = [];
+    List<VentureItem> dynamicItems = [];
     for(Map<String, dynamic> item in jsonResponse['results']) {
       if(item.containsKey('users_json')) {
         if(item['users_json'] != null) {
           for(Map<String, dynamic> user in item['users_json']) {
             UserModel userItem = UserModel(user);
-            DynamicItem dItem = DynamicItem(user: userItem);
+            VentureItem dItem = VentureItem(user: userItem);
             dynamicItems.add(dItem);
           }
         }
@@ -482,7 +482,7 @@ Future<List<DynamicItem>?> searchVenture(BuildContext context, String text, List
         if(item['pins_json'] != null) {
           for(Map<String, dynamic> pin in item['pins_json']) {
             Pin pinItem = Pin(pin);
-            DynamicItem dItem = DynamicItem(pin: pinItem);
+            VentureItem dItem = VentureItem(pin: pinItem);
             dynamicItems.add(dItem);
           }
         }
@@ -492,6 +492,47 @@ Future<List<DynamicItem>?> searchVenture(BuildContext context, String text, List
     // dynamicItems.sort((a, b) => a.user!.displayName!.compareTo(b.pin!.title!));
 
     return dynamicItems;
+  }
+  else {
+    showToast(context: context, color: Colors.red, msg: "An error has occured.");
+    return null;
+  }
+}
+
+Future<List<VentureItem>?> updateProfile(BuildContext context, int key, {String? name, String? bio}) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "token": key,
+  };
+
+  if(name != null) jsonMap['name'] = name;
+  if(bio != null) jsonMap['bio'] = bio;
+
+  String url = "${globals.apiBaseUrl}/updateProfile";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToast(context: context, color: Colors.red, msg: "Connection timeout.");
+    return null;
+  }
+
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  if (jsonResponse['result'] == 'true') {
+    return null;
   }
   else {
     showToast(context: context, color: Colors.red, msg: "An error has occured.");

@@ -108,7 +108,7 @@ class _PinSkeleton extends State<PinSkeleton> {
             ): Container(),
             VenUser().userKey.value == widget.pin.user!.userKey ?
             ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => print("CREATOR SETTINGS"),
               child: CustomIcon(
                 icon: 'assets/icons/settings.svg',
                 size: 27,
