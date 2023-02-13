@@ -8,12 +8,16 @@
 .buildlog/
 .history
 .svn/
+.fvm/
 
 # IntelliJ related
 *.iml
 *.ipr
 *.iws
 .idea/
+
+# Visual Studio Code related
+.vscode/
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
@@ -48,3 +52,5 @@ app.*.map.json
 # Fastlane related
 /ios/fastlane/README.md
 /ios/fastlane/report.xml
+
+.fvm/flutter_sdk
