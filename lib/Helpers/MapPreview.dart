@@ -1,6 +1,8 @@
 // ignore_for_file: constant_identifier_names
 import 'package:flutter/material.dart';
+import 'package:venture/Constants.dart';
 import 'package:venture/Globals.dart' as globals;
+import 'package:venture/Helpers/CustomIcon.dart';
 
 class MapPreview extends StatelessWidget {
   final double latitude;
@@ -31,15 +33,29 @@ class MapPreview extends StatelessWidget {
         break;
     }
 
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        image: DecorationImage(
-          fit: BoxFit.cover,
-          image: NetworkImage(image),
+    return Stack(
+      children: [
+        Container(
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: NetworkImage(image),
+            )
+          ),
+        ),
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.center,
+            child: CustomIcon(
+              icon: 'assets/icons/location.svg',
+              size: 40,
+              color: primaryOrange,
+            ),
+          )
         )
-      ),
+      ]
     );
   }
 }

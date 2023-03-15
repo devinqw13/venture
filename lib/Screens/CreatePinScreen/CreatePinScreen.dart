@@ -1,15 +1,24 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Components/DottedBorder.dart';
+import 'package:venture/Components/FadeOverlay.dart';
+import 'package:venture/Components/PhotoBuilder.dart';
+import 'package:venture/Helpers/DeleteContent.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/MapPreview.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/VenUser.dart';
+import 'package:venture/Controllers/ThemeController.dart';
+import 'package:venture/Screens/ContentSelectionScreen.dart/ContentSelectionScreen.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class CreatePinScreen extends StatefulWidget {
@@ -21,12 +30,14 @@ class CreatePinScreen extends StatefulWidget {
 }
 
 class _CreatePinScreenState extends State<CreatePinScreen> {
+  final ThemesController _themesController = Get.find();
   bool isLoading = false;
   bool isLoadingLoc = false;
   final TextEditingController nameTxtController = TextEditingController();
   final TextEditingController descTxtController = TextEditingController();
   final TextEditingController locTxtController = TextEditingController();
   List<int> circleKeys = [];
+  List<File?> content = [];
 
   @override
   void initState() {
@@ -45,68 +56,108 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
     locTxtController.text = "${loc.street} ${loc.subAdministrativeArea} ${loc.administrativeArea} ${loc.postalCode}";
   }
 
-  _showCircleModal(ThemeData theme) {
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 30),
-        decoration: BoxDecoration(
-          color: Get.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Select circle", style: theme.textTheme.subtitle1),
-            SizedBox(height: 32),
-            Center(
-              child: Text(
-                "You are not in any circles", 
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.grey.shade700,
-                  fontStyle: FontStyle.italic
-                )
-              )
-            ),
-            SizedBox(height: 32),
-            // ListTile(
-            //   leading: Icon(Icons.brightness_5, color: Colors.blue,),
-            //   title: Text("Light", style: theme.textTheme.bodyText1),
-            //   onTap: () {
-            //     _themesController.setTheme('light');
-            //     Get.back();
-            //   },
-            //   trailing: Icon(Icons.check, color: current == 'light' ? Colors.blue : Colors.transparent,),
-            // ),
-            // SizedBox(height: 16),
-            // ListTile(
-            //   leading: Icon(Icons.brightness_2, color: Colors.orange,),
-            //   title: Text("Dark", style: theme.textTheme.bodyText1),
-            //   onTap: () {
-            //     _themesController.setTheme('dark');
-            //     Get.back();
-            //   },
-            //   trailing: Icon(Icons.check, color: current == 'dark' ? Colors.orange : Colors.transparent,),
-            // ),
-            // SizedBox(height: 16),
-            // ListTile(
-            //   leading: Icon(Icons.brightness_6, color: Colors.blueGrey,),
-            //   title: Text("System", style: theme.textTheme.bodyText1),
-            //   onTap: () {
-            //     _themesController.setTheme('system');
-            //     Get.back();
-            //   },
-            //   trailing: Icon(Icons.check, color: current == 'system' ? Colors.blueGrey : Colors.transparent,),
-            // ),
-          ],
-        ),
+  openPhotoSelector() async {
+    var result = await Navigator.of(context).push(
+      FadeOverlay(
+        backgroundColor: _themesController.getContainerBgColor(),
+        child: ContentSelectionScreen(
+          allowMultiSelect: true,
+          photoOnly: false,
+        )
       )
     );
+
+    if(result != null) {
+      setState(() => content = result);
+    }
   }
+
+  removeContent() {
+    // remove any content stored in local files
+    for(var item in content) {
+      deleteFile(item!);
+    }
+
+    setState(() => content.clear());
+  }
+
+  viewContent() {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext ctx) => GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: CarouselSlider(
+          items: List<Widget>.generate(content.length, (index) {
+            return Image.file(content[index]!);
+          }),
+          options: CarouselOptions(),
+        )
+      ),
+    );
+  }
+
+  // _showCircleModal(ThemeData theme) {
+  //   Get.bottomSheet(
+  //     Container(
+  //       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 30),
+  //       decoration: BoxDecoration(
+  //         color: Get.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
+  //         borderRadius: BorderRadius.only(
+  //           topLeft: Radius.circular(16),
+  //           topRight: Radius.circular(16),
+  //         )
+  //       ),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text("Select circle", style: theme.textTheme.subtitle1),
+  //           SizedBox(height: 32),
+  //           Center(
+  //             child: Text(
+  //               "You are not in any circles", 
+  //               style: TextStyle(
+  //                 fontSize: 15,
+  //                 color: Colors.grey.shade700,
+  //                 fontStyle: FontStyle.italic
+  //               )
+  //             )
+  //           ),
+  //           SizedBox(height: 32),
+  //           // ListTile(
+  //           //   leading: Icon(Icons.brightness_5, color: Colors.blue,),
+  //           //   title: Text("Light", style: theme.textTheme.bodyText1),
+  //           //   onTap: () {
+  //           //     _themesController.setTheme('light');
+  //           //     Get.back();
+  //           //   },
+  //           //   trailing: Icon(Icons.check, color: current == 'light' ? Colors.blue : Colors.transparent,),
+  //           // ),
+  //           // SizedBox(height: 16),
+  //           // ListTile(
+  //           //   leading: Icon(Icons.brightness_2, color: Colors.orange,),
+  //           //   title: Text("Dark", style: theme.textTheme.bodyText1),
+  //           //   onTap: () {
+  //           //     _themesController.setTheme('dark');
+  //           //     Get.back();
+  //           //   },
+  //           //   trailing: Icon(Icons.check, color: current == 'dark' ? Colors.orange : Colors.transparent,),
+  //           // ),
+  //           // SizedBox(height: 16),
+  //           // ListTile(
+  //           //   leading: Icon(Icons.brightness_6, color: Colors.blueGrey,),
+  //           //   title: Text("System", style: theme.textTheme.bodyText1),
+  //           //   onTap: () {
+  //           //     _themesController.setTheme('system');
+  //           //     Get.back();
+  //           //   },
+  //           //   trailing: Icon(Icons.check, color: current == 'system' ? Colors.blueGrey : Colors.transparent,),
+  //           // ),
+  //         ],
+  //       ),
+  //     )
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -161,9 +212,6 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                         child: TextField(
                           readOnly: isLoading,
                           controller: descTxtController,
-                          style: TextStyle(
-                            color: ColorConstants.gray400
-                          ),
                           maxLines: 5,
                           decoration: InputDecoration(
                             contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
@@ -201,31 +249,31 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                       //   ),
                       // ),
                       // SizedBox(height: 15),
-                      GestureDetector(
-                        onTap: () => !isLoading ? _showCircleModal(theme) : null,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                          decoration: BoxDecoration(
-                            color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(10)
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Choose circle",
-                                style: TextStyle(
-                                  color: ColorConstants.gray400
-                                ),
-                              ),
-                              Icon(IconlyLight.arrow_down_2, color: ColorConstants.gray400)
-                            ],
-                          ),
-                        )
-                      ),
+                      // GestureDetector(
+                      //   onTap: () => !isLoading ? _showCircleModal(theme) : null,
+                      //   child: Container(
+                      //     padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                      //     decoration: BoxDecoration(
+                      //       color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
+                      //       borderRadius: BorderRadius.circular(10)
+                      //     ),
+                      //     child: Row(
+                      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //       children: [
+                      //         Text(
+                      //           "Choose circle",
+                      //           style: TextStyle(
+                      //             color: ColorConstants.gray400
+                      //           ),
+                      //         ),
+                      //         Icon(IconlyLight.arrow_down_2, color: ColorConstants.gray400)
+                      //       ],
+                      //     ),
+                      //   )
+                      // ),
 
-                      ZoomTapAnimation(
-                        onTap: () => print("UPLOAD CONTENT"),
+                      content.isEmpty ? ZoomTapAnimation(
+                        onTap: () => openPhotoSelector(),
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 20.0),
                           child: DottedBorder(
@@ -252,6 +300,54 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                             ),
                           )
                         ),
+                      ) :
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ZoomTapAnimation(
+                            child: IconButton(
+                              onPressed: () => removeContent(),
+                              icon: Icon(
+                                Icons.close,
+                                color: Get.isDarkMode ? ColorConstants.gray400 : Colors.grey,
+                              )
+                            )
+                          ),
+
+                          Expanded(
+                            child: Container(
+                            decoration: BoxDecoration(
+                                color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(10)
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                    child: ZoomTapAnimation(
+                                      onTap: () => viewContent(),
+                                      child: OverlapPhotos(
+                                        files: content,
+                                        radius: 20,
+                                      )
+                                    )
+                                  ),
+                                  Expanded(
+                                    child: TextField(
+                                      maxLines: 5,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 0),
+                                        hintText: "Write a caption...",
+                                      )
+                                    )
+                                  )
+                                ],
+                              ),
+                            )
+                          )
+                        ],
                       ),
                     ],
                   )
@@ -262,7 +358,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
             
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: _themesController.getContainerBgColor(),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey,
@@ -282,6 +378,9 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
 
                           setState(() => isLoading = true);
                           Pin? pin = await createPin(context, nameTxtController.text, descTxtController.text, location, VenUser().userKey.value, circleKeys: circleKeys.isNotEmpty ? circleKeys : null);
+                          if(content.isNotEmpty) {
+                            var _ = await handleContentUploadV2(context, content, VenUser().userKey.value, "post", pinKey: pin?.pinKey);
+                          }
                           setState(() => isLoading = false);
 
                           if(pin != null) {

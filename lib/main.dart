@@ -1,7 +1,7 @@
 import 'dart:async';
 // import 'dart:io';
 import 'package:flutter/material.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:get/get.dart';
@@ -53,13 +53,13 @@ class _MyAppState extends State<MyApp> {
     // await remoteConfig.fetch(expiration: Duration(hours: 12));
     await remoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: const Duration(minutes: 1),
-      minimumFetchInterval: const Duration(hours: 12),
+      minimumFetchInterval: const Duration(seconds: 10),
     ));
     await remoteConfig.fetchAndActivate();
 
      globals.apiBaseUrl = remoteConfig.getString('api_base_url');
      globals.googleMapsApi = remoteConfig.getString('google_maps_api');
-
+     globals.googleApi = remoteConfig.getString('google_api_key');
      return;
   }
 
@@ -67,35 +67,35 @@ class _MyAppState extends State<MyApp> {
   //   globals.appleSignInAvailable = Platform.isIOS;
   // }
 
-  // Future<void> checkUserLoginStatus() async {
-  //   globals.auth!.idTokenChanges().listen((User? user) async {
-  //     if (user == null) {
-  //       VenUser().clear();
-  //     } else {
-  //       print(user.uid);
-  //       // VenUser().userKey.value = userKey ?? 0;
-  //       // if (user.displayName != null) {
-  //       //   VenUser().displayName = user.displayName!;
-  //       // }
-  //       // VenUser().email = user.email!;
-  //       // if (!alreadyCalled) {
-  //       //   alreadyCalled = true;
-  //       //   await getUserInfo(user.email);
-  //       //   createUserDevice(user.email!);
-  //       // }
-  //     }
-  //   });
-  // }
+  Future<void> checkUserLoginStatus() async {
+    globals.auth!.idTokenChanges().listen((User? user) async {
+      print(user);
+      // if (user == null) {
+      //   VenUser().clear();
+      // } else {
+      //   print(user.uid);
+      //   // VenUser().userKey.value = userKey ?? 0;
+      //   // if (user.displayName != null) {
+      //   //   VenUser().displayName = user.displayName!;
+      //   // }
+      //   // VenUser().email = user.email!;
+      //   // if (!alreadyCalled) {
+      //   //   alreadyCalled = true;
+      //   //   await getUserInfo(user.email);
+      //   //   createUserDevice(user.email!);
+      //   // }
+      // }
+    });
+  }
 
   _initializeAsyncDependencies() async {
-    // globals.auth = FirebaseAuth.instance;
+    globals.auth = FirebaseAuth.instance;
     // await checkAppleSignIn();
     // await checkUserLoginStatus();
     await getKeys();
     // var box = storage.read('user');
     // User().fromJson(box);
     var userKey = storage.read('user_key');
-    print(userKey);
     VenUser().userKey.value = userKey ?? 0;
 
     setState(() {

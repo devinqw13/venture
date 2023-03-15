@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'package:flutter/cupertino.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,6 +21,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen>  {
   final ThemesController _themesController = Get.find();
+  final storage = GetStorage();
 
   @override
   Widget build(BuildContext context) {
@@ -111,6 +116,10 @@ class _SettingsScreenState extends State<SettingsScreen>  {
                     return _buildListTile('Appearance', Icons.dark_mode, _.theme.toCapitalized(), Colors.purple, theme, onTab: () => _showAppearanceModal(theme, _.theme));
                     // return Text(_.theme);
                   }),
+                  GetBuilder<ThemesController>(builder: (_) {
+                    return _buildToggleTile('Map Satelite', Icons.map_rounded, _.mapType == MapType.satellite, Colors.blue, theme, onTap: () => _toggleSatelite(_.mapType));
+                    // return Text(_.theme);
+                  }),
                   // GetBuilder<ThemesController>(builder: (_) {
                   //   return _buildListTile('Map Style', Icons.map_rounded, '', Colors.blue, theme, onTab: () => _showMapThemeModal(theme));
                   //   // return Text(_.theme);
@@ -131,6 +140,33 @@ class _SettingsScreenState extends State<SettingsScreen>  {
           ),
         )
       )
+    );
+  }
+
+  Widget _buildToggleTile(String title, IconData icon, bool value, Color color, theme, {onTap}) {
+    return ListTile(
+      contentPadding: EdgeInsets.all(0),
+      leading: Container(
+        width: 46,
+        height: 46,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color.withAlpha(30)
+        ),
+        child: Center(
+          child: Icon(icon, color: color,),
+        ),
+      ),
+      title: Text(title, style: theme.textTheme.subtitle1),
+      trailing: Platform.isAndroid ?
+      Switch(
+        onChanged: (v) => onTap(),
+        value: value,
+      ) : CupertinoSwitch(
+        value: value,
+        onChanged: (v) => onTap()
+      ),
+      onTap: onTap,
     );
   }
 
@@ -214,6 +250,18 @@ class _SettingsScreenState extends State<SettingsScreen>  {
         ),
       )
     );
+  }
+
+  _toggleSatelite(MapType type) {
+
+    if(type == MapType.satellite) {
+      setState(() => _themesController.mapType = MapType.normal);
+
+    }else {
+      setState(() => _themesController.mapType = MapType.satellite);
+    }
+
+    storage.write('maptype', _themesController.mapType == MapType.satellite ? "satellite" : "normal");
   }
 
   // _showMapThemeModal(ThemeData theme) {

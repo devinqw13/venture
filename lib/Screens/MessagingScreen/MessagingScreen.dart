@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:venture/Components/Avatar.dart';
@@ -12,6 +13,7 @@ import 'package:venture/Models/Conversation.dart';
 import 'package:venture/Models/Message.dart';
 import 'package:venture/Models/FirebaseUser.dart';
 import 'package:venture/Models/VenUser.dart';
+import 'package:venture/Controllers/ThemeController.dart';
 
 class MessagingScreen extends StatefulWidget {
   final MessageUser? newSendToUser;
@@ -32,12 +34,13 @@ class MessagingScreen extends StatefulWidget {
 }
 
 class MessagingScreenState extends State<MessagingScreen> {
+  final ThemesController _themesController = Get.find();
   ScrollController _scrollController = ScrollController();
   TextEditingController textController = TextEditingController();
   List<String>? owners;
   List<Message>? messages = [];
   // late Conversation conversation;
-  var isVisible = true;
+  var isVisible = false;
 
   @override
   void initState() {
@@ -55,6 +58,14 @@ class MessagingScreenState extends State<MessagingScreen> {
     if (messages!.isNotEmpty) {
       // markMessagesAsRead();
     }
+
+    textController.addListener(() {
+      if(textController.text.isEmpty) {
+        setState(() => isVisible = false);
+      } else {
+        setState(() => isVisible = true);
+      }
+    });
   }
 
   // Future<void> markMessagesAsRead() async {
@@ -356,6 +367,7 @@ class MessagingScreenState extends State<MessagingScreen> {
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: Card(
+                      color: _themesController.getContainerBgColor(),
                       margin: EdgeInsets.zero,
                       child: Padding(
                         padding: EdgeInsets.only(right: 8, left: 8, bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 15 : 28, top: 8),
@@ -376,49 +388,70 @@ class MessagingScreenState extends State<MessagingScreen> {
                                       Expanded(
                                         child: Container(
                                           margin: EdgeInsets.only(bottom: 5),
+                                          decoration: BoxDecoration(
+                                            color: Get.isDarkMode ? ColorConstants.gray600 : Colors.white,
+                                            borderRadius: BorderRadius.circular(50),
+                                          ),
                                           child: TextField(
                                             controller: textController,
+                                            onChanged: (value) => setTyper(),
                                             minLines: 1,
                                             maxLines: 5,
-                                            cursorColor: Colors.black,
                                             decoration: InputDecoration(
                                               isDense: true,
                                               contentPadding: EdgeInsets.only(right: 16, left: 20, bottom: 10, top: 10),
                                               hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                                               hintText: 'Type a message',
-                                              border: InputBorder.none,
-                                              filled: true,
-                                              fillColor: Colors.grey.shade100,
-                                              enabledBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(20),
-                                                gapPadding: 0,
-                                                borderSide: BorderSide(color: Colors.grey.shade200),
-                                              ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(20),
-                                                gapPadding: 0,
-                                                borderSide: BorderSide(color: Colors.grey.shade300),
-                                              ),
                                             ),
-                                            onChanged: (value) => setTyper(),
                                           ),
                                         ),
                                       ),
+                                      // Expanded(
+                                      //   child: Container(
+                                      //     margin: EdgeInsets.only(bottom: 5),
+                                      //     child: TextField(
+                                      //       controller: textController,
+                                      //       minLines: 1,
+                                      //       maxLines: 5,
+                                      //       cursorColor: Colors.black,
+                                      //       decoration: InputDecoration(
+                                      //         isDense: true,
+                                      //         contentPadding: EdgeInsets.only(right: 16, left: 20, bottom: 10, top: 10),
+                                      //         hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                                      //         hintText: 'Type a message',
+                                      //         border: InputBorder.none,
+                                      //         filled: true,
+                                      //         fillColor: Get.isDarkMode ? ColorConstants.gray600 : Colors.white,
+                                      //         enabledBorder: OutlineInputBorder(
+                                      //           borderRadius: BorderRadius.circular(20),
+                                      //           gapPadding: 0,
+                                      //           borderSide: BorderSide(color: Colors.grey.shade200),
+                                      //         ),
+                                      //         focusedBorder: OutlineInputBorder(
+                                      //           borderRadius: BorderRadius.circular(20),
+                                      //           gapPadding: 0,
+                                      //           borderSide: BorderSide(color: Colors.grey.shade300),
+                                      //         ),
+                                      //       ),
+                                      //       onChanged: (value) => setTyper(),
+                                      //     ),
+                                      //   ),
+                                      // ),
                                     ],
                                   ),
                                 ),
                                 Row(
                                   children: [
-                                    IconButton(
+                                    isVisible ? IconButton(
                                       splashRadius: 20,
-                                      icon: Icon(Icons.send, color: isVisible ? Colors.grey.shade700 : Colors.blue,),
+                                      icon: Icon(Icons.send, color: primaryOrange),
                                       onPressed: () {
                                         if (textController.text.isNotEmpty) {
                                           sendMessage(textController.text);
                                           setTyper(value: false);
                                         }
                                       },
-                                    ),
+                                    ) : Container(),
                                   ],
                                 ),
                               ],

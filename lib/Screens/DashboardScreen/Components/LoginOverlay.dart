@@ -72,8 +72,9 @@ class _LoginOverlay extends State<LoginOverlay>  {
                         Center(
                           child: Text("Venture",
                             style: TextStyle(
-                              fontFamily: "GrandHotel",
-                              fontSize: 60
+                              // fontFamily: "GrandHotel",
+                              fontFamily: "Coolvetica",
+                              fontSize: 55
                             ),
                           )
                         ),

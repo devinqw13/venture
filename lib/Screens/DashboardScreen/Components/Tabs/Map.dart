@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Globals.dart' as globals;
 import 'package:venture/Calls.dart';
+import 'package:venture/Helpers/CustomPin.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Screens/CreatePinScreen/CreatePinScreen.dart';
+import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Components/CreatePin.dart';
@@ -32,7 +35,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   ValueNotifier<bool> canRemovePin = ValueNotifier<bool>(false);
   late AnimationController controller;
   late Animation<Offset> offset;
-  MapType mapType = MapType.normal;
+  // MapType mapType = MapType.satellite;
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   MarkerId? createdMarker;
   LatLng? createdMarkerPos;
@@ -114,10 +117,10 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
         _remove(createdMarker!);
         break;
       case "togglesatellite":
-        if (mapType == MapType.normal) {
-          setState(() => mapType = MapType.satellite);
+        if (_themesController.mapType == MapType.normal) {
+          setState(() => _themesController.mapType = MapType.satellite);
         } else {
-          setState(() => mapType = MapType.normal);
+          setState(() => _themesController.mapType = MapType.normal);
         }
         break;
       case "continue":
@@ -135,12 +138,14 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
 
           final MarkerId markerKey = MarkerId(result.pinKey.toString());
           List loc = result.latLng.split(',');
+          
+          BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
+
           final Marker marker = Marker(
             markerId: markerKey,
             position: LatLng(double.parse(loc[0]), double.parse(loc[1])),
             draggable: false,
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-            // icon: mkr!,
+            icon: mkr,
             // onTap: () => _onMarkerTapped(markerKey),
           );
 
@@ -173,19 +178,14 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
 
     final String key = '0';
     final MarkerId markerKey = MarkerId(key);
-    // BitmapDescriptor? mkr;
-
-    // await BitmapDescriptor.fromAssetImage(
-    //   createLocalImageConfiguration(context, size: Size(8, 8)),
-    //   'assets/images/marker-orange.png'
-    // ).then((value) => mkr = value);
+    
+    BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: primaryOrange, size: Size(45, 45));
 
     final Marker marker = Marker(
       markerId: markerKey,
       position: coords,
       draggable: true,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-      // icon: mkr!,
+      icon: mkr,
       // onTap: () => _onMarkerTapped(markerKey),
       // onDragEnd: (LatLng position) => _onMarkerDragEnd(markerKey, position),
       onDrag: (LatLng position) => _onMarkerDrag(markerKey, position),
@@ -199,7 +199,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     });
   }
 
-  displayGatheredPins(List<Pin> pins) {
+  displayGatheredPins(List<Pin> pins) async {
     List<Pin> newPins = pins.where((e) => !markers.keys.map((f) => int.parse(f.value)).toList().contains(e.pinKey)).toList();
 
     setState(() {
@@ -209,13 +209,15 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     for(Pin item in newPins) {
       final MarkerId markerKey = MarkerId(item.pinKey.toString());
       List loc = item.latLng.split(',');
+
+      BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
+
       final Marker marker = Marker(
         markerId: markerKey,
         position: LatLng(double.parse(loc[0]), double.parse(loc[1])),
         draggable: false,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-        // icon: mkr!,
-        // onTap: () => _onMarkerTapped(markerKey),
+        icon: mkr,
+        onTap: () => _onMarkerTapped(markerKey),
       );
 
       setState(() {
@@ -226,30 +228,13 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     print("MARKERS DISPLAYED: ${markers.length}");
   }
 
-  // void _onMarkerTapped(MarkerId key) {
-  //   final Marker? tappedMarker = markers[key];
-  //   if (tappedMarker != null) {
-  //     setState(() {
-  //       final MarkerId? previousMarkerId = selectedMarker;
-  //       if (previousMarkerId != null && markers.containsKey(previousMarkerId)) {
-  //         final Marker resetOld = markers[previousMarkerId]!
-  //             .copyWith(iconParam: BitmapDescriptor.defaultMarker);
-  //         markers[previousMarkerId] = resetOld;
-  //       }
-  //       selectedMarker = key;
-  //       final Marker newMarker = tappedMarker.copyWith(
-  //         iconParam: BitmapDescriptor.defaultMarkerWithHue(
-  //           BitmapDescriptor.hueGreen,
-  //         ),
-  //       );
-  //       markers[key] = newMarker;
-
-  //       initMarkerPosition = null;
-
-  //       canRemovePin.value = true;
-  //     });
-  //   }
-  // }
+  void _onMarkerTapped(MarkerId key) {
+    final Marker? tappedMarker = markers[key];
+    if (tappedMarker != null) {
+      PinScreen screen = PinScreen(pinKey: int.parse(tappedMarker.markerId.value));
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+    }
+  }
 
   Future<void> _onMarkerDrag(MarkerId key, LatLng newPosition) async {
     setState(() {
@@ -353,6 +338,10 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   //   );
   // }
 
+  autocomplete(String v) async {
+    // var list = await getPlaces(v);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -362,7 +351,8 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
         children: [
           GoogleMap(
             initialCameraPosition: _kGooglePlex,
-            mapType: mapType,
+            mapType: _themesController.mapType,
+            myLocationEnabled: true,
             myLocationButtonEnabled: false,
             onMapCreated: (GoogleMapController controller) async {
               _themesController.googleMapController = controller;
@@ -446,6 +436,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
                                   ]
                                 ),
                                 child: TextField(
+                                  onChanged: (v) => autocomplete(v),
                                   controller: textController,
                                   keyboardType: TextInputType.streetAddress,
                                   textInputAction: TextInputAction.go,
@@ -565,6 +556,14 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
           //     )
           //   )
           // )
+          // Positioned(
+          //   right: 100,
+          //   bottom: 100,
+          //   child: FloatingActionButton(
+          //     onPressed: () {},
+          //     child: Icon(Icons.add),
+          //   )
+          // ),
           isLoading ? Align(
             alignment: Alignment.bottomCenter,
             child: Padding(

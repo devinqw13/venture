@@ -231,6 +231,38 @@ Future<Content?> handleContentUpload(BuildContext context, File file, int userKe
   return content;
 }
 
+Future<Content?> handleContentUploadV2(BuildContext context, List<File?> files, int userKey, String contentType, {String? contentCaption, int? pinKey = 20, int? circleKey}) async {
+
+  List<String> contentNames = [];
+
+  Map<String, dynamic> jsonMap = {
+    "user_key": userKey.toString(),
+    "content_name": contentNames,
+    "upload_type": contentType
+  };
+
+  if(contentCaption != null) jsonMap['content_caption'] = contentCaption;
+  if(pinKey != null) jsonMap['pin_key'] = pinKey.toString();
+  if(circleKey != null) jsonMap['circle_key'] = circleKey.toString();
+
+  for(var item in files) {
+    String name = item!.path.substring(item.path.lastIndexOf('/') + 1) + '-${VenUser().userKey.value}' + '.png';
+
+    Map<String, dynamic>? signedUrlDetails = await getS3SignedUrl(context, userKey, name, contentType, pinKey, circleKey);
+    if(signedUrlDetails == null) return null;
+
+    bool uploadResults = await uploadContentV2(context, item, signedUrlDetails);
+    if(!uploadResults) return null;
+
+    contentNames.add(name);
+  }
+  print(jsonMap);
+  Content? content = await createContentDetails(context, jsonMap);
+  if(content == null) return null;
+
+  return content;
+}
+
 Future<Map<String, dynamic>?> getS3SignedUrl(BuildContext context, int userKey, String contentName, String uploadType, int? pinKey, int? circleKey) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
@@ -238,6 +270,8 @@ Future<Map<String, dynamic>?> getS3SignedUrl(BuildContext context, int userKey, 
   };
 
   String url = "${globals.apiBaseUrl}/getS3SignedUrl?content_name=$contentName&user_key=$userKey&upload_type=$uploadType";
+
+  if(pinKey != null) url = url + '&pin_key=$pinKey';
   
   Map jsonResponse = {};
   http.Response response;
@@ -538,4 +572,31 @@ Future<List<VentureItem>?> updateProfile(BuildContext context, int key, {String?
     showToast(context: context, color: Colors.red, msg: "An error has occured.");
     return null;
   }
+}
+
+// Used for autocomplete when searching location
+Future<List<String>> getPlaces(String text, {String lang = "EN"}) async {
+  final client = http.Client();
+  final request =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$text&types=address&language=$lang&components=country:us&key=${globals.googleApi}';
+  
+  final response = await client.get(Uri.parse(request));
+
+  if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      if (result['status'] == 'OK') {
+        // compose suggestions in a list
+        // return result['predictions']
+        //     .map<Suggestion>((p) => Suggestion(p['place_id'], p['description']))
+        //     .toList();
+
+        print(result);
+      }
+      if (result['status'] == 'ZERO_RESULTS') {
+        return [];
+      }
+      throw Exception(result['error_message']);
+    } else {
+      throw Exception('Failed to fetch suggestion');
+    }
 }

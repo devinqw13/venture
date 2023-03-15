@@ -71,6 +71,40 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
     }
   }
 
+  _buildSearchSuffix() {
+    if(textController.text.isNotEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(3.0),
+        child: ZoomTapAnimation(
+          onTap: () {
+            if (textController.text.isNotEmpty) {
+              textController.clear();
+            }
+          },
+          child: Container(
+            width: 40,
+            child: Center(
+              child: Container(
+                padding: EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: ColorConstants.gray200,
+                  shape: BoxShape.circle
+                ),
+                child: Icon(
+                  Icons.close,
+                  color: Get.isDarkMode ? ColorConstants.gray600 : Colors.white,
+                  size: 14
+                ),
+              )
+            ),
+          )
+        ),
+      );
+    }else {
+      return null;
+    }
+  }
+
   Widget buildSearch() {
     if(isSearching) {
       return SizedBox(
@@ -109,23 +143,24 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
         child: CustomScrollView(
           controller: controller,
           slivers: [
-            SliverAppBar(
-              backgroundColor: Colors.white.withOpacity(0.2),
-              elevation: 0.5,
-              shadowColor: Colors.grey,
-              pinned: false,
-              flexibleSpace: FlexibleSpaceBar(
-                titlePadding: EdgeInsetsDirectional.only(
-                  bottom: 10.0,
-                ),
-                centerTitle: true,
-                // titlePadding: EdgeInsets.symmetric(horizontal: 16),
-                title: Text(
-                  'Search',
-                  style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
+            // SliverAppBar(
+            //   // backgroundColor: Colors.white.withOpacity(0.2),
+            //   elevation: 0.5,
+            //   shadowColor: Colors.grey,
+            //   pinned: false,
+            //   flexibleSpace: FlexibleSpaceBar(
+            //     titlePadding: EdgeInsetsDirectional.only(
+            //       bottom: 10.0,
+            //     ),
+            //     centerTitle: true,
+            //     // titlePadding: EdgeInsets.symmetric(horizontal: 16),
+            //     title: Text(
+            //       'Search',
+            //       // style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.w600),
+            //       style: theme.textTheme.headline6!.copyWith(fontFamily: "CoolveticaCondensed",color: primaryOrange, fontSize: 24),
+            //     ),
+            //   ),
+            // ),
 
             SliverFillRemaining(
               hasScrollBody: true,
@@ -193,23 +228,7 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                               hintText: "Search $hintText",
                               prefixIcon: Icon(IconlyLight.search, color: Colors.grey),
-                              suffixIcon: Padding(
-                                padding: const EdgeInsets.all(3.0),
-                                child: ZoomTapAnimation(
-                                  onTap: () {
-                                    KeyboardUtil.hideKeyboard(context);
-                                    if (textController.text.isNotEmpty) {
-                                      
-                                    }
-                                  },
-                                  child: Container(
-                                    width: 40,
-                                    child: Center(
-                                      child: Icon(IconlyLight.filter, color: primaryOrange),
-                                    ),
-                                  )
-                                ),
-                              )
+                              suffixIcon: _buildSearchSuffix()
                             ),
                           ),
                         )
@@ -220,35 +239,35 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SingleChildScrollView(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                for(var item in filters)
-                                  ZoomTapAnimation(
-                                    onTap: () {
-                                      for (var e in filters) {
-                                        setState(() => e.isSelected = false);
-                                      }
-                                      setState(() => item.isSelected = true);
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                                      margin: EdgeInsets.symmetric(horizontal: 4),
-                                      child: Text(
-                                        item.name,
-                                        style: theme.textTheme.bodyText2!.copyWith(color: item.isSelected ? Colors.white : Colors.black)
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: item.isSelected ? primaryOrange : Colors.grey.shade200,
-                                        borderRadius: BorderRadius.circular(50),
-                                      ),
-                                    )
-                                  ),
-                              ]
-                            ),
-                          ),
+                          // SingleChildScrollView(
+                          //   padding: EdgeInsets.symmetric(horizontal: 10),
+                          //   scrollDirection: Axis.horizontal,
+                          //   child: Row(
+                          //     children: [
+                          //       for(var item in filters)
+                          //         ZoomTapAnimation(
+                          //           onTap: () {
+                          //             for (var e in filters) {
+                          //               setState(() => e.isSelected = false);
+                          //             }
+                          //             setState(() => item.isSelected = true);
+                          //           },
+                          //           child: Container(
+                          //             padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                          //             margin: EdgeInsets.symmetric(horizontal: 4),
+                          //             child: Text(
+                          //               item.name,
+                          //               style: theme.textTheme.bodyText2!.copyWith(color: item.isSelected ? Colors.white : Colors.black)
+                          //             ),
+                          //             decoration: BoxDecoration(
+                          //               color: item.isSelected ? primaryOrange : Colors.grey.shade200,
+                          //               borderRadius: BorderRadius.circular(50),
+                          //             ),
+                          //           )
+                          //         ),
+                          //     ]
+                          //   ),
+                          // ),
                           SizedBox(
                             height: 20,
                           ),
@@ -256,7 +275,8 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                             padding: EdgeInsets.symmetric(horizontal: 15),
                             child: Text(
                               "Suggested",
-                              style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
+                              // style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
+                              style: theme.textTheme.headline6!.copyWith(fontFamily: "CoolveticaCondensed", fontSize: 26),
                             )
                           )
                         ],

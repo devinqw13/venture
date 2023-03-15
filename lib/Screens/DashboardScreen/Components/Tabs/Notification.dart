@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:venture/Components/FadeOverlay.dart';
 import 'package:venture/Constants.dart';
 
 class NotificationTab extends StatefulWidget {
@@ -14,6 +15,13 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
   bool get wantKeepAlive => true;
 
   @override
+  void initState() {
+    super.initState();
+
+    // Navigator.of(context).push(MaterialPageRoute(builder: (context) => FadeOverlay()));
+  }
+
+  @override
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
@@ -22,10 +30,19 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
       child: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor: Colors.white.withOpacity(0.2),
-            elevation: 0.5,
+            // backgroundColor: Colors.white.withOpacity(0.2),
+            elevation: 0.2,
             shadowColor: Colors.grey,
+            forceElevated: true,
             pinned: false,
+            actions: [
+              MaterialButton(
+                onPressed: () {
+                  Navigator.of(context).push(FadeOverlay());
+                },
+                child: Text("TEST")
+              )
+            ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: EdgeInsetsDirectional.only(
                 bottom: 10.0,
@@ -34,10 +51,20 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
               // titlePadding: EdgeInsets.symmetric(horizontal: 16),
               title: Text(
                 'Notifications',
-                style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.w600),
+                // style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.w600),
+                style: theme.textTheme.headline6!.copyWith(fontFamily: "CoolveticaCondensed",color: primaryOrange, fontSize: 24),
               ),
             ),
           ),
+
+          // SliverToBoxAdapter(
+          //   child: MaterialButton(
+          //     onPressed: () {
+
+          //     },
+          //     child: Text("TEST"),
+          //   ),
+          // )
         ]
       )
     );

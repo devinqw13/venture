@@ -332,7 +332,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
                               shadowColor: primaryOrange,
-                              primary: Colors.grey.shade50,
+                              primary: _themesController.getContainerBgColor(),
                               shape: CircleBorder(),
                             ),
                           ): Container(),
@@ -344,7 +344,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                             ),
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
-                              primary: Colors.grey.shade50,
+                              primary: _themesController.getContainerBgColor(),
                               shape: CircleBorder(),
                             ),
                           ) : Container()

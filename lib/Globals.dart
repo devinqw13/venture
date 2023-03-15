@@ -4,3 +4,5 @@ FirebaseAuth? auth;
 bool appleSignInAvailable = false;
 String apiBaseUrl = '';
 String googleMapsApi = '';
+String googleMapPreviewPin = '';
+String googleApi = '';

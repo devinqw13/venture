@@ -56,6 +56,7 @@ dependencies:
   path_drawing: ^1.0.1
   iconsax: ^0.0.8
   flutter_svg: ^1.0.3
+  vector_math: ^2.1.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
@@ -112,6 +113,20 @@ flutter:
     - family: GrandHotel
       fonts:
         - asset: assets/fonts/GrandHotel-Regular.ttf
+    - family: Coolvetica
+      fonts:
+        - asset: assets/fonts/coolvetica-rg.otf
+        - asset: assets/fonts/coolvetica-rg-it.otf
+          style: italic
+    - family: CoolveticaCrammed
+      fonts:
+        - asset: assets/fonts/coolvetica-crammed-rg.otf
+    - family: CoolveticaCondensed
+      fonts:
+        - asset: assets/fonts/coolvetica-condensed-rg.otf
+    - family:
+      fonts:
+        - asset: assets/fonts/coolvetica-compressed-hv.otf
   # example:
   # fonts:
   #   - family: Schyler

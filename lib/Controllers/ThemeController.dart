@@ -9,28 +9,44 @@ import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 class ThemesController extends GetxController {
   final storage = GetStorage();
   GoogleMapController? googleMapController;
-
-  String theme = 'light';
-  String mapStyle = 'standard';
+  MapType mapType = MapType.satellite;
+  String theme = 'dark';
+  String mapStyle = 'orange';
+  String lightModeMapStyle = 'orange';
+  String darkModeMapStyle = 'orange';
 
   @override
   void onInit() {
     super.onInit();
 
     getThemeState();
+    getMapState();
   }
 
   getThemeState() {
     if (storage.read('theme') != null) {
       return setTheme(storage.read('theme'));
-    } 
+    }
     
-    setTheme('light');
+    setTheme(theme);
+  }
+
+  getMapState() {
+    if (storage.read('maptype') != null) {
+      mapType = storage.read('maptype') == "normal" ? MapType.normal : MapType.satellite;
+    }
+
+    if (storage.read('mapstyle') != null) {
+      return setMapStyle(storage.read('mapstyle'));
+    }
+
+    setMapStyle();
   }
 
   Color getContainerBgColor() {
     if (Get.isDarkMode) {
-      return ColorConstants.gray900;
+      // return ColorConstants.gray900;
+      return Colors.black;
     } else {
       return Colors.grey.shade50;
     }
@@ -44,15 +60,21 @@ class ThemesController extends GetxController {
     if (value == 'light') Get.changeThemeMode(ThemeMode.light);
     if (value == 'dark') Get.changeThemeMode(ThemeMode.dark);
 
-    if (value == 'light') googleMapController?.setMapStyle(MapThemes().themes[0]['style']);
-    if (value == 'dark') googleMapController?.setMapStyle(MapThemes().themes[1]['style']);
-
     update();
   }
 
-  void setMapStyle() {
-    if (theme == 'light') googleMapController?.setMapStyle(MapThemes().themes[0]['style']);
-    if (theme == 'dark') googleMapController?.setMapStyle(MapThemes().themes[1]['style']);
+  void setMapStyle([String? value]) {
+    if(value != null) {
+      mapStyle = value;
+
+      googleMapController?.setMapStyle(MapThemes().themes.firstWhere((e) => e['name'] == value)['style']);
+
+      return;
+    }
+
+    if (theme == 'light') googleMapController?.setMapStyle(MapThemes().themes.firstWhere((e) => e['name'] == lightModeMapStyle)['style']);
+
+    if (theme == 'dark') googleMapController?.setMapStyle(MapThemes().themes.firstWhere((e) => e['name'] == darkModeMapStyle)['style']);
 
     update();
   }

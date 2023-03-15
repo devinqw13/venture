@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
-class FadeOverlay extends ModalRoute<void> {
+class FadeOverlay extends ModalRoute {
+  final Widget? child;
+  final Color? backgroundColor;
+  FadeOverlay({this.child, this.backgroundColor}) : super();
+
   @override
   Duration get transitionDuration => Duration(milliseconds: 200);
 
@@ -14,7 +18,7 @@ class FadeOverlay extends ModalRoute<void> {
   bool get barrierDismissible => false;
 
   @override
-  Color get barrierColor => Colors.black.withOpacity(0.5);
+  Color get barrierColor => backgroundColor != null ? backgroundColor! : Colors.black.withOpacity(0.5);
 
   @override
   Null get barrierLabel => null;
@@ -32,9 +36,7 @@ class FadeOverlay extends ModalRoute<void> {
     return Material(
       type: MaterialType.transparency,
       // make sure that the overlay content is not cut off
-      child: SafeArea(
-        child: _buildOverlayContent(context),
-      ),
+      child: child != null ? child! : _buildOverlayContent(context),
     );
   }
 

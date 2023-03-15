@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:venture/Constants.dart';
@@ -7,11 +8,19 @@ import 'package:venture/Helpers/lru_map.dart';
 class PhotoBuilder extends StatefulWidget {
   final AssetEntity entity;
   final double size;
+  final bool selected;
+  final bool multiSelect;
+  final bool highlighted;
+  final int index;
 
   const PhotoBuilder({
     Key? key,
     this.size = 130,
     required this.entity,
+    this.selected = false,
+    this.multiSelect = false,
+    this.highlighted = false,
+    this.index = 0
   }) : super(key: key);
   @override
   _PhotoBuilder createState() => _PhotoBuilder();
@@ -26,11 +35,37 @@ class _PhotoBuilder extends State<PhotoBuilder> {
     Widget image;
 
     if (u8List != null) {
-      return Image.memory(
-        u8List,
-        width: widget.size,
-        height: widget.size,
-        fit: BoxFit.cover,
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: Image.memory(
+              u8List,
+              width: widget.size,
+              height: widget.size,
+              fit: BoxFit.cover,
+            )
+          ),
+          widget.highlighted ? Container(color: ColorConstants.gray50.withOpacity(0.4)) : Container(),
+          widget.multiSelect ? Padding(
+            padding: EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                height: 22,
+                width: 22,
+                child: widget.selected ? 
+                Text(widget.index.toString(), textAlign: TextAlign.center, style: TextStyle(color: Colors.white)) : Text(""),
+                decoration: BoxDecoration(
+                  color: widget.selected ? Colors.blue : ColorConstants.gray50.withOpacity(0.7),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: widget.selected ? Colors.blue : Colors.white
+                  )
+                ),
+              )
+            ) 
+          ): Container()
+        ],
       );
     } else {
       image = FutureBuilder(
@@ -44,11 +79,20 @@ class _PhotoBuilder extends State<PhotoBuilder> {
           }
           if (snapshot.hasData) {
             ImageLruCache.setData(item, size, snapshot.data as Uint8List);
-            w = Image.memory(
-              snapshot.data as Uint8List,
-              width: widget.size,
-              height: widget.size,
-              fit: BoxFit.cover
+            w = Stack(
+              children: [
+                Image.memory(
+                  snapshot.data as Uint8List,
+                  width: widget.size,
+                  height: widget.size,
+                  fit: BoxFit.cover
+                ),
+                widget.multiSelect ? Container(
+                  decoration: BoxDecoration(
+                    color: widget.selected ? Colors.blue : ColorConstants.gray50.withOpacity(0.3)
+                  ),
+                ) : Container()
+              ],
             );
           } else {
             w = Center(
@@ -74,158 +118,58 @@ class _PhotoBuilder extends State<PhotoBuilder> {
   }
 }
 
-// class PhotoBuilderV2 extends StatefulWidget {
-//   final AssetEntity entity;
+class OverlapPhotos extends StatefulWidget {
+  final List<File?> files;
+  final double overlap;
+  final double radius;
 
-//   const PhotoBuilderV2({
-//     Key? key,
-//     required this.entity,
-//   }) : super(key: key);
-//   @override
-//   _PhotoBuilderV2 createState() => _PhotoBuilderV2();
-// }
-
-// class _PhotoBuilderV2 extends State<PhotoBuilderV2> {
-//   Uint8List? bytes;
-//   final size = 130;
-//   var bt;
-
-//   @override
-//   void initState() {
-//     super.initState();
-
-//     // _getBytes();
-//     bt = widget.entity.originBytes;
-//   }
-
-//   _getBytes() async {
-//     print(widget.entity);
-//     print("GET BYTES CALLED");
-//     Uint8List? bytes = await widget.entity.originBytes;
-//     if (bytes != null) {
-//       print("NOT NULL");
-//     } else {
-//       print("IS NULL");
-//     }
-//     return bytes;
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return FutureBuilder(
-//       future: _getBytes(),
-//       builder: (context, snapshot) {
-//         if (snapshot.hasData) {
-//           return Image.memory(
-//             bytes!,
-//             width: size.toDouble(),
-//             height: size.toDouble(),
-//             fit: BoxFit.cover,
-//           );
-//         } else {
-//           return Center(
-//             child: CircularProgressIndicator(
-//               color: primaryOrange,
-//             )
-//           );
-//         }
-//       }
-//     );
-//     // if (bytes != null) {
-//     //   return Image.memory(
-//     //     bytes!,
-//     //     width: size.toDouble(),
-//     //     height: size.toDouble(),
-//     //     fit: BoxFit.cover,
-//     //   );
-//     // } else {
-//     //   return Container();
-//     // }
-//   }
-
-//   @override
-//   void didUpdateWidget(PhotoBuilderV2 oldWidget) {
-//     super.didUpdateWidget(oldWidget);
-//     if (widget.entity.id != oldWidget.entity.id) {
-//       setState(() {});
-//     }
-//   }
-// }
-
-class PhotoBuilderV2 extends StatefulWidget {
-  final AssetEntity entity;
-
-  const PhotoBuilderV2({
+  const OverlapPhotos({
     Key? key,
-    required this.entity,
+    this.overlap = 10.0,
+    this.radius = 40.0,
+    required this.files,
   }) : super(key: key);
   @override
-  _PhotoBuilderV2 createState() => _PhotoBuilderV2();
+  _OverlapPhotos createState() => _OverlapPhotos();
 }
 
-class _PhotoBuilderV2 extends State<PhotoBuilderV2> {
-  Uint8List? bytes;
-  final size = 130;
-  var bt;
+class _OverlapPhotos extends State<OverlapPhotos> {
+  List items = [];
 
   @override
   void initState() {
     super.initState();
-    bt = widget.entity.originBytes;
+
   }
 
   @override
   Widget build(BuildContext context) {
-    final item = widget.entity;
-    final size = 130;
-    final u8List = widget.entity.originBytes;
-    Widget image;
-
-    if (bt != null) {
-      return Image.memory(
-        bt,
-        width: size.toDouble(),
-        height: size.toDouble(),
-        fit: BoxFit.cover,
+    List<Widget> stackLayers = List<Widget>.generate(widget.files.length > 3 ? 3 : widget.files.length, (index) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(index.toDouble() * widget.overlap, 0, 0, 0),
+        child: CircleAvatar(
+          radius: widget.radius,
+          backgroundColor: Colors.white,
+          child: CircleAvatar(
+            backgroundImage: FileImage(
+              widget.files[index]!,
+            ),
+            radius: widget.radius-0.5,
+          )
+        )
       );
-    } else {
-      image = FutureBuilder(
-        future: item.thumbnailDataWithSize(ThumbnailSize(size, size)),
-        builder: (context, snapshot) {
-          Widget w;
-          if (snapshot.hasError) {
-            w = Center(
-              child: Text("load error, error: ${snapshot.error}"),
-            );
-          }
-          if (snapshot.hasData) {
-            ImageLruCache.setData(item, size, snapshot.data as Uint8List);
-            w = FittedBox(
-              fit: BoxFit.cover,
-              child: Image.memory(
-                snapshot.data as Uint8List,
-              ),
-            );
-          } else {
-            w = Center(
-              child: CircularProgressIndicator(
-                color: primaryOrange,
-              )
-            );
-          }
-          return w;
-        },
-      );
-    }
+    });
 
-    return image;
+    return Stack(
+      children: stackLayers
+    );
   }
 
-  @override
-  void didUpdateWidget(PhotoBuilderV2 oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.entity.id != oldWidget.entity.id) {
-      setState(() {});
-    }
-  }
+  // @override
+  // void didUpdateWidget(OverlapPhotos oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //   if (widget.files != oldWidget.files) {
+  //     setState(() {});
+  //   }
+  // }
 }

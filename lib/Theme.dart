@@ -113,14 +113,17 @@ class Themes {
     fontFamily: 'Montserrat',
     primaryColor: Colors.blue,
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: ColorConstants.gray900,
+    // scaffoldBackgroundColor: ColorConstants.gray900,
+    scaffoldBackgroundColor: Colors.black,
     appBarTheme: AppBarTheme(
       backwardsCompatibility: false,
       systemOverlayStyle: SystemUiOverlayStyle.light,
-      backgroundColor: ColorConstants.gray900,
+      // backgroundColor: ColorConstants.gray900,
+      backgroundColor: Colors.black,
       elevation: 0
     ),
-    bottomAppBarColor: ColorConstants.gray800,
+    // bottomAppBarColor: ColorConstants.gray800,
+    bottomAppBarColor: Colors.black,
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: ColorConstants.gray100,
     ),
