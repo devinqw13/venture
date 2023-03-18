@@ -95,7 +95,7 @@ class _LoginOverlay extends State<LoginOverlay>  {
                             controller: userTextController,
                             decoration: InputDecoration(
                               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                              hintText: "Username",
+                              hintText: "Username or email",
                             ),
                           ),
                         ),

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:iconly/iconly.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -35,6 +36,10 @@ class _SettingsScreenState extends State<SettingsScreen>  {
               // expandedHeight: 100.0,
               floating: false,
               pinned: true,
+              leading: IconButton(
+                icon: Icon(IconlyLight.arrow_left, size: 28),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
               flexibleSpace: FlexibleSpaceBar(
                 centerTitle: false,
                 // titlePadding: EdgeInsets.symmetric(horizontal: 16),

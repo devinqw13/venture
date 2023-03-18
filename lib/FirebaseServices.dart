@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Helpers/Toast.dart';
@@ -132,6 +133,16 @@ class FirebaseServices extends ChangeNotifier {
 
   Future<void> logout() async {
     await FirebaseAuth.instance.signOut();
+  }
+
+  Future<void> updatePassword(BuildContext context, String password) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if(user == null) {
+      showToast(context: context, msg: "Unable to update password");
+      return;
+    }
+    await user.updatePassword(password);
+    showToast(context: context, gravity: ToastGravity.BOTTOM, msg: "Password was updated successfully!", type: ToastType.INFO);
   }
 
   // void firebaseCloudMessagingListeners() async {
