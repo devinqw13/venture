@@ -14,7 +14,7 @@ void showToast({
   @required BuildContext? context, 
   Color? color,
   ToastType type = ToastType.ERROR,
-  Duration duration = const Duration(seconds: 3),
+  Duration duration = const Duration(seconds: 4),
   @required String? msg,
   ToastGravity gravity = ToastGravity.TOP
 }) async {
@@ -23,7 +23,7 @@ void showToast({
   if(type == ToastType.INFO) icon = Icons.info_outline;
   color == null ? 
     color = Get.isDarkMode ? 
-      ColorConstants.gray800.withOpacity(0.8)
+      ColorConstants.gray800.withOpacity(0.9)
       :Colors.grey.shade50.withOpacity(0.8)
   : null;
   FToast fToast = FToast().init(context!);

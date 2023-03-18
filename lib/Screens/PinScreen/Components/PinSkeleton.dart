@@ -45,6 +45,25 @@ class _PinSkeleton extends State<PinSkeleton> {
           "No description provided"
         ),
         SizedBox(height: 15),
+        Row(
+          children: [
+            Text(
+              "Created by ",
+              style: TextStyle(
+                color: Colors.grey
+              ),
+            ),
+            ZoomTapAnimation(
+              child: Text(
+                widget.pin.user!.userName!,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold
+                ),
+              )
+            )
+          ],
+        ),
+        SizedBox(height: 15),
         MapPreview(
           latitude: double.parse(widget.pin.latLng.split(',')[0]), longitude: double.parse(widget.pin.latLng.split(',')[1]),
           height: 150,

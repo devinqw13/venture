@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:venture/Components/FadeOverlay.dart';
 import 'package:venture/Constants.dart';
+import 'package:venture/Helpers/CustomIcon.dart';
 
 class NotificationTab extends StatefulWidget {
   NotificationTab({Key? key}) : super(key: key);
@@ -56,15 +57,6 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
               ),
             ),
           ),
-
-          // SliverToBoxAdapter(
-          //   child: MaterialButton(
-          //     onPressed: () {
-
-          //     },
-          //     child: Text("TEST"),
-          //   ),
-          // )
         ]
       )
     );

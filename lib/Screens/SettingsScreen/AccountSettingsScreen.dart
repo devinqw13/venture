@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
-import 'package:get/get.dart';
+import 'package:venture/FireBaseServices.dart';
 import 'package:get_storage/get_storage.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
@@ -12,6 +12,15 @@ class AccountSettingsScreen extends StatefulWidget {
 }
 
 class _AccountSettingsScreenState extends State<AccountSettingsScreen>  {
+
+  _logout() async {
+    final storage = GetStorage();
+    storage.remove("user_key");
+    VenUser().userKey.value = 0;
+    // await FirebaseServices().removeFirebaseTokens();
+    await FirebaseServices().logout();
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +43,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen>  {
           ),
           SliverToBoxAdapter(
             child: Center(
-              child:ZoomTapAnimation(
-                onTap: () {
-                  final storage = GetStorage();
-                  VenUser().userKey.value = 0;
-                  storage.remove("user_key");
-                  Navigator.pop(context);
-                  // Get.toNamed('/home');
-                },
+              child: ZoomTapAnimation(
+                onTap: () => _logout(),
                 child: Text("Log out",
                   style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold, color: Colors.red),
                 )

@@ -11,8 +11,36 @@ import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Globals.dart' as globals;
 import 'package:get_storage/get_storage.dart';
+import 'package:device_info/device_info.dart';
 
-Future<bool?> createUser(BuildContext context, String name, String email, String password) async {
+Future<List<String>> getDeviceDetails() async {
+  String deviceName = '';
+  String deviceVersion = '';
+  String deviceIdentifier = '';
+  String deviceType = '';
+  final DeviceInfoPlugin deviceInfoPlugin = new DeviceInfoPlugin();
+  try {
+    if (Platform.isAndroid) {
+      var build = await deviceInfoPlugin.androidInfo;
+      deviceName = build.model;
+      deviceVersion = build.version.toString();
+      deviceIdentifier = build.androidId;
+      deviceType = 'Android';
+    } else if (Platform.isIOS) {
+      var data = await deviceInfoPlugin.iosInfo;
+      deviceName = data.name;
+      deviceVersion = data.systemVersion;
+      deviceIdentifier = data.identifierForVendor; // UUID for iOS
+      deviceType = 'iOS';
+    }
+  } on Exception {
+    print("failed to get platform version");
+  }
+
+  return [deviceName, deviceVersion, deviceIdentifier, deviceType];
+}
+
+Future<bool> createUser(BuildContext context, String name, String email, {String? password}) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
@@ -20,9 +48,10 @@ Future<bool?> createUser(BuildContext context, String name, String email, String
 
   Map jsonMap = {
     "username": name,
-    "email": email,
-    "password": password,
+    "email": email
   };
+
+  if(password != null) jsonMap['password'] = password;
 
   String url = "${globals.apiBaseUrl}/register";
 
@@ -33,7 +62,7 @@ Future<bool?> createUser(BuildContext context, String name, String email, String
     response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
   } on TimeoutException {
     showToast(context: context, color: Colors.red, msg: "Connection timeout. Please try again.");
-    return null;
+    return false;
   }
 
   if (json.decode(response.body) is List) {
@@ -51,8 +80,8 @@ Future<bool?> createUser(BuildContext context, String name, String email, String
     return true;
   }
   else {
-    showToast(context: context, color: Colors.red, msg: jsonResponse['message']);
-    return null;
+    showToast(context: context, msg: jsonResponse['message']);
+    return false;
   }
 }
 

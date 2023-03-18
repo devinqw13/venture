@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Calls.dart';
+import 'package:venture/FirebaseServices.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Constants.dart';
@@ -29,7 +30,12 @@ class _LoginOverlay extends State<LoginOverlay>  {
     KeyboardUtil.hideKeyboard(context);
     if (isLoading) return;
     setState(() => isLoading = true);
-    bool? _ = await postLogin(context, userTextController.text, pwdTextController.text);
+    // bool? _ = await postLogin(context, userTextController.text, pwdTextController.text);
+    var _ = await FirebaseServices().login(
+      context,
+      userTextController.text,
+      pwdTextController.text
+    );
     setState(() => isLoading = false);
   }
 
@@ -172,20 +178,23 @@ class _LoginOverlay extends State<LoginOverlay>  {
           ),
 
           widget.enableSettings ? Positioned(
-            right: 5,
-            top: 5,
-            child: ElevatedButton(
-              onPressed: () => goToSettings(),
-              child: Icon(IconlyLight.setting),
-              style: ElevatedButton.styleFrom(
-                elevation: 3,
-                shadowColor: primaryOrange,
-                primary: primaryOrange,
-                // shape: RoundedRectangleBorder(
-                //   borderRadius: BorderRadius.circular(20.0),
-                // )
-                shape: CircleBorder(),
-              ),
+            right: 0,
+            top: 0,
+            child: Padding(
+              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.06),
+              child: ElevatedButton(
+                onPressed: () => goToSettings(),
+                child: Icon(IconlyLight.setting),
+                style: ElevatedButton.styleFrom(
+                  elevation: 3,
+                  shadowColor: primaryOrange,
+                  primary: primaryOrange,
+                  // shape: RoundedRectangleBorder(
+                  //   borderRadius: BorderRadius.circular(20.0),
+                  // )
+                  shape: CircleBorder(),
+                ),
+              )
             )
           ) : Container()
         ]

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:venture/Calls.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Constants.dart';
+import 'package:venture/FireBaseServices.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/VenUser.dart';
@@ -23,7 +23,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
   final TextEditingController pwdRepeatTextController = TextEditingController();
   bool obsecure = true;
   bool obsecure2 = true;
-  bool _isPasswordEightCharacters = false;
+  bool _isPasswordLengthAccepted = false;
   bool _hasPasswordOneNumber = false;
   FToast? fToast;
   bool isLoading = false;
@@ -39,68 +39,135 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     final numericRegex = RegExp(r'[0-9]');
 
     setState(() {
-      _isPasswordEightCharacters = false;
-      if(password.length >= 8) _isPasswordEightCharacters = true;
+      _isPasswordLengthAccepted = false;
+      if(password.length >= 6) _isPasswordLengthAccepted = true;
 
       _hasPasswordOneNumber = false;
       if(numericRegex.hasMatch(password)) _hasPasswordOneNumber = true;
     });
   }
 
-  _createUser() async {
-    if (isLoading) return;
-    KeyboardUtil.hideKeyboard(context);
-    // Username checks
+  bool checkFields() {
     if(usernameTextController.text.isEmpty) {
       showToast(context: context, msg: "Username field must not be empty.");
-      return;
+      return false;
     }
     if(usernameTextController.text.length < 5) {
       showToast(context: context, msg: "Username must be 5 or more characters.");
-      return;
+      return false;
     }
     if(usernameTextController.text.length > 20) {
       showToast(context: context, msg: "Username must be lower than 20 characters.");
-      return;
+      return false;
     }
-    if(!RegExp(r'^[a-zA-Z0-9_]*$').hasMatch(usernameTextController.text)) {
-      showToast(context: context, msg: "Username must not contain spaces or special characters except underscores (_).");
-      return;
+    if(!RegExp(r'^[a-z0-9_]*$').hasMatch(usernameTextController.text)) {
+      showToast(context: context, msg: "Username must be lowercase, contain no spaces or special characters except underscores (_).");
+      return false;
     }
 
     // Email Checks
     if(emailTextController.text.isEmpty) {
       showToast(context: context, msg: "Email field must not be empty.");
-      return;
+      return false;
     }
     if(!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(emailTextController.text)) {
       showToast(context: context, msg: "Please enter a valid email address.");
-      return;
+      return false;
     }
 
     // Password Checks
     if(pwdTextController.text.isEmpty || pwdRepeatTextController.text.isEmpty) {
       showToast(context: context, msg: "Password fields must not be empty.");
-      return;
+      return false;
     }
-    if(!_isPasswordEightCharacters || !_hasPasswordOneNumber) {
+    if(!_isPasswordLengthAccepted || !_hasPasswordOneNumber) {
       showToast(context: context, msg: "Password does not follow all criteria.");
-      return;
+      return false;
     }
     if(pwdTextController.text != pwdRepeatTextController.text) {
       showToast(context: context, msg: "Password fields does not match.");
-      return;
+      return false;
     }
+    return true;
+  }
+
+  signUpWithEmail() async {
+    if (isLoading) return;
+    KeyboardUtil.hideKeyboard(context);
+    bool canRun = checkFields();
+    if (!canRun) return;
 
     setState(() => isLoading = true);
-    bool? results = await createUser(context, usernameTextController.text, emailTextController.text, pwdTextController.text);
-
-    if (results != null && results) {
+    var result = await FirebaseServices().createUserWithEmailAndPassword(
+      context, 
+      usernameTextController.text, 
+      emailTextController.text, 
+      pwdTextController.text
+    );
+    
+    if(result != null) {
       VenUser().onChange();
       Navigator.pop(context, true);
     }
+
     setState(() => isLoading = false);
+
   }
+
+  // _createUser() async {
+  //   if (isLoading) return;
+  //   KeyboardUtil.hideKeyboard(context);
+  //   // Username checks
+  //   if(usernameTextController.text.isEmpty) {
+  //     showToast(context: context, msg: "Username field must not be empty.");
+  //     return;
+  //   }
+  //   if(usernameTextController.text.length < 5) {
+  //     showToast(context: context, msg: "Username must be 5 or more characters.");
+  //     return;
+  //   }
+  //   if(usernameTextController.text.length > 20) {
+  //     showToast(context: context, msg: "Username must be lower than 20 characters.");
+  //     return;
+  //   }
+  //   if(!RegExp(r'^[a-zA-Z0-9_]*$').hasMatch(usernameTextController.text)) {
+  //     showToast(context: context, msg: "Username must not contain spaces or special characters except underscores (_).");
+  //     return;
+  //   }
+
+  //   // Email Checks
+  //   if(emailTextController.text.isEmpty) {
+  //     showToast(context: context, msg: "Email field must not be empty.");
+  //     return;
+  //   }
+  //   if(!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(emailTextController.text)) {
+  //     showToast(context: context, msg: "Please enter a valid email address.");
+  //     return;
+  //   }
+
+  //   // Password Checks
+  //   if(pwdTextController.text.isEmpty || pwdRepeatTextController.text.isEmpty) {
+  //     showToast(context: context, msg: "Password fields must not be empty.");
+  //     return;
+  //   }
+  //   if(!_isPasswordLengthAccepted || !_hasPasswordOneNumber) {
+  //     showToast(context: context, msg: "Password does not follow all criteria.");
+  //     return;
+  //   }
+  //   if(pwdTextController.text != pwdRepeatTextController.text) {
+  //     showToast(context: context, msg: "Password fields does not match.");
+  //     return;
+  //   }
+
+  //   setState(() => isLoading = true);
+  //   bool? results = await createUser(context, usernameTextController.text, emailTextController.text, password: pwdTextController.text);
+
+  //   if (results) {
+  //     VenUser().onChange();
+  //     Navigator.pop(context, true);
+  //   }
+  //   setState(() => isLoading = false);
+  // }
 
   promptErrorToast(String msg) async {
     Widget toast = Container(
@@ -242,15 +309,15 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                           width: 20,
                           height: 20,
                           decoration: BoxDecoration(
-                            color: _isPasswordEightCharacters ?  Colors.green : Colors.transparent,
-                            border: _isPasswordEightCharacters ? Border.all(color: Colors.transparent) :
+                            color: _isPasswordLengthAccepted ?  Colors.green : Colors.transparent,
+                            border: _isPasswordLengthAccepted ? Border.all(color: Colors.transparent) :
                               Border.all(color: Colors.grey.shade400),
                             borderRadius: BorderRadius.circular(50)
                           ),
                           child: Center(child: Icon(Icons.check, color: Get.isDarkMode ? ColorConstants.gray900 : Colors.grey.shade50, size: 15)),
                         ),
                         SizedBox(width: 10),
-                        Text("Contains at least 8 characters")
+                        Text("Contains at least 6 characters")
                       ],
                     ),
                     SizedBox(height: 10),
@@ -308,7 +375,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                     ),
                     SizedBox(height: 30),
                     ElevatedButton(
-                      onPressed: () => _createUser(),
+                      onPressed: () => signUpWithEmail(), // _createUser(),
                       child: isLoading ? 
                       SizedBox(width: 30, height: 30, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
                       : Text("Create Account"),

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:venture/Calls.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Theme.dart';
 import 'package:venture/Constants.dart';
@@ -48,6 +50,35 @@ class _MyAppState extends State<MyApp> {
     _initializeAsyncDependencies();
   }
 
+  _initializeAsyncDependencies() async {
+    globals.auth = FirebaseAuth.instance;
+    // await checkAppleSignIn();
+    await getKeys();
+    await checkUserLoginStatus();
+    await saveUniqueIDToSecureStorage();
+    // var box = storage.read('user');
+    // User().fromJson(box);
+    // var userKey = storage.read('user_key');
+    // VenUser().userKey.value = userKey ?? 0;
+
+    setState(() {
+      future = Future.value(true);
+    });
+  }
+
+  saveUniqueIDToSecureStorage() async {
+    // Normally, UIDs can change if app is uninstalled and reinstalled. Store initial UID to secure storage and retrieve when app is loaded
+    // in order to save between installations. 
+    // Used for push notifications and solves the problem of recieving duplicate push notifications on the same device.
+    final storage = FlutterSecureStorage();
+    await storage.read(key: 'AppUID').then((uniqueID) async {
+      if (uniqueID == null) {
+        List<String> deviceDetails = await getDeviceDetails();
+        await storage.write(key: 'AppUID', value: deviceDetails[2]);
+      }
+    });
+  }
+
   Future<void> getKeys() async {
     FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.instance;
     // await remoteConfig.fetch(expiration: Duration(hours: 12));
@@ -69,37 +100,22 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> checkUserLoginStatus() async {
     globals.auth!.idTokenChanges().listen((User? user) async {
-      print(user);
-      // if (user == null) {
-      //   VenUser().clear();
-      // } else {
-      //   print(user.uid);
-      //   // VenUser().userKey.value = userKey ?? 0;
-      //   // if (user.displayName != null) {
-      //   //   VenUser().displayName = user.displayName!;
-      //   // }
-      //   // VenUser().email = user.email!;
-      //   // if (!alreadyCalled) {
-      //   //   alreadyCalled = true;
-      //   //   await getUserInfo(user.email);
-      //   //   createUserDevice(user.email!);
-      //   // }
-      // }
-    });
-  }
-
-  _initializeAsyncDependencies() async {
-    globals.auth = FirebaseAuth.instance;
-    // await checkAppleSignIn();
-    // await checkUserLoginStatus();
-    await getKeys();
-    // var box = storage.read('user');
-    // User().fromJson(box);
-    var userKey = storage.read('user_key');
-    VenUser().userKey.value = userKey ?? 0;
-
-    setState(() {
-      future = Future.value(true);
+      if (user == null) {
+        VenUser().clear();
+      } else {
+        var userKey = storage.read('user_key');
+        VenUser().userKey.value = userKey ?? 0;
+        // VenUser().userKey.value = userKey ?? 0;
+        // if (user.displayName != null) {
+        //   VenUser().displayName = user.displayName!;
+        // }
+        // VenUser().email = user.email!;
+        // if (!alreadyCalled) {
+        //   alreadyCalled = true;
+        //   await getUserInfo(user.email);
+        //   createUserDevice(user.email!);
+        // }
+      }
     });
   }
 

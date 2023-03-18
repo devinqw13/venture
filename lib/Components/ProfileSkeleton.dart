@@ -381,9 +381,10 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
             child: Container(
               constraints: BoxConstraints(maxHeight: getProportionateScreenHeight(105)),
               decoration: BoxDecoration(
+                color: _themesController.getContainerBgColor(),
                 border: Border.all(
                   color: _themesController.getContainerBgColor(),
-                  width: 4.0
+                  width: 2.0
                 ),
                 shape: BoxShape.circle,
                 image: DecorationImage(
@@ -555,73 +556,194 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
 }
 
 class ProfileSkeletonShimmer extends StatelessWidget {
-  ProfileSkeletonShimmer({Key? key}) : super(key: key);
+  final bool enableBackButton;
+  final bool enableSettingsButton;
+  ProfileSkeletonShimmer({Key? key, required this.enableBackButton, required this.enableSettingsButton}) : super(key: key);
 
   final ThemesController _themesController = Get.find();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          pinned: false,
-          automaticallyImplyLeading: false,
-          expandedHeight: MediaQuery.of(context).size.height * 0.15,
-          flexibleSpace: Stack(
-            children: [
-              Positioned(
-                child: Container(
-                  child: ClipRRect(
-                    child: BackdropFilter(
-                      filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        alignment: Alignment.center,
-                        color: Colors.white.withOpacity(0.3),
-                        child: Skeleton.rectangular(height: MediaQuery.of(context).size.height * 0.12),
-                      )
+
+    void goToSettings() {
+      SettingsScreen screen = SettingsScreen();
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+    }
+
+    SliverAppBar _buildHeader() {
+      return SliverAppBar(
+        automaticallyImplyLeading: false,
+        floating: true,
+        stretch: true,
+        pinned: false,
+        expandedHeight: MediaQuery.of(context).size.height * 0.22,
+        flexibleSpace: Stack(
+          children: [
+            Positioned(
+              child: Container(
+                child: ClipRRect(
+                  child: BackdropFilter(
+                    filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Stack(
+                      children: [
+                        Container(
+                          child: ClipRRect(
+                            child: BackdropFilter(
+                              filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                              child: Container(
+                                alignment: Alignment.center,
+                                color: Colors.white.withOpacity(0.3),
+                                child: Skeleton.rectangular(height: MediaQuery.of(context).size.height),
+                              )
+                            )
+                          )
+                        ),
+                        Container(
+                      // alignment: Alignment.center,
+                      // color: Colors.white.withOpacity(0.3),
+                      child: Padding(
+                        padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.06),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            enableBackButton ?
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Icon(
+                                IconlyLight.arrow_left,
+                                color: primaryOrange,
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                shadowColor: primaryOrange,
+                                primary: _themesController.getContainerBgColor(),
+                                shape: CircleBorder(),
+                              ),
+                            ): Container(),
+                            enableSettingsButton ? ElevatedButton(
+                              onPressed: () => goToSettings(),
+                              child: Icon(
+                                IconlyLight.setting,
+                                color: primaryOrange,
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                primary: _themesController.getContainerBgColor(),
+                                shape: CircleBorder(),
+                              ),
+                            ) : Container()
+                          ],
+                        )
+                      ),
+                    )
+                      ]
                     )
                   )
-                ),
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0
+                )
               ),
-              Positioned(
-                child: Container(
-                  height: 55,
-                  decoration: BoxDecoration(
-                    color: _themesController.getContainerBgColor(),
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(20),
-                    ),
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0
+            ),
+
+            Positioned(
+              child: Container(
+                height: 70,
+                decoration: BoxDecoration(
+                  color: _themesController.getContainerBgColor(),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(35),
                   ),
                 ),
-                bottom: -1,
-                left: 0,
-                right: 0,
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  constraints: BoxConstraints(maxHeight: getProportionateScreenHeight(103)),
-                  child: Skeleton.circular(height: MediaQuery.of(context).size.height * 1, seconds: 3),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    // image: DecorationImage(
-                    //   fit: BoxFit.contain,
-                    //   image: NetworkImage(data.userAvatar!)
-                    // )
-                  )
-                ),
-              )
-              // Center(
-              //   child: Skeleton.circular(height: MediaQuery.of(context).size.height * 1, seconds: 3),
-              // )
-            ],
-          )
-        ),
+              bottom: -1,
+              left: 0,
+              right: 0,
+            ),
+
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                constraints: BoxConstraints(maxHeight: getProportionateScreenHeight(105)),
+                child: Skeleton.circular(height: MediaQuery.of(context).size.height * 1, seconds: 3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  // image: DecorationImage(
+                  //   fit: BoxFit.contain,
+                  //   image: NetworkImage(data.userAvatar!)
+                  // )
+                )
+              ),
+            )
+          ],
+        )
+      );
+    }
+
+    return CustomScrollView(
+      slivers: [
+        _buildHeader(),
+        // SliverAppBar(
+        //   pinned: false,
+        //   automaticallyImplyLeading: false,
+        //   expandedHeight: MediaQuery.of(context).size.height * 0.15,
+        //   flexibleSpace: Stack(
+        //     children: [
+        //       Positioned(
+        //         child: Container(
+        //           child: ClipRRect(
+        //             child: BackdropFilter(
+        //               filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        //               child: Container(
+        //                 alignment: Alignment.center,
+        //                 color: Colors.white.withOpacity(0.3),
+        //                 child: Skeleton.rectangular(height: MediaQuery.of(context).size.height * 0.12),
+        //               )
+        //             )
+        //           )
+        //         ),
+        //         top: 0,
+        //         left: 0,
+        //         right: 0,
+        //         bottom: 0
+        //       ),
+        //       Positioned(
+        //         child: Container(
+        //           height: 55,
+        //           decoration: BoxDecoration(
+        //             color: _themesController.getContainerBgColor(),
+        //             borderRadius: BorderRadius.vertical(
+        //               top: Radius.circular(20),
+        //             ),
+        //           ),
+        //         ),
+        //         bottom: -1,
+        //         left: 0,
+        //         right: 0,
+        //       ),
+        //       Align(
+        //         alignment: Alignment.bottomCenter,
+        //         child: Container(
+        //           constraints: BoxConstraints(maxHeight: getProportionateScreenHeight(103)),
+        //           child: Skeleton.circular(height: MediaQuery.of(context).size.height * 1, seconds: 3),
+        //           decoration: BoxDecoration(
+        //             shape: BoxShape.circle,
+        //             // image: DecorationImage(
+        //             //   fit: BoxFit.contain,
+        //             //   image: NetworkImage(data.userAvatar!)
+        //             // )
+        //           )
+        //         ),
+        //       )
+        //       // Center(
+        //       //   child: Skeleton.circular(height: MediaQuery.of(context).size.height * 1, seconds: 3),
+        //       // )
+        //     ],
+        //   )
+        // ),
         SliverToBoxAdapter(
           child: ListView(
             shrinkWrap: true,

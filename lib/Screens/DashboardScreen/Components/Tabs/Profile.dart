@@ -48,7 +48,7 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
       future: apiCall,
       builder: (context, snapshot) {
         if(!snapshot.hasData) {
-          return ProfileSkeletonShimmer();
+          return ProfileSkeletonShimmer(enableBackButton: false, enableSettingsButton: true);
         }else {
           UserModel data = snapshot.data as UserModel;
           return ProfileSkeleton(user: data, isUser: true, enableBackButton: false, enableSettingsButton: true);
@@ -68,7 +68,7 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
           return Stack(
             children: [
               value != 0 ? _buildBody(value as int) : Container(),
-              value == 0 ? ProfileSkeletonShimmer() : Container(),
+              value == 0 ? ProfileSkeletonShimmer(enableBackButton: false, enableSettingsButton: false) : Container(),
               value == 0 ? LoginOverlay(enableSettings: true) : Container(),
             ]
           );

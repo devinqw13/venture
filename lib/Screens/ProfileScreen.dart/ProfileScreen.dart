@@ -36,7 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen>  {
         future: apiCall,
         builder: (context, snapshot) {
           if(!snapshot.hasData) {
-            return ProfileSkeletonShimmer();
+            return ProfileSkeletonShimmer(enableBackButton: true, enableSettingsButton: VenUser().userKey.value == widget.userKey);
           }else {
             UserModel data = snapshot.data as UserModel;
             return ProfileSkeleton(user: data, isUser: VenUser().userKey.value == widget.userKey, enableBackButton: true, enableSettingsButton: VenUser().userKey.value == widget.userKey);
