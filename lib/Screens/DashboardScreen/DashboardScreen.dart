@@ -38,6 +38,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
     return ZoomTapAnimation(
       onTap: () {
+        if(_homeController.currentPage.value == 0 && page == 0) {
+          _homeController.homeFeedController?.animateToPage(
+            0, 
+            curve: Curves.decelerate,
+            duration: Duration(milliseconds: 300)
+          );
+        }
         _homeController.goToTab(page);
         setState(() => extendBody = page == 2 ? true : false);
       },

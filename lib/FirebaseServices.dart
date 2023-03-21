@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -17,12 +18,40 @@ class FirebaseServices extends ChangeNotifier {
         .map((snapshot) => snapshot.docs);
   }
 
-  Stream<List<dynamic>> getReactions(String contentKey) {
+  Stream<dynamic> getReactions(String contentKey) {
     return _firestore.collection('content')
         .where('content_key', isEqualTo: contentKey)
         .snapshots()
-        .map((snapShot) => snapShot.docs
-        .map((document) => document.data()).toList().first['reactions']);
+        .map((snapshot) => snapshot.docs
+          .map((document) {
+            Map<String, dynamic> data = document.data();
+            data.update('documentId', (value) => value, ifAbsent: () => document.id);
+            return data;
+          }).toList().first);
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>?> getReactionsV2(String contentKey, String? documentId) {
+    return _firestore.collection('content')
+        .doc(documentId)
+        .collection("reactions")
+        .snapshots();
+  }
+
+  Future<dynamic> getContentFromKey(String contentKey) async {
+    return await _firestore.collection('content')
+      .where('content_key', isEqualTo: contentKey).get();
+  }
+
+  Stream<dynamic> getContentDoc(String contentKey) {
+    return _firestore.collection('content')
+      .where('content_key', isEqualTo: contentKey)
+      .snapshots()
+      .map((snapshot) => snapshot.docs
+          .map((document) {
+            Map<String, dynamic> data = document.data();
+            data.update('documentId', (value) => value, ifAbsent: () => document.id);
+            return data;
+          }).toList().first);
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> checkUsername(String username) async {
@@ -58,7 +87,7 @@ class FirebaseServices extends ChangeNotifier {
 
       if (userCredential.user != null) {
 
-        var userRef = FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid);
+        var userRef = _firestore.collection('users').doc(FirebaseAuth.instance.currentUser!.uid);
         userRef.set({
           'user_key': VenUser().userKey.value.toString(),
           'username': username,
@@ -116,7 +145,9 @@ class FirebaseServices extends ChangeNotifier {
         int userKey = int.parse(userDetails.docs.first.data()['user_key']);
 
         VenUser().userKey.value = userKey;
+        VenUser().onChange();
         storage.write('user_key', VenUser().userKey.value);
+
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -135,6 +166,10 @@ class FirebaseServices extends ChangeNotifier {
     await FirebaseAuth.instance.signOut();
   }
 
+  String? firebaseId() {
+    return FirebaseAuth.instance.currentUser?.uid;
+  }
+
   Future<void> updatePassword(BuildContext context, String password) async {
     final user = FirebaseAuth.instance.currentUser;
     if(user == null) {
@@ -143,6 +178,98 @@ class FirebaseServices extends ChangeNotifier {
     }
     await user.updatePassword(password);
     showToast(context: context, gravity: ToastGravity.BOTTOM, msg: "Password was updated successfully!", type: ToastType.INFO);
+  }
+
+  Future<void> addReaction(String? documentId, int contentKey) async {
+    HapticFeedback.mediumImpact();
+
+    if(documentId != null) {
+      var rxRef = _firestore.collection('content').doc(documentId);
+      rxRef.update({
+      "reactions": FieldValue.arrayUnion([FirebaseAuth.instance.currentUser!.uid])
+    }).catchError((error) {print("Failed to add message: $error");});
+    }else {
+      var rxRef = _firestore.collection('content').doc();
+      rxRef.set({
+        'content_key': contentKey.toString(),
+        'reactions': [FirebaseAuth.instance.currentUser!.uid]
+      }, SetOptions(merge: true)).then((value) {
+      }).catchError((error) {print("Failed to add message: $error");});
+    }
+  }
+
+  Future<void> addReactionV2(String? documentId, int contentKey) async {
+    HapticFeedback.mediumImpact();
+
+    if(documentId != null) {
+      _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()});
+    }else {
+      var rxRef = _firestore.collection('content').doc();
+      rxRef.set({
+        'content_key': contentKey.toString(),
+        // 'reactions': [FirebaseAuth.instance.currentUser!.uid]
+      }, SetOptions(merge: true)).then((value) {
+      }).then((value) {
+        rxRef.collection("reactions").doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()});
+      });
+    }
+  }
+
+  Future<void> removeReaction(String documentId) async {
+    // HapticFeedback.lightImpact();
+    var rxRef = _firestore.collection('content').doc(documentId);
+    rxRef.update({
+      "reactions": FieldValue.arrayRemove([FirebaseAuth.instance.currentUser!.uid])
+    }).catchError((error) {print("Failed to remove reaction: $error");});
+  }
+
+  Future<void> removeReactionV2(String documentId) async {
+    // HapticFeedback.lightImpact();
+    var rxRef = _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).delete().onError((error, stackTrace) => print("Failed to remove reaction: $error"));
+  }
+
+  Query<Object?> likedByQuery(String? documentId) {
+    return FirebaseFirestore.instance.collection('content').doc(documentId).collection('reactions').orderBy('timestamp', descending: true);
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> getUserFromFirebaseId(String id) async {
+    return await _firestore.collection('users')
+      .doc(id)
+      .get();
+  }
+
+  Future<void> updateFollowStatus(String firebaseId, bool shouldFollow) async {
+    print(shouldFollow);
+    if(shouldFollow) {
+
+      var userRef = _firestore.collection('users').doc(firebaseId);
+
+      userRef.update({
+        "followers": FieldValue.arrayUnion([FirebaseAuth.instance.currentUser!.uid])
+      }).catchError((error) {print("Failed to add message: $error");}).then((value) {
+
+        var userRef = _firestore.collection('users').doc(FirebaseAuth.instance.currentUser!.uid);
+
+        userRef.update({
+          "following": FieldValue.arrayUnion([firebaseId])
+        }).catchError((error) {print("Failed to add message: $error");});
+
+      });
+    } else {
+      var userRef = _firestore.collection('users').doc(firebaseId);
+
+      userRef.update({
+        "followers": FieldValue.arrayRemove([FirebaseAuth.instance.currentUser!.uid])
+      }).catchError((error) {print("Failed to remove reaction: $error");}).then((value) {
+
+        var userRef = _firestore.collection('users').doc(FirebaseAuth.instance.currentUser!.uid);
+
+        userRef.update({
+          "following": FieldValue.arrayRemove([firebaseId])
+        }).catchError((error) {print("Failed to add message: $error");});
+
+      });
+    }
   }
 
   // void firebaseCloudMessagingListeners() async {

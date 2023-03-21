@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
-import 'package:venture/Calls.dart';
 import 'package:venture/FirebaseServices.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
@@ -14,7 +13,9 @@ import 'package:venture/Components/PointedLine.dart';
 
 class LoginOverlay extends StatefulWidget {
   final bool enableSettings;
-  LoginOverlay({Key? key, this.enableSettings = false}) : super(key: key);
+  final bool enableBackButton;
+  final String? message;
+  LoginOverlay({Key? key, this.enableBackButton = false, this.enableSettings = false, this.message}) : super(key: key);
 
   @override
   _LoginOverlay createState() => _LoginOverlay();
@@ -36,7 +37,9 @@ class _LoginOverlay extends State<LoginOverlay>  {
       userTextController.text,
       pwdTextController.text
     );
+
     setState(() => isLoading = false);
+    if(widget.enableBackButton && FirebaseServices().firebaseId() != null) Navigator.pop(context);
   }
 
   void goToSettings() {
@@ -54,7 +57,7 @@ class _LoginOverlay extends State<LoginOverlay>  {
               filter: ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7),
               child: Container(
                 alignment: Alignment.center,
-                color: Get.isDarkMode ? ColorConstants.gray700.withOpacity(0.3) : Colors.white.withOpacity(0.1),
+                color: Get.isDarkMode ? ColorConstants.gray800.withOpacity(0.95) : Colors.white.withOpacity(0.1),
                 child: Container(
                   height: MediaQuery.of(context).size.height * 0.5,
                   width: MediaQuery.of(context).size.width * 0.8,
@@ -63,10 +66,10 @@ class _LoginOverlay extends State<LoginOverlay>  {
                     borderRadius: BorderRadius.circular(10.0),
                     boxShadow: [
                       BoxShadow(
-                        color: Get.isDarkMode ? ColorConstants.gray700.withOpacity(0.8) : Colors.grey.withOpacity(0.9),
-                        spreadRadius: 2,
-                        blurRadius: 10,
-                        offset: Offset(0, 2), // changes position of shadow
+                        color: Get.isDarkMode ? ColorConstants.gray700.withOpacity(0.9) : Colors.grey.withOpacity(0.9),
+                        spreadRadius: 1,
+                        blurRadius: 1,
+                        offset: Offset(0, 1), // changes position of shadow
                       ),
                     ],
                   ),
@@ -75,6 +78,15 @@ class _LoginOverlay extends State<LoginOverlay>  {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        widget.message != null ? Center(
+                          child: Text(
+                            widget.message!,
+                            style: TextStyle(
+                              color: primaryOrange
+                            ),
+                          )
+                        ) : Container(),
+                        SizedBox(height: 15),
                         Center(
                           child: Text("Venture",
                             style: TextStyle(
@@ -149,7 +161,7 @@ class _LoginOverlay extends State<LoginOverlay>  {
                         SizedBox(height: 20),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: PointedLine()
+                          child: PointedLine(height: 0.5)
                         ),
                         SizedBox(height: 20),
                         Row(
@@ -158,6 +170,8 @@ class _LoginOverlay extends State<LoginOverlay>  {
                             Text("Don't have an account? "),
                             ZoomTapAnimation(
                               onTap: () async {
+                                if(widget.enableBackButton) Navigator.pop(context);
+
                                 final CreateUserScreen screen = CreateUserScreen();
                                 Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 400));
                               },
@@ -176,6 +190,27 @@ class _LoginOverlay extends State<LoginOverlay>  {
               )
             )
           ),
+
+          widget.enableBackButton ? Positioned(
+            left: 0,
+            top: 0,
+            child: Padding(
+              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.06),
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: Icon(Icons.close),
+                style: ElevatedButton.styleFrom(
+                  elevation: 3,
+                  shadowColor: primaryOrange,
+                  primary: primaryOrange,
+                  // shape: RoundedRectangleBorder(
+                  //   borderRadius: BorderRadius.circular(20.0),
+                  // )
+                  shape: CircleBorder(),
+                ),
+              ),
+            )
+          ) : Container(),
 
           widget.enableSettings ? Positioned(
             right: 0,

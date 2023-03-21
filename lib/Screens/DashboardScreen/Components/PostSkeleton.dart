@@ -1,14 +1,18 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
+import 'package:venture/Components/FadeOverlay.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
-import 'package:venture/FireBaseServices.dart';
+import 'package:venture/FirebaseServices.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Indicator.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
+import 'package:venture/Screens/DashboardScreen/Components/LoginOverlay.dart';
+import 'package:venture/Screens/LikedByScreen.dart/LikedByScreen.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:venture/Screens/ProfileScreen.dart/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -220,20 +224,28 @@ class _PostSkeleton extends State<PostSkeleton> {
               
             },
             child: Container(
+              constraints: BoxConstraints(
+                maxHeight: 40
+              ),
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
               child: FutureBuilder(
                 future: LocationHandler.getDistanceFromCoords(content.pinLocation!),
                 builder: (context, snapshot) {
                   if(!snapshot.hasData) {
-                    return Text(
-                      "Maps",
-                      style: theme.textTheme.bodyText2!.copyWith(color: Colors.white)
+                    return SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        color: Colors.white,
+                      ),
                     );
                   } else {
                     return Text(
                       "${snapshot.data} miles",
                       style: theme.textTheme.bodyText2!.copyWith(color: Colors.white)
                     );
+                    // return CircularProgressIndicator();
                   }
                 }
               ),
@@ -242,7 +254,7 @@ class _PostSkeleton extends State<PostSkeleton> {
                 borderRadius: BorderRadius.circular(50),
               ),
             )
-          )
+          ),
         ],
       )
     );
@@ -271,40 +283,95 @@ class _PostSkeleton extends State<PostSkeleton> {
     }
   }
 
+  showLogin() {
+    Navigator.of(context).push(
+      FadeOverlay(
+        child: LoginOverlay(enableBackButton: true, message: "Sign in or sign up to interact with posts.")
+      )
+    );
+  }
+
+  goToLikedBy(String? documentId, int numOfLikes) {
+    LikedByScreen screen = LikedByScreen(documentId: documentId, numOfLikes: numOfLikes);
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+  }
+
+  Widget buildReactionButton(List<String>? reactions, String? documentId, Content content) {
+    if(FirebaseServices().firebaseId() == null) {
+      return ZoomTapAnimation(
+        onTap: () => showLogin(),
+        child: Row(
+          children: [
+            Text(
+              reactions != null ? reactions.length.toString() : "0",
+              style: TextStyle(
+                // fontWeight: FontWeight.bold,
+                fontSize: 16
+              )
+            ),
+            SizedBox(width: 10),
+            CustomIcon(
+              icon: 'assets/icons/favorite.svg',
+              size: 27,
+              color: Colors.white,
+            )
+          ],
+        )
+      );
+    } else {
+      return Row(
+        children: [
+          ZoomTapAnimation(
+            onTap: () => goToLikedBy(documentId, reactions != null ? reactions.length : 0),
+            child: Text(
+              reactions != null ? reactions.length.toString() : "0",
+              style: TextStyle(
+                // fontWeight: FontWeight.bold,
+                fontSize: 16
+              )
+            )
+          ),
+          SizedBox(width: 10),
+          reactions != null && reactions.contains(FirebaseServices().firebaseId()) ? ZoomTapAnimation(
+              onTap: () => FirebaseServices().removeReactionV2(documentId!),
+              child: CustomIcon(
+                icon: 'assets/icons/favorite-filled.svg',
+                size: 27,
+                color: Colors.red,
+              ),
+            ) : ZoomTapAnimation(
+            onTap: () => FirebaseServices().addReactionV2(documentId, content.contentKey),
+            child: CustomIcon(
+              icon: 'assets/icons/favorite.svg',
+              size: 27,
+              color: Colors.white,
+            ),
+          )
+        ],
+      );
+    }
+  }
+
   _buildContentActions(ThemeData theme, Content content) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 18),
+      padding: EdgeInsets.symmetric(horizontal: 18, vertical: 5),
       child: Row(
         children: [
           StreamBuilder(
-            stream: FirebaseServices().getReactions(content.contentKey.toString()),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return Text("Like");
-              } else {
-                var data = snapshot.data as List<dynamic>;
-                return Row(
-                  children: [
-                    ZoomTapAnimation(
-                      child: Text(
-                        data.length.toString(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold
-                        )
-                      )
-                    ),
-                    SizedBox(width: 10),
-                    ZoomTapAnimation(
-                      child: Text(
-                        "Like",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold
-                        )
-                      ),
-                    )
-                  ],
+            stream: FirebaseServices().getContentDoc(content.contentKey.toString()),
+            builder: (context, contentDocSnapshot) {
+              Map<String, dynamic>? data = contentDocSnapshot.data as Map<String, dynamic>?;
+              String? documentId = data?['documentId'];
+                return StreamBuilder(
+                  stream: FirebaseServices().getReactionsV2(content.contentKey.toString(), documentId),
+                  builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>?> snapshot) {
+                    
+                    List<String>? reactions = snapshot.data?.docs.map((e) => e.id).toList();
+
+                    return buildReactionButton(reactions, documentId, content);
+
+                  }
                 );
-              }
             }
           )
         ],

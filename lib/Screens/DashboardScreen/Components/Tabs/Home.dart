@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 // import 'package:flutter/cupertino.dart';
+import 'dart:ui' as ui;
 import 'package:get/get.dart';
+import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Constants.dart';
@@ -25,8 +27,11 @@ class HomeTab extends StatefulWidget {
 
 class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<HomeTab>, SingleTickerProviderStateMixin {
   final ThemesController _themesController = Get.find();
+  final HomeController _homeController = Get.find();
   List<Content> content = [];
   bool isLoading = false;
+  PageController exploreController = PageController();
+  PageController followingController = PageController();
 
   @override
   bool get wantKeepAlive => true;
@@ -35,6 +40,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   void initState() {
     super.initState();
 
+    _homeController.homeFeedController = exploreController;
     _initializeAsyncDependencies();
   }
 
@@ -88,6 +94,13 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
     
   }
 
+  Future<void> _pullRefresh() async {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      
+    });
+    // why use freshNumbers var? https://stackoverflow.com/a/52992836/2301224
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -104,11 +117,24 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
             extendBodyBehindAppBar: true,
             appBar: AppBar(
               backgroundColor: Colors.transparent,
+              flexibleSpace: ClipRect(
+                child: BackdropFilter(
+                  filter: Get.isDarkMode ? ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7) : ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    color: Get.isDarkMode ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.8),
+                  ),
+                ),
+              ),
               title: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TabBar(
+                    onTap: (page) {
+                      if(page == 1) setState(() => _homeController.homeFeedController = exploreController);
+
+                      if(page == 0) setState(() => _homeController.homeFeedController = followingController);
+                    },
                     enableFeedback: true,
                     isScrollable: true,
                     // indicator: CircleTabIndicator(color: primaryOrange, radius: 3),
@@ -146,7 +172,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
                     child: Container(
                       padding: EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                        color: Get.isDarkMode ? ColorConstants.gray800.withOpacity(0.7) : ColorConstants.gray25.withOpacity(0.7),
+                        color: Get.isDarkMode ? ColorConstants.gray800.withOpacity(0.35) : ColorConstants.gray25.withOpacity(0.35),
                         borderRadius: BorderRadius.circular(10)
                       ),
                       child: Center(
@@ -167,23 +193,27 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
                   physics: NeverScrollableScrollPhysics(),
                   children: [
                     Container(),
-                    PageView.builder(
-                      physics: AlwaysScrollableScrollPhysics(),
-                      scrollDirection: Axis.vertical,
-                      itemCount: content.isEmpty ? 1 : content.length,
-                      itemBuilder: (context, i) {
-                        if(content.isEmpty) {
-                          return Padding(
-                            padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
-                            child: PostSkeletonShimmer()
-                          );
-                        }else {
-                          return Padding(
-                            padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
-                            child: PostSkeleton(content: content[i])
-                          );
+                    RefreshIndicator(
+                      onRefresh: _pullRefresh,
+                      child: PageView.builder(
+                        controller: exploreController,
+                        physics: AlwaysScrollableScrollPhysics(),
+                        scrollDirection: Axis.vertical,
+                        itemCount: content.isEmpty ? 1 : content.length,
+                        itemBuilder: (context, i) {
+                          if(content.isEmpty) {
+                            return Padding(
+                              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
+                              child: PostSkeletonShimmer()
+                            );
+                          }else {
+                            return Padding(
+                              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
+                              child: PostSkeleton(content: content[i])
+                            );
+                          }
                         }
-                      }
+                      )
                     )
                   ]
                 )

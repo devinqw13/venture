@@ -14,6 +14,7 @@ class HomeController extends GetxController {
 
   late PageController pageController;
   late CarouselController carouselController;
+  PageController? homeFeedController;
 
   var currentPage = 2.obs;
   var currentBanner = 0.obs;
