@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:venture/Components/FadeOverlay.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
+import 'package:venture/Screens/LoginScreen/LoginScreen.dart';
 
 class NotificationTab extends StatefulWidget {
   NotificationTab({Key? key}) : super(key: key);
@@ -32,6 +33,7 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
         slivers: [
           SliverAppBar(
             // backgroundColor: Colors.white.withOpacity(0.2),
+            automaticallyImplyLeading: false,
             elevation: 0.2,
             shadowColor: Colors.grey,
             forceElevated: true,
@@ -39,7 +41,9 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
             actions: [
               MaterialButton(
                 onPressed: () {
-                  Navigator.of(context).push(FadeOverlay());
+                  // Navigator.of(context).push(FadeOverlay());
+                  LoginScreen screen = LoginScreen();
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
                 },
                 child: Text("TEST")
               )
@@ -53,8 +57,13 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
               title: Text(
                 'Notifications',
                 // style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.w600),
-                style: theme.textTheme.headline6!.copyWith(fontFamily: "CoolveticaCondensed",color: primaryOrange, fontSize: 24),
-              ),
+                style: TextStyle(
+                  fontFamily: "CoolveticaCondensed",
+                  // fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                  fontSize: 23
+                ),
+              )
             ),
           ),
         ]

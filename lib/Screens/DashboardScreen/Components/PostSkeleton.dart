@@ -1,8 +1,10 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
+import 'package:venture/Components/CustomOptionsPopupMenu.dart';
 import 'package:venture/Components/FadeOverlay.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
@@ -11,6 +13,8 @@ import 'package:venture/FirebaseServices.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Indicator.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
+import 'package:venture/Models/VenUser.dart';
+import 'package:venture/Screens/CommentScreen/CommentScreen.dart';
 import 'package:venture/Screens/DashboardScreen/Components/LoginOverlay.dart';
 import 'package:venture/Screens/LikedByScreen.dart/LikedByScreen.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
@@ -75,7 +79,7 @@ class _PostSkeleton extends State<PostSkeleton> {
 
   goToProfile(Content content) {
     ProfileScreen screen  = ProfileScreen(userKey: content.user!.userKey!);
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 
   Widget _buildTitle(ThemeData theme, Content content) {
@@ -88,7 +92,7 @@ class _PostSkeleton extends State<PostSkeleton> {
             child: ZoomTapAnimation(
               onTap: () {
                 PinScreen screen = PinScreen(pinKey: content.pinKey!);
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+                Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
               },
               child: Text(
                 content.pinName!,
@@ -293,7 +297,7 @@ class _PostSkeleton extends State<PostSkeleton> {
 
   goToLikedBy(String? documentId, int numOfLikes) {
     LikedByScreen screen = LikedByScreen(documentId: documentId, numOfLikes: numOfLikes);
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 
   Widget buildReactionButton(List<String>? reactions, String? documentId, Content content) {
@@ -352,28 +356,88 @@ class _PostSkeleton extends State<PostSkeleton> {
     }
   }
 
+  goToCommentScreen(String? documentId, int? numOfComments, int contentKey) {
+    CommentScreen screen = CommentScreen(documentId: documentId!, numOfComments: numOfComments, contentKey: contentKey);
+    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+  }
+
+  buildCommentButton(List<String>? comments, String? documentId, int contentKey) {
+    return ZoomTapAnimation(
+      onTap: () => goToCommentScreen(documentId, comments?.length, contentKey),
+      child: Container(
+        color: Colors.transparent,
+        child: Row(
+          children: [
+            Text(
+              comments != null ? comments.length.toString() : "0",
+              style: TextStyle(
+                // fontWeight: FontWeight.bold,
+                fontSize: 16
+              )
+            ),
+            SizedBox(width: 10),
+            CustomIcon(
+              icon: 'assets/icons/chat.svg',
+              size: 27,
+              color: Colors.white,
+            )
+          ],
+        ),
+      )
+    );
+  }
+
   _buildContentActions(ThemeData theme, Content content) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 18, vertical: 5),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           StreamBuilder(
             stream: FirebaseServices().getContentDoc(content.contentKey.toString()),
             builder: (context, contentDocSnapshot) {
               Map<String, dynamic>? data = contentDocSnapshot.data as Map<String, dynamic>?;
               String? documentId = data?['documentId'];
-                return StreamBuilder(
-                  stream: FirebaseServices().getReactionsV2(content.contentKey.toString(), documentId),
-                  builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>?> snapshot) {
-                    
-                    List<String>? reactions = snapshot.data?.docs.map((e) => e.id).toList();
+              return Row(
+                children: [
+                  // build reactions amount & icon
+                  StreamBuilder(
+                    stream: FirebaseServices().getReactionsV2(content.contentKey.toString(), documentId),
+                    builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>?> reactionSnapshot) {
+                      
+                      List<String>? reactions = reactionSnapshot.data?.docs.map((e) => e.id).toList();
 
-                    return buildReactionButton(reactions, documentId, content);
+                      return buildReactionButton(reactions, documentId, content);
 
-                  }
-                );
+                    }
+                  ),
+                  SizedBox(width: 20),
+                  // build comment amount & icon
+                  FutureBuilder(
+                    future: FirebaseServices().getComments(documentId),
+                    builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>?> commentSnapshot) {
+                      List<String>? comments = commentSnapshot.data?.docs.map((e) => e.id).toList();
+
+                      return buildCommentButton(comments, documentId, content.contentKey);
+                    }
+                  )
+                ]
+              );
             }
-          )
+          ),
+
+          VenUser().userKey.value != 0 ? CustomOptionsPopupMenu(
+            popupItems: [
+              if(content.user!.userKey == VenUser().userKey.value)
+                CustomOptionPopupMenuItem(
+                  text: Text("Delete", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  icon: CustomIcon(icon: "assets/icons/delete.svg", color: Colors.red, size: 25)
+                ),
+              CustomOptionPopupMenuItem(
+                text: Text("Add to bookmarks"),
+              )
+            ]
+          ) : Container()
         ],
       ),
     );

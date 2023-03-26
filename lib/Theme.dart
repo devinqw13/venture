@@ -6,7 +6,7 @@ class Themes {
   static ThemeData lightTheme = ThemeData(
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
-    fontFamily: 'Montserrat',
+    fontFamily: 'SegoeUI',
     primarySwatch: Colors.blue,
     brightness: Brightness.light,
     appBarTheme: AppBarTheme(
@@ -110,7 +110,7 @@ class Themes {
   static ThemeData darkTheme = ThemeData(
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
-    fontFamily: 'Montserrat',
+    fontFamily: 'SegoeUI',
     primaryColor: Colors.blue,
     brightness: Brightness.dark,
     // scaffoldBackgroundColor: ColorConstants.gray900,

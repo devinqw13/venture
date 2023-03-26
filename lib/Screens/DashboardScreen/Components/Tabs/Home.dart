@@ -116,6 +116,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
             extendBody: true,
             extendBodyBehindAppBar: true,
             appBar: AppBar(
+              automaticallyImplyLeading: false,
               backgroundColor: Colors.transparent,
               flexibleSpace: ClipRect(
                 child: BackdropFilter(

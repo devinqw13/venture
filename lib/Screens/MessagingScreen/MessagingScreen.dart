@@ -338,31 +338,6 @@ class MessagingScreenState extends State<MessagingScreen> {
                 children: [
                   Expanded(
                     child: buildPaginatedMessages()
-                    // child: widget.conversation.messages.isNotEmpty ? ListView.builder(
-                    //   reverse: true,
-                    //   shrinkWrap: true,
-                    //   controller: _scrollController,
-                    //   padding: EdgeInsets.symmetric(vertical: 8),
-                    //   itemCount: widget.conversation.messages.length,
-                    //   itemBuilder: (context, index) {
-                    //     return MessageWidget(
-                    //       message: widget.conversation.messages[index],
-                    //     );
-                    //   },
-                    // )
-                    // : Container(
-                    //   padding: EdgeInsets.symmetric(vertical: 8),
-                    //   child: Center(
-                    //     child: Column(
-                    //       mainAxisAlignment: MainAxisAlignment.center,
-                    //       children: [
-                    //         Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
-                    //         SizedBox(height: 20,),
-                    //         Text('No messages yet', style: theme.textTheme.bodyText2,),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,

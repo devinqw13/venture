@@ -52,6 +52,8 @@ class _LikedByScreen extends State<LikedByScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(IconlyLight.arrow_left, size: 28),
@@ -71,42 +73,63 @@ class _LikedByScreen extends State<LikedByScreen> {
           style: theme.textTheme.headline6,
         )
       ),
-      body: PaginateFirestore(
-        query: FirebaseServices().likedByQuery(widget.documentId),
-        itemBuilderType: PaginateBuilderType.listView,
-        isLive: true, 
-        itemsPerPage: 20,
-        header: SliverToBoxAdapter(
-          child: Center(
-            child: Text("Liked by ${widget.numOfLikes}")
+      body: ListView(
+        children: [
+          PaginateFirestore(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            query: FirebaseServices().likedByQuery(widget.documentId),
+            itemBuilderType: PaginateBuilderType.listView,
+            isLive: true, 
+            itemsPerPage: 20,
+            // padding: EdgeInsets.only(top: 100),
+            header: SliverToBoxAdapter(
+              child: Center(
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text:'Liked by ',
+                      ),
+                      TextSpan(
+                        text: "$numOfLikes",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              )
+            ),
+            onEmpty: Container(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
+                  // SizedBox(height: 20,),
+                  Text('No likes yet'),
+                ],
+              ),
+            ),
+            // padding: const EdgeInsets.only(bottom: 90),
+            itemBuilder: (context, documentSnapshot, index) {
+              String userFirebaseId = documentSnapshot[index].id;
+              return FutureBuilder(
+                future: FirebaseServices().getUserFromFirebaseId(userFirebaseId),
+                builder: (context, snapshot) {
+                  if(snapshot.hasData) {
+                    var docSnapshot = snapshot.data as DocumentSnapshot<Map<String, dynamic>>?;
+                    var data = docSnapshot!.data();
+                    return UserLikeCard(user: data!);
+                  }
+                  return Container();
+                }
+              );
+            },
           )
-        ),
-        onEmpty: Container(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
-              // SizedBox(height: 20,),
-              Text('No likes yet'),
-            ],
-          ),
-        ),
-        // padding: const EdgeInsets.only(bottom: 90),
-        itemBuilder: (context, documentSnapshot, index) {
-          String userFirebaseId = documentSnapshot[index].id;
-          return FutureBuilder(
-            future: FirebaseServices().getUserFromFirebaseId(userFirebaseId),
-            builder: (context, snapshot) {
-              if(snapshot.hasData) {
-                var docSnapshot = snapshot.data as DocumentSnapshot<Map<String, dynamic>>?;
-                var data = docSnapshot!.data();
-                return UserLikeCard(user: data!);
-              }
-              return Container();
-            }
-          );
-        },
+        ]
       )
     );
   }

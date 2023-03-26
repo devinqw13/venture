@@ -275,8 +275,12 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                             padding: EdgeInsets.symmetric(horizontal: 15),
                             child: Text(
                               "Suggested",
-                              // style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
-                              style: theme.textTheme.headline6!.copyWith(fontFamily: "CoolveticaCondensed", fontSize: 26),
+                              style: TextStyle(
+                                fontFamily: "CoolveticaCondensed",
+                                // fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                                fontSize: 23
+                              ),
                             )
                           )
                         ],

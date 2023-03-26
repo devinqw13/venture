@@ -42,6 +42,13 @@ class FirebaseServices extends ChangeNotifier {
       .where('content_key', isEqualTo: contentKey).get();
   }
 
+  Future<QuerySnapshot<Map<String, dynamic>>?> getComments(String? documentId) async {
+    return await _firestore.collection('content')
+      .doc(documentId)
+      .collection('comments')
+      .get();
+  }
+
   Stream<dynamic> getContentDoc(String contentKey) {
     return _firestore.collection('content')
       .where('content_key', isEqualTo: contentKey)
@@ -162,6 +169,12 @@ class FirebaseServices extends ChangeNotifier {
     return userCredential;
   }
 
+  void reauthenticate() async {
+    final user = FirebaseAuth.instance.currentUser;
+    print(user?.providerData);
+    // await user?.reauthenticateWithCredential(credential);
+  }
+
   Future<void> logout() async {
     await FirebaseAuth.instance.signOut();
   }
@@ -232,6 +245,10 @@ class FirebaseServices extends ChangeNotifier {
     return FirebaseFirestore.instance.collection('content').doc(documentId).collection('reactions').orderBy('timestamp', descending: true);
   }
 
+  Query<Object?> commentQuery(String? documentId) {
+    return FirebaseFirestore.instance.collection('content').doc(documentId).collection('comments').orderBy('timestamp', descending: true);
+  }
+
   Future<DocumentSnapshot<Map<String, dynamic>>> getUserFromFirebaseId(String id) async {
     return await _firestore.collection('users')
       .doc(id)
@@ -239,7 +256,7 @@ class FirebaseServices extends ChangeNotifier {
   }
 
   Future<void> updateFollowStatus(String firebaseId, bool shouldFollow) async {
-    print(shouldFollow);
+    HapticFeedback.mediumImpact();
     if(shouldFollow) {
 
       var userRef = _firestore.collection('users').doc(firebaseId);
@@ -268,6 +285,30 @@ class FirebaseServices extends ChangeNotifier {
           "following": FieldValue.arrayRemove([firebaseId])
         }).catchError((error) {print("Failed to add message: $error");});
 
+      });
+    }
+  }
+
+  Future<void> addComment(String? documentId, int contentKey, String comment) async {
+    // HapticFeedback.mediumImpact();
+
+    if(documentId != null) {
+      _firestore.collection('content').doc(documentId).collection('comments').doc().set({
+        'timestamp': DateTime.now().toUtc(),
+        'comment': comment,
+        'firebase_id': FirebaseAuth.instance.currentUser!.uid
+      });
+    }else {
+      var rxRef = _firestore.collection('content').doc();
+      rxRef.set({
+        'content_key': contentKey.toString(),
+      }, SetOptions(merge: true)).then((value) {
+      }).then((value) {
+        rxRef.collection("comments").doc().set({
+          'timestamp': DateTime.now().toUtc(),
+          'comment': comment,
+          'firebase_id': FirebaseAuth.instance.currentUser!.uid
+        });
       });
     }
   }
