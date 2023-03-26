@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Models/VenUser.dart';
+import 'package:venture/Screens/LoginScreen/LoginScreen.dart';
 import 'package:venture/Screens/SettingsScreen/ChangePassword.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
@@ -24,7 +25,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen>  {
     VenUser().onChange();
     // await FirebaseServices().removeFirebaseTokens();
     await FirebaseServices().logout();
-    Navigator.pop(context);
+    // Navigator.pop(context);
+
+    // Implemented force login. This will remove all screens and navigate to login screen
+    // remove statements below if disabling force login.
+    LoginScreen loginController = LoginScreen();
+    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => loginController), (Route<dynamic> route) => false);
   }
 
   _goToChangePassword() {

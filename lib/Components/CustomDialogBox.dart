@@ -2,6 +2,9 @@
 // import 'dart:ui';
 // import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:venture/Constants.dart';
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class Constants{
   Constants._();
@@ -31,7 +34,7 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      insetPadding: EdgeInsets.all(12),
+      insetPadding: EdgeInsets.symmetric(horizontal: 60),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(Constants.padding)
       ),
@@ -45,28 +48,38 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
     return Stack(
       children: [
         Container(
-          padding: EdgeInsets.only(left: Constants.padding,top: Constants.padding
-              + Constants.padding, right: Constants.padding,bottom: Constants.padding
-          ),
+          // padding: EdgeInsets.only(left: Constants.padding,top: Constants.padding
+          //     + Constants.padding, right: Constants.padding
+          // ),
           // margin: EdgeInsets.only(top: Constants.avatarRadius),
           decoration: BoxDecoration(
             shape: BoxShape.rectangle,
-            color: Colors.white,
+            color: Get.isDarkMode ? ColorConstants.gray500 : Colors.white,
             borderRadius: BorderRadius.circular(Constants.padding),
-            boxShadow: [
-              BoxShadow(color: Colors.black,offset: Offset(0,10),
-              blurRadius: 10
-              ),
-            ]
+            // boxShadow: [
+            //   BoxShadow(color: Colors.black,offset: Offset(0,10),
+            //   blurRadius: 10
+            //   ),
+            // ]
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Text(widget.title!, textAlign: TextAlign.center, style: TextStyle(fontSize: 22,fontWeight: FontWeight.w600)),
-              SizedBox(height: 15,),
-              Flexible(child: SingleChildScrollView(child: Text(widget.description!,style: TextStyle(fontSize: 16),textAlign: widget.descAlignment!))),
-              SizedBox(height: 22,),
+              Padding(
+                  padding: EdgeInsets.only(left: Constants.padding,top: Constants.padding
+                + Constants.padding, right: Constants.padding
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(widget.title!, textAlign: TextAlign.center, style: TextStyle(fontSize: 22,fontWeight: FontWeight.w600)),
+                    SizedBox(height: 15,),
+                    Flexible(child: SingleChildScrollView(child: Text(widget.description!,style: TextStyle(fontSize: 16),textAlign: widget.descAlignment!))),
+                    SizedBox(height: 22,),
+                  ],
+                ),
+              ),
               Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -91,19 +104,42 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
     List<Widget> buttons = [];
     widget.buttons!.forEach((k,v) {
       buttons.add(
+        // Expanded(
+        //   child: Padding(
+        //     padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        //     child: MaterialButton(
+        //       onPressed: v['action'],
+        //       shape: RoundedRectangleBorder(
+        //         borderRadius: BorderRadius.circular(20.0),
+        //       ),
+        //       color: v['color'],
+        //       child: Text(k,
+        //         style: TextStyle(color: v['textColor'])
+        //       ),
+        //     ),
+        //   ),
+        // )
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: MaterialButton(
-              onPressed: v['action'],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0),
+          child: ZoomTapAnimation(
+            onTap: v['action'],
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.grey,
+                    width: 0.1
+                  )
+                )
               ),
-              color: v['color'],
-              child: Text(k,
-                style: TextStyle(color: v['textColor'])
+              child: Text(
+                k,
+                textAlign: v['alignment'] ?? TextAlign.center,
+                style: TextStyle(
+                  color: v['textColor']
+                ),
               ),
-            ),
+            )
           ),
         )
       );

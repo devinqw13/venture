@@ -6,14 +6,14 @@ import 'package:get/get.dart';
 
 class CustomOptionPopupMenuItem {
   Text text;
-  Icon? icon;
+  Widget? icon;
   VoidCallback? onTap;
 
   CustomOptionPopupMenuItem({required this.text, this.icon, this.onTap});
 }
 
 class CustomOptionsPopupMenu extends StatefulWidget {
-  final List<CustomOptionPopupMenuItem> popupItems;
+  final List<CustomOptionPopupMenuItem>? popupItems;
   const CustomOptionsPopupMenu({
     Key? key,
     required this.popupItems
@@ -34,9 +34,9 @@ class _CustomOptionsPopupMenu extends State<CustomOptionsPopupMenu> with TickerP
   }
 
   PopupMenuItem _buildPopupMenuItem(
-      Widget title, Icon? icon, Function? onTap) {
+      Widget title, Widget? icon, Function? onTap) {
     return PopupMenuItem(
-      padding: EdgeInsets.only(left: 15.0, right: 15.0),
+      padding: EdgeInsets.only(left: 10.0, right: 10.0),
       value: onTap,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -45,7 +45,7 @@ class _CustomOptionsPopupMenu extends State<CustomOptionsPopupMenu> with TickerP
           icon != null ? Padding(
             padding: EdgeInsets.only(left: 10),
             child: icon
-          ) : Container(),
+          ) : Container(padding: EdgeInsets.only(left: 10)),
         ],
       ),
     );
@@ -70,12 +70,12 @@ class _CustomOptionsPopupMenu extends State<CustomOptionsPopupMenu> with TickerP
   _showPopupMenu() {
     showMenu(
       color: Get.isDarkMode ?
-      ColorConstants.gray600.withOpacity(0.95)
+      ColorConstants.gray500.withOpacity(0.9)
       : Colors.grey.shade200.withOpacity(0.9),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
       ),
-      items: widget.popupItems.map<PopupMenuEntry<dynamic>>((s) =>
+      items: widget.popupItems!.map<PopupMenuEntry<dynamic>>((s) =>
         _buildPopupMenuItem(s.text, s.icon, s.onTap)
       ).toList(),
       context: context,
@@ -101,12 +101,9 @@ class _CustomOptionsPopupMenu extends State<CustomOptionsPopupMenu> with TickerP
         _showPopupMenu();
       },
       child: Center(
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: Icon(
-            Icons.more_horiz,
-            color: color,
-          )
+        child:Icon(
+          Icons.more_horiz,
+          color: color,
         )
       ),
     );

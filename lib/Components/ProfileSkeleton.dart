@@ -58,7 +58,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
             )
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -126,7 +126,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                       child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
-                          color: ColorConstants.gray50,
+                          color: Get.isDarkMode ? ColorConstants.gray600 : ColorConstants.gray50,
                           borderRadius: BorderRadius.circular(10)
                         ),
                         child: Row(
@@ -156,7 +156,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                       child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                         decoration: BoxDecoration(
-                          color: ColorConstants.gray50,
+                          color: Get.isDarkMode ? ColorConstants.gray600 : ColorConstants.gray50,
                           borderRadius: BorderRadius.circular(10)
                         ),
                         child: Row(
@@ -425,52 +425,84 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
             )
           ),
           SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Column(
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * .15),
+            child: IntrinsicHeight(
+              child: Row(
                 children: [
-                  ZoomTapAnimation(
-                    child: Text(
-                      NumberFormat.format(user.followerCount!),
-                      style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 20),
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        children: [
+                          ZoomTapAnimation(
+                            child: Text(
+                              NumberFormat.format(user.followerCount!),
+                              style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 18),
+                            )
+                          ),
+                          Text(
+                            "Followers",
+                            style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey, fontSize: 12),
+                          )
+                        ],
+                      )
                     )
                   ),
-                  Text(
-                    "Followers",
-                    style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey),
-                  )
-                ],
-              ),
-              Column(
-                children: [
-                  ZoomTapAnimation(
-                    child: Text(
-                      NumberFormat.format(user.followingCount!),
-                      style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 20),
+
+                  Container(
+                    width: 1.0,
+                    color: Colors.grey,
+                    margin: const EdgeInsets.only(left: 8.0, right: 8.0, top: 10.0, bottom: 10.0),
+                    padding: const EdgeInsets.symmetric(vertical: 0.0),
+                  ),
+
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        children: [
+                          ZoomTapAnimation(
+                            child: Text(
+                              NumberFormat.format(user.followingCount!),
+                              style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 18),
+                            )
+                          ),
+                          Text(
+                            "Following",
+                            style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey, fontSize: 12),
+                          )
+                        ],
+                      )
                     )
                   ),
-                  Text(
-                    "Following",
-                    style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey),
-                  )
-                ],
-              ),
-              Column(
-                children: [
-                  ZoomTapAnimation(
-                    child: Text(
-                      NumberFormat.format(user.pinCount!),
-                      style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 20),
+
+                  Container(
+                    width: 1.0,
+                    color: Colors.grey,
+                    margin: const EdgeInsets.only(left: 8.0, right: 8.0, top: 10.0, bottom: 10.0),
+                    padding: const EdgeInsets.symmetric(vertical: 0.0),
+                  ),
+
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        children: [
+                          ZoomTapAnimation(
+                            child: Text(
+                              NumberFormat.format(user.pinCount!),
+                              style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 18),
+                            )
+                          ),
+                          Text(
+                            "Pins",
+                            style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey, fontSize: 12),
+                          )
+                        ],
+                      )
                     )
                   ),
-                  Text(
-                    "Pins",
-                    style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey),
-                  )
                 ],
-              ),
-            ],
+              )
+            )
           )
         ],
       )

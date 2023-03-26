@@ -6,6 +6,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:venture/Calls.dart';
+import 'package:venture/Constants.dart';
+import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/VenUser.dart';
 
@@ -83,7 +85,7 @@ class FirebaseServices extends ChangeNotifier {
     }
 
     try {
-      bool? result = await createUser(context, username, email, password: password);
+      bool? result = await createUser(context, username, email);
 
       if(!result) return null;
 
@@ -163,7 +165,25 @@ class FirebaseServices extends ChangeNotifier {
       } else if (e.code == 'wrong-password') {
         showToast(context: context, msg: "Username/email or password did not match");
         return null;
+      } else if (e.code == 'user-disabled') {
+        showCustomDialog(
+          context: context,
+          title: 'Account restricted', 
+          description: "Your account has been restricted from any activity. We restricted your account to prevent any action and to protect others. Contact customer service for assistance.",
+          descAlignment: TextAlign.center,
+          buttons: {
+            "OK": {
+              "action": () => Navigator.of(context).pop(),
+              "textColor": Colors.white,
+              "alignment": TextAlign.center
+            },
+          }
+        );
+        return null;
       }
+    }catch (e) {
+      print(e);
+      return null;
     }
 
     return userCredential;

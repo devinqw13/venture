@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:venture/Globals.dart' as globals;
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Constants.dart';
@@ -23,7 +24,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    checkUserStatus();
+  }
 
+  checkUserStatus() {
+    print(globals.userDisabled);
   }
 
   Widget _bottomAppBarItem({icon, page, double? iconSize}) {

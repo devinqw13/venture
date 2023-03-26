@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:venture/Calls.dart';
+import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Theme.dart';
 import 'package:venture/Constants.dart';
@@ -105,6 +106,27 @@ class _MyAppState extends State<MyApp> {
       } else {
         var userKey = storage.read('user_key');
         VenUser().userKey.value = userKey ?? 0;
+        try {
+          await FirebaseAuth.instance.currentUser!.reload();
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'user-disabled') {
+            print("USER DISABLED");
+            setState(() =>  globals.userDisabled = true);
+            showCustomDialog(
+              context: context,
+              title: 'Account restricted', 
+              description: "Your account has been restricted from any activity. We restricted your account to prevent any action and to protect others. Contact customer service for assistance.",
+              descAlignment: TextAlign.center,
+              buttons: {
+                "OK": {
+                  "action": () => Navigator.of(context).pop(),
+                  "textColor": Colors.white,
+                  "alignment": TextAlign.center
+                },
+              }
+            );
+          }
+        }
         // VenUser().userKey.value = userKey ?? 0;
         // if (user.displayName != null) {
         //   VenUser().displayName = user.displayName!;
@@ -120,7 +142,15 @@ class _MyAppState extends State<MyApp> {
   }
 
   String getInitialRoute() {
-    return '/home';
+    // Implemented force login screen if not signed in.
+    // remove if statement to disable force login.
+    // note: remove pushAndRemoveUntil in logout func if disabling force login.
+    if(FirebaseAuth.instance.currentUser == null) {
+      return '/login';
+    } else {
+      return '/home';
+    }
+    // return '/home';
   }
 
   ThemeMode getThemeMode(String type) {
