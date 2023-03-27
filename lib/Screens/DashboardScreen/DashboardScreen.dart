@@ -53,7 +53,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _homeController.goToTab(page);
         setState(() => extendBody = page == 2 ? true : false);
       },
-      child: icon,
+      child: Container(
+        color: Colors.transparent,
+        padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        child: icon
+      )
     );
   }
 
@@ -92,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 elevation: 1.0,
                 child: Container(
                   color: Colors.transparent,
-                  padding: const EdgeInsets.only(left: 40, right: 40, top: 4),
+                  padding: const EdgeInsets.only(left: 23, right: 23, top: 4),
                   child: Obx(() => Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

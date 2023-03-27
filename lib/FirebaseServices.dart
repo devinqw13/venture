@@ -237,6 +237,25 @@ class FirebaseServices extends ChangeNotifier {
     if(documentId != null) {
       _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()});
     }else {
+      await addReactionFromKey(contentKey);
+      // var rxRef = _firestore.collection('content').doc();
+      // rxRef.set({
+      //   'content_key': contentKey.toString(),
+      //   // 'reactions': [FirebaseAuth.instance.currentUser!.uid]
+      // }, SetOptions(merge: true)).then((value) {
+      // }).then((value) {
+      //   rxRef.collection("reactions").doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()});
+      // });
+    }
+  }
+
+  Future<void> addReactionFromKey(int contentKey) async {
+    var content = await _firestore.collection('content').where('content_key', isEqualTo: contentKey.toString()).get();
+
+    if(content.docs.isNotEmpty) {
+      var documentId = content.docs.first.id;
+      _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()});
+    } else {
       var rxRef = _firestore.collection('content').doc();
       rxRef.set({
         'content_key': contentKey.toString(),

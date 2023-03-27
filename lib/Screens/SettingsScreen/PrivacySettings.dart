@@ -2,41 +2,20 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Models/VenUser.dart';
-import 'package:venture/Screens/LoginScreen/LoginScreen.dart';
 import 'package:venture/Screens/SettingsScreen/ChangePassword.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 import 'package:venture/FireBaseServices.dart';
 import 'package:get_storage/get_storage.dart';
 
-class AccountSettingsScreen extends StatefulWidget {
-  AccountSettingsScreen({Key? key}) : super(key: key);
+class PrivacySettingsScreen extends StatefulWidget {
+  PrivacySettingsScreen({Key? key}) : super(key: key);
 
   @override
-  _AccountSettingsScreenState createState() => _AccountSettingsScreenState();
+  _PrivacySettingsScreenState createState() => _PrivacySettingsScreenState();
 }
 
-class _AccountSettingsScreenState extends State<AccountSettingsScreen>  {
-
-  _logout() async {
-    final storage = GetStorage();
-    storage.remove("user_key");
-    VenUser().userKey.value = 0;
-    VenUser().onChange();
-    // await FirebaseServices().removeFirebaseTokens();
-    await FirebaseServices().logout();
-    // Navigator.pop(context);
-
-    // Implemented force login. This will remove all screens and navigate to login screen
-    // remove statements below if disabling force login.
-    LoginScreen loginController = LoginScreen();
-    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => loginController), (Route<dynamic> route) => false);
-  }
-
-  _goToChangePassword() {
-    ChangePasswordScreen screen = ChangePasswordScreen();
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
-  }
+class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>  {
 
   Widget _buildListTile(String title, IconData icon, String trailing, Color color, theme, {onTab}) {
     return ListTile(
@@ -98,16 +77,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen>  {
         padding: EdgeInsets.symmetric(horizontal: 16.0),
         child: ListView(
           children: [
-            _buildListTile('Change your password', Icons.key_rounded, "", Colors.grey, theme, onTab: () => _goToChangePassword()),
+            _buildListTile('Change your password', Icons.key_rounded, "", Colors.grey, theme, onTab: () => print("")),
 
-            Center(
-              child: ZoomTapAnimation(
-                onTap: () => _logout(),
-                child: Text("Log out",
-                  style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold, color: Colors.red),
-                )
-              )
-            )
           ],
         )
       )

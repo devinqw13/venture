@@ -56,7 +56,7 @@ class _LikedByScreen extends State<LikedByScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(IconlyLight.arrow_left, size: 28),
+          icon: Icon(IconlyLight.arrow_left, size: 25),
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: Colors.transparent,

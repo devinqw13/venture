@@ -328,10 +328,11 @@ class _ProfileSkeleton extends State<ProfileSkeleton> {
                             child: Icon(
                               IconlyLight.arrow_left,
                               color: primaryOrange,
+                              size: 25,
                             ),
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
-                              shadowColor: primaryOrange,
+                              shadowColor: Colors.transparent,
                               primary: _themesController.getContainerBgColor(),
                               shape: CircleBorder(),
                             ),
@@ -646,10 +647,11 @@ class ProfileSkeletonShimmer extends StatelessWidget {
                               child: Icon(
                                 IconlyLight.arrow_left,
                                 color: primaryOrange,
+                                size: 25,
                               ),
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                shadowColor: primaryOrange,
+                                shadowColor: Colors.transparent,
                                 primary: _themesController.getContainerBgColor(),
                                 shape: CircleBorder(),
                               ),

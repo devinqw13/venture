@@ -85,7 +85,7 @@ class ThemesController extends GetxController {
       zoom: 15,
     );
 
-    googleMapController!.animateCamera(CameraUpdate.newCameraPosition(_kLoc));
+    await googleMapController!.animateCamera(CameraUpdate.newCameraPosition(_kLoc));
 
     return LatLng(double.parse(coords[0]), double.parse(coords[1]));
   }

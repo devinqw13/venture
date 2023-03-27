@@ -39,14 +39,14 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
             forceElevated: true,
             pinned: false,
             actions: [
-              MaterialButton(
-                onPressed: () {
-                  // Navigator.of(context).push(FadeOverlay());
-                  LoginScreen screen = LoginScreen();
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
-                },
-                child: Text("TEST")
-              )
+              // MaterialButton(
+              //   onPressed: () {
+              //     // Navigator.of(context).push(FadeOverlay());
+              //     LoginScreen screen = LoginScreen();
+              //     Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+              //   },
+              //   child: Text("TEST")
+              // )
             ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: EdgeInsetsDirectional.only(

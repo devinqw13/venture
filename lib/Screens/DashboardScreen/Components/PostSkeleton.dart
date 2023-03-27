@@ -1,10 +1,13 @@
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+import "dart:math";
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:venture/Components/CustomOptionsPopupMenu.dart';
+import 'package:venture/Components/DropShadow.dart';
 import 'package:venture/Components/FadeOverlay.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
@@ -42,6 +45,7 @@ class _PostSkeleton extends State<PostSkeleton> {
   final HomeController _homeController = Get.find();
   CarouselController controller = CarouselController();
   int currentIndex = 0;
+  late Offset doubleTapPosition;
 
   _showOptions(ThemeData theme) {
     Get.bottomSheet(
@@ -224,9 +228,7 @@ class _PostSkeleton extends State<PostSkeleton> {
             )
           ),
           ZoomTapAnimation(
-            onTap: () {
-              
-            },
+            onTap: () => goToMaps(content.pinLocation),
             child: Container(
               constraints: BoxConstraints(
                 maxHeight: 40
@@ -279,12 +281,14 @@ class _PostSkeleton extends State<PostSkeleton> {
     }
   }
 
-  goToMaps(String? location) {
-    _homeController.goToTab(2);
+  goToMaps(String? location) async {
     if(location != null) {
       List<String> loc = location.split(',');
-      _themesController.navigateMap(loc);
+      await _themesController.navigateMap(loc);
     }
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _homeController.goToTab(2);
+    });
   }
 
   showLogin() {
@@ -327,15 +331,19 @@ class _PostSkeleton extends State<PostSkeleton> {
         children: [
           ZoomTapAnimation(
             onTap: () => goToLikedBy(documentId, reactions != null ? reactions.length : 0),
-            child: Text(
-              reactions != null ? reactions.length.toString() : "0",
-              style: TextStyle(
-                // fontWeight: FontWeight.bold,
-                fontSize: 16
+            child: Container(
+              color: Colors.transparent,
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text(
+                reactions != null ? reactions.length.toString() : "0",
+                style: TextStyle(
+                  // fontWeight: FontWeight.bold,
+                  fontSize: 16
+                )
               )
             )
           ),
-          SizedBox(width: 10),
+          // SizedBox(width: 10),
           reactions != null && reactions.contains(FirebaseServices().firebaseId()) ? ZoomTapAnimation(
               onTap: () => FirebaseServices().removeReactionV2(documentId!),
               child: CustomIcon(
@@ -454,18 +462,28 @@ class _PostSkeleton extends State<PostSkeleton> {
                 return ZoomOverlay(
                   twoTouchOnly: true,
                   minScale: 1,
-                  child: ClipRRect(
-                    // borderRadius: BorderRadius.circular(20.0),
-                    child: CachedNetworkImage(
-                      // fit: BoxFit.contain,
-                      fit: BoxFit.cover,
-                      imageUrl: content.contentUrls[index].toString(),
-                      progressIndicatorBuilder: (context, url, downloadProgress) {
-                        return Skeleton.rectangular(
-                          height: 250,
-                          // borderRadius: 20.0
-                        );
-                      }
+                  child: GestureDetector(
+                    onDoubleTap: () async {
+                      await FirebaseServices().addReactionV2(null, content.contentKey);
+                      showLikeHeart(context: context, offset: doubleTapPosition);
+                    },
+                    onDoubleTapDown: (details) {
+                      // final RenderBox box = context.findRenderObject() as RenderBox;
+                      doubleTapPosition = details.globalPosition;
+                    },
+                    child: ClipRRect(
+                      // borderRadius: BorderRadius.circular(20.0),
+                      child: CachedNetworkImage(
+                        // fit: BoxFit.contain,
+                        fit: BoxFit.cover,
+                        imageUrl: content.contentUrls[index].toString(),
+                        progressIndicatorBuilder: (context, url, downloadProgress) {
+                          return Skeleton.rectangular(
+                            height: 250,
+                            // borderRadius: 20.0
+                          );
+                        }
+                      )
                     )
                   )
                 );
@@ -596,6 +614,52 @@ class PostSkeletonShimmer extends StatelessWidget {
           SizedBox(height: 10),
           _buildContent(context)
         ],
+      )
+    );
+  }
+}
+
+void showLikeHeart({
+  required BuildContext context,
+  required Offset offset
+}) {
+
+  OverlayEntry overlayEntry;
+  List<double> angles = [-120,0,120];
+  double angle = angles[Random().nextInt(angles.length)];
+
+  overlayEntry = OverlayEntry(
+      builder: (context) => LikeHeartWidget(offset: offset, angle: angle)
+  );
+  Overlay.of(context)?.insert(overlayEntry);
+  Timer(Duration(seconds: 1), () =>  overlayEntry.remove());
+
+}
+
+class LikeHeartWidget extends StatelessWidget {
+  final Offset offset;
+  final double angle;
+  LikeHeartWidget({Key? key, required this.offset, this.angle = 0}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      child: Transform.translate(
+        offset: Offset(offset.dx - 50, offset.dy - 50),
+        child: Transform.rotate(
+          angle: angle,
+          child: IgnorePointer(
+            child: DropShadow(
+              child: CustomIcon(
+                icon: 'assets/icons/favorite-filled.svg',
+                size: 100,
+                color: Colors.red,
+              )
+            )
+          )
+        ),
       )
     );
   }

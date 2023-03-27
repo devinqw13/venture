@@ -37,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen>  {
               floating: false,
               pinned: true,
               leading: IconButton(
-                icon: Icon(IconlyLight.arrow_left, size: 28),
+                icon: Icon(IconlyLight.arrow_left, size: 25),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               flexibleSpace: FlexibleSpaceBar(

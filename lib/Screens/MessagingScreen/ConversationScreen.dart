@@ -110,7 +110,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
         ),
         centerTitle: false,
         leading: IconButton(
-          icon: Icon(IconlyLight.arrow_left, color: primaryOrange, size: 28),
+          icon: Icon(IconlyLight.arrow_left, color: primaryOrange, size: 25),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [

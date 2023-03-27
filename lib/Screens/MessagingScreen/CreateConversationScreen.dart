@@ -105,7 +105,7 @@ class _CreateConversationScreenState extends State<CreateConversationScreen> {
               forceElevated: true,
               elevation: 0.5,
               leading: IconButton(
-                icon: Icon(IconlyLight.arrow_left, size: 28, color: primaryOrange),
+                icon: Icon(IconlyLight.arrow_left, size: 25, color: primaryOrange),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               floating: false,
