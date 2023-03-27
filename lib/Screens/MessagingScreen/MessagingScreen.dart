@@ -56,7 +56,7 @@ class MessagingScreenState extends State<MessagingScreen> {
     }
 
     if (messages!.isNotEmpty) {
-      // markMessagesAsRead();
+      markMessagesAsRead();
     }
 
     textController.addListener(() {
@@ -68,21 +68,21 @@ class MessagingScreenState extends State<MessagingScreen> {
     });
   }
 
-  // Future<void> markMessagesAsRead() async {
-  //   WriteBatch batch = FirebaseFirestore.instance.batch();
-  //   return FirebaseFirestore.instance.collection('conversations').doc(widget.conversation!.conversationUID).collection('messages').get().then((querySnapshot) {
-  //     querySnapshot.docs.forEach((document) {
-  //       if (messages!.isNotEmpty) {
-  //         if (document.get('to_email') == VIPUser().email) {
-  //           if (!document.get('read')) {
-  //             batch.update(document.reference, {'read': true});
-  //           }
-  //         }
-  //       }
-  //     });
-  //     return batch.commit();
-  //   });
-  // }
+  Future<void> markMessagesAsRead() async {
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+    return FirebaseFirestore.instance.collection('conversations').doc(widget.conversation.conversationUID).collection('messages').get().then((querySnapshot) {
+      querySnapshot.docs.forEach((document) {
+        if (messages!.isNotEmpty) {
+          if (document.get('user_key') == owners!.firstWhere((e) => e != VenUser().userKey.value.toString())) {
+            if (!document.get('read')) {
+              batch.update(document.reference, {'read': true});
+            }
+          }
+        }
+      });
+      return batch.commit();
+    });
+  }
 
   updateMessages(List<Message> updatedMessages) {
     if (updatedMessages.length == messages!.length + 1) {
@@ -295,7 +295,7 @@ class MessagingScreenState extends State<MessagingScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(IconlyLight.arrow_left, color: primaryOrange, size: 25),
+          icon: Icon(IconlyLight.arrow_left, size: 25),
           onPressed: () => Navigator.of(context).pop(),
         ),
         elevation: 0,

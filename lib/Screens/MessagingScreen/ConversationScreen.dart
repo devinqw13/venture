@@ -65,7 +65,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
     }
     messagesList.sort((a,b) => a.timestamp.compareTo(b.timestamp));
     bool showUnread = false;
-    if (messagesList.firstWhereOrNull((message) => message.userKey == VenUser().userKey.value.toString() && !message.isMessageRead!) != null) {
+    
+    if (messagesList.firstWhereOrNull((message) => message.userKey != VenUser().userKey.value.toString() && !message.isMessageRead!) != null) {
       showUnread = true;
     } else {
       showUnread = false;
@@ -106,11 +107,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
           // style: TextStyle(
           //   color: primaryOrange,
           // )
-          style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.w600)
+          style: theme.textTheme.headline6
         ),
         centerTitle: false,
         leading: IconButton(
-          icon: Icon(IconlyLight.arrow_left, color: primaryOrange, size: 25),
+          icon: Icon(IconlyLight.arrow_left, size: 25),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
@@ -158,7 +159,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   children: [
                     for (var convo in conversations)
                     StreamBuilder(
-                      stream: convo.reference.collection('messages').orderBy('timestamp', descending: true).limit(1).snapshots(),
+                      stream: convo.reference.collection('messages').orderBy('timestamp', descending: true).snapshots(),
                       builder: (context, messageSnapshot) {
                         if (!messageSnapshot.hasData || !snapshot.hasData) {
                           return Center(
