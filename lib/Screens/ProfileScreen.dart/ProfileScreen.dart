@@ -3,6 +3,7 @@ import 'package:async/async.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Constants.dart';
+import 'package:venture/FirebaseServices.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Components/ProfileSkeleton.dart';
@@ -21,8 +22,18 @@ class _ProfileScreenState extends State<ProfileScreen>  {
 
   _fetch(int userKey) {
     return _memoizer.runOnce(() async {
-      var res = await getUser(context, userKey);
-      return res;
+      // TODO: Incorporate user content caching
+      // var res = await getUser(context, userKey);
+      // return res;
+
+      var res = await FirebaseServices().getUserDetails(userKey: userKey.toString());
+      
+      if(res != null) {
+        var user = UserModel.fromFirebaseMap(res.docs.first.data());
+        return user;
+      }else {
+        return null;
+      }
     });
   }
 

@@ -69,10 +69,20 @@ class FirebaseServices extends ChangeNotifier {
         .get();
   }
 
-  Future<QuerySnapshot<Map<String, dynamic>>> getUserDetails(String username) async {
-    return _firestore.collection('users')
+  Future<QuerySnapshot<Map<String, dynamic>>?> getUserDetails({String? username, String? userKey}) async {
+    if(username != null) {
+      return await _firestore.collection('users')
         .where('username', isEqualTo: username)
         .get();
+    }
+
+    if(userKey != null) {
+      return await _firestore.collection('users')
+        .where('user_key', isEqualTo: userKey)
+        .get();
+    }
+
+    return null;
   }
 
   Future<UserCredential?> createUserWithEmailAndPassword(BuildContext context, String username, String email, String password) async {
@@ -130,8 +140,8 @@ class FirebaseServices extends ChangeNotifier {
     UserCredential? userCredential;
     
     if(!user.contains("@")) {
-      var result = await getUserDetails(user.toLowerCase());
-      if(result.docs.isEmpty) {
+      var result = await getUserDetails(username: user.toLowerCase());
+      if(result == null || result.docs.isEmpty) {
         showToast(context: context, msg: "User was not found.");
         return null;
       }

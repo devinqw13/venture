@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+// import 'package:swipeable_page_route/swipeable_page_route.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/UserModel.dart';
-import 'package:venture/Screens/PinScreen/Components/PinSkeleton.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:venture/Screens/ProfileScreen.dart/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -79,6 +79,10 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
           onTap: () {
             if (textController.text.isNotEmpty) {
               textController.clear();
+              setState(() {
+                showSearchResults = false;
+                searchResults = [];
+              });
             }
           },
           child: Container(
@@ -321,9 +325,13 @@ class PinSearched extends StatelessWidget {
   const PinSearched({Key? key, required this.pin, required this.ctx}) : super(key: key);
 
   goToPin() {
-    KeyboardUtil.hideKeyboard(ctx);
+    // KeyboardUtil.hideKeyboard(ctx);
     PinScreen screen = PinScreen(pinKey: pin.pinKey);
     Navigator.of(ctx).push(MaterialPageRoute(builder: (context) => screen));
+    // Navigator.of(ctx).push(SwipeablePageRoute(
+    //   canOnlySwipeFromEdge: false,
+    //   builder: (BuildContext context) => screen,
+    // ));
   }
 
   @override
@@ -395,7 +403,7 @@ class UserSearched extends StatelessWidget {
   const UserSearched({Key? key, required this.ctx, required this.user}) : super(key: key);
 
   goToUserProfile() {
-    KeyboardUtil.hideKeyboard(ctx);
+    // KeyboardUtil.hideKeyboard(ctx);
     ProfileScreen screen = ProfileScreen(userKey: user.userKey!);
     Navigator.of(ctx).push(MaterialPageRoute(builder: (context) => screen));
   }

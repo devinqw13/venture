@@ -16,6 +16,7 @@ import 'package:venture/FirebaseServices.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Indicator.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
+import 'package:venture/Helpers/PhotoHero.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/CommentScreen/CommentScreen.dart';
 import 'package:venture/Screens/DashboardScreen/Components/LoginOverlay.dart';
@@ -34,7 +35,8 @@ import 'package:venture/Helpers/ZoomOverlay.dart';
 
 class PostSkeleton extends StatefulWidget{
   final Content content;
-  PostSkeleton({Key? key, required this.content}) : super(key: key);
+  final String? heroTag;
+  PostSkeleton({Key? key, required this.content, this.heroTag}) : super(key: key);
 
   @override
   _PostSkeleton createState() => _PostSkeleton();
@@ -473,17 +475,33 @@ class _PostSkeleton extends State<PostSkeleton> {
                     },
                     child: ClipRRect(
                       // borderRadius: BorderRadius.circular(20.0),
-                      child: CachedNetworkImage(
-                        // fit: BoxFit.contain,
-                        fit: BoxFit.cover,
-                        imageUrl: content.contentUrls[index].toString(),
-                        progressIndicatorBuilder: (context, url, downloadProgress) {
-                          return Skeleton.rectangular(
-                            height: 250,
-                            // borderRadius: 20.0
-                          );
-                        }
-                      )
+                      // child: CachedNetworkImage(
+                      //   // fit: BoxFit.contain,
+                      //   fit: BoxFit.cover,
+                      //   imageUrl: content.contentUrls[index].toString(),
+                      //   progressIndicatorBuilder: (context, url, downloadProgress) {
+                      //     return Skeleton.rectangular(
+                      //       height: 250,
+                      //       // borderRadius: 20.0
+                      //     );
+                      //   }
+                      // )
+                      child: widget.heroTag != null ?
+                        PhotoHero(
+                          tag: widget.heroTag!,
+                          photoUrl: content.contentUrls[index].toString()
+                        ) : CachedNetworkImage(
+                          // fit: BoxFit.contain,
+                          fit: BoxFit.cover,
+                          imageUrl: content.contentUrls[index].toString(),
+                          progressIndicatorBuilder: (context, url, downloadProgress) {
+                            return Skeleton.rectangular(
+                              height: 250,
+                              // borderRadius: 20.0
+                            );
+                          }
+                        )
+
                     )
                   )
                 );
@@ -632,7 +650,7 @@ void showLikeHeart({
       builder: (context) => LikeHeartWidget(offset: offset, angle: angle)
   );
   Overlay.of(context)?.insert(overlayEntry);
-  Timer(Duration(seconds: 1), () =>  overlayEntry.remove());
+  Timer(Duration(milliseconds: 500), () =>  overlayEntry.remove());
 
 }
 

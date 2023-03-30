@@ -6,7 +6,6 @@ import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Constants.dart';
-import 'package:venture/FireBaseServices.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/DeleteContent.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
@@ -47,7 +46,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   _initializeAsyncDependencies() async {
     // await _fetchCache();
     setState(() => isLoading = true);
-    List<Content> results = await getContent(context, 0);
+    List<Content> results = await getContent(context, [0]);
     setState(() => isLoading = false);
 
     setState(() {
@@ -98,7 +97,6 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
     Future.delayed(const Duration(milliseconds: 500), () {
       
     });
-    // why use freshNumbers var? https://stackoverflow.com/a/52992836/2301224
   }
 
   @override

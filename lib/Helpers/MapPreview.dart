@@ -10,8 +10,9 @@ class MapPreview extends StatelessWidget {
   final PreviewStyle style;
   final int zoom;
   final double height;
+  final double borderRadius;
 
-  const MapPreview({Key? key, required this.latitude, required this.longitude, this.style = PreviewStyle.STANDARD, this.zoom = 13, this.height = 100}) : super(key: key);
+  const MapPreview({Key? key, required this.latitude, required this.longitude, this.style = PreviewStyle.STANDARD, this.zoom = 13, this.height = 100, this.borderRadius = 10.0}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +39,7 @@ class MapPreview extends StatelessWidget {
         Container(
           height: height,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(borderRadius),
             image: DecorationImage(
               fit: BoxFit.cover,
               image: NetworkImage(image),

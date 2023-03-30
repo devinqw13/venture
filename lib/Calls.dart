@@ -369,7 +369,7 @@ Future<Content?> createContentDetails(BuildContext context, Map<String, dynamic>
   }
 }
 
-Future<List<Content>> getContent(BuildContext context, int userKey) async {
+Future<List<Content>> getContent(BuildContext context, List<int> userKey) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
@@ -395,13 +395,29 @@ Future<List<Content>> getContent(BuildContext context, int userKey) async {
   }
 
   if (jsonResponse['result'] == 'true') {
-    List<Content>? contents = [];
+    List<Content> contents = [];
 
-    for (var item in jsonResponse['results']) {
-      Content content = Content(item);
-      contents.add(content);
+    for (Map<String, dynamic> item in jsonResponse['results']) {
+      if(item.containsKey('pins') && item['pins'] != null) {
+        for(var pin in item['pins']) {
+          Content content = Content.fromMap(pin, item['user'], ContentFormat.pin);
+          contents.add(content);
+        }
+      }
+      if(item.containsKey('pin_content') && item['pin_content'] != null) {
+        for(var pinContent in item['pin_content']) {
+          Content content = Content.fromMap(pinContent, item['user'], ContentFormat.pinContent);
+          contents.add(content);
+        }
+      }
+      if(!item.containsKey('pin_content') && !item.containsKey('pins')) {
+        Content content = Content.fromMap(item, item['user'], ContentFormat.normal);
+        contents.add(content);
+      }
+      // Content content = Content(item);
+      // contents.add(content);
     }
-
+    contents.sort((a,b) => b.timestamp.compareTo(a.timestamp));
     //TODO: CREATE CACHE OF RETRIEVED DATA AND SET EXPIRATION (24 hours)
 
     return contents;
