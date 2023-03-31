@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:paginate_firestore/paginate_firestore.dart';
+// import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Constants.dart';
@@ -95,9 +96,9 @@ class MessagingScreenState extends State<MessagingScreen> {
     if (!mounted) return false;
 
     // if there's a current frame,
-    if (SchedulerBinding.instance!.schedulerPhase != SchedulerPhase.idle) {
+    if (SchedulerBinding.instance.schedulerPhase != SchedulerPhase.idle) {
       // wait for the end of that frame.
-      await SchedulerBinding.instance!.endOfFrame;
+      await SchedulerBinding.instance.endOfFrame;
       if (!mounted) return false;
     }
 
@@ -227,29 +228,28 @@ class MessagingScreenState extends State<MessagingScreen> {
   }
 
   buildPaginatedMessages() {
-    return PaginateFirestore(
-      query: FirebaseFirestore.instance.collection('conversations').doc(widget.conversation.conversationUID).collection('messages').orderBy('timestamp', descending: true),
-      itemBuilderType: PaginateBuilderType.listView,
-      isLive: true, 
+    return FirestoreListView(
       reverse: true,
-      itemsPerPage: 30,
-      onEmpty: Container(
-        padding: EdgeInsets.symmetric(vertical: 8),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
-              SizedBox(height: 20,),
-              Text('No messages yet'),
-            ],
+      pageSize: 30,
+      emptyBuilder: (context) {
+        return Container(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
+                SizedBox(height: 20,),
+                Text('No messages yet'),
+              ],
+            ),
           ),
-        ),
-      ),
-      // padding: const EdgeInsets.only(bottom: 90),
-      itemBuilder: (context, documentSnapshot, index) {
-        Message? message = Message(documentSnapshot[index]);
-        // return Container();
+        );
+      },
+      query: FirebaseFirestore.instance.collection('conversations').doc(widget.conversation.conversationUID).collection('messages').orderBy('timestamp', descending: true),
+      itemBuilder: (context, documentSnapshot) {
+        Message? message = Message(documentSnapshot);
+    //     // return Container();
         DateTime dateTime = DateTime.parse(message.timestamp);
         DateFormat dateFormat = DateFormat('MMM dd');
         String dateString = dateFormat.format(dateTime);
@@ -285,7 +285,7 @@ class MessagingScreenState extends State<MessagingScreen> {
             )
           ),
         );
-      },
+      }
     );
   }
 

@@ -1,9 +1,10 @@
 import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:paginate_firestore/paginate_firestore.dart';
+// import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/FirebaseAPI.dart';
@@ -75,58 +76,37 @@ class _LikedByScreen extends State<LikedByScreen> {
       ),
       body: ListView(
         children: [
-          PaginateFirestore(
+          FirestoreListView(
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
+            pageSize: 20,
             query: FirebaseAPI().likedByQuery(widget.documentId),
-            itemBuilderType: PaginateBuilderType.listView,
-            isLive: true, 
-            itemsPerPage: 20,
-            // padding: EdgeInsets.only(top: 100),
-            header: SliverToBoxAdapter(
-              child: Center(
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text:'Liked by ',
-                      ),
-                      TextSpan(
-                        text: "$numOfLikes",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              )
-            ),
-            onEmpty: Container(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
-                  // SizedBox(height: 20,),
-                  Text('No likes yet'),
-                ],
-              ),
-            ),
-            // padding: const EdgeInsets.only(bottom: 90),
-            itemBuilder: (context, documentSnapshot, index) {
-              String userFirebaseId = documentSnapshot[index].id;
+            emptyBuilder: (context) {
+              return Container(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
+                    // SizedBox(height: 20,),
+                    Text('No likes yet'),
+                  ],
+                ),
+              );
+            },
+            itemBuilder: (context, documentSnapshot) {
+              String userFirebaseId = documentSnapshot.id;
               return FutureBuilder(
                 future: FirebaseAPI().getUserFromFirebaseId(userFirebaseId),
                 builder: (context, snapshot) {
                   if(snapshot.hasData) {
-                    var docSnapshot = snapshot.data as Map<String, dynamic>?;
+                    var docSnapshot = snapshot.data;
                     return UserLikeCard(user: docSnapshot!);
                   }
                   return Container();
                 }
               );
-            },
+            }
           )
         ]
       )

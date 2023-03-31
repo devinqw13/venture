@@ -1,9 +1,9 @@
 import 'dart:ui' as ui;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:paginate_firestore/paginate_firestore.dart';
+// import 'package:paginate_firestore/paginate_firestore.dart';
+import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/ThemeController.dart';
@@ -27,6 +27,7 @@ class _CommentScreen extends State<CommentScreen> {
   bool allowPost = false;
   TextEditingController textController = TextEditingController();
   final ThemesController _themeController = Get.put(ThemesController());
+  ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
@@ -53,6 +54,11 @@ class _CommentScreen extends State<CommentScreen> {
 
     FirebaseAPI().addComment(widget.documentId, widget.contentKey, textController.text);
     textController.clear();
+    scrollController.animateTo(
+      scrollController.position.minScrollExtent,
+      duration: Duration(milliseconds: 500),
+      curve: Curves.fastOutSlowIn,
+    );
   }
 
   @override
@@ -85,62 +91,48 @@ class _CommentScreen extends State<CommentScreen> {
           children: [
             Expanded(
               child: ListView(
+                controller: scrollController,
                 children: [
-                  PaginateFirestore(
+                  FirestoreListView(
                     physics: NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     query: FirebaseAPI().commentQuery(widget.documentId),
-                    itemBuilderType: PaginateBuilderType.listView,
-                    isLive: true,
-                    itemsPerPage: 20,
-                    header: SliverToBoxAdapter(
-                      child: Center(
-                        child: RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: "$numOfComments ",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold
-                                ),
-                              ),
-                              TextSpan(
-                                text:'comments',
-                              ),
-                            ],
-                          ),
+                    pageSize: 20,
+                    emptyBuilder: (context) {
+                      return Container(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
+                            // SizedBox(height: 20,),
+                            Text(
+                              'Be the first to comment.'
+                            ),
+                          ],
                         ),
-                      )
-                    ),
-                    onEmpty: Container(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
-                          // SizedBox(height: 20,),
-                          Text('Be the first to comment.'),
-                        ],
-                      ),
-                    ),
-                    itemBuilder: (context, documentSnapshot, index) {
-                      // String documentId = documentSnapshot[index].id;
-                      var commentData = documentSnapshot[index].data() as Map<String, dynamic>;
+                      );
+                    },
+                    itemBuilder: (context, documentSnapshot) {
+                      // String documentId = documentSnapshot.id;
+                      var commentData = documentSnapshot.data() as Map<String, dynamic>;
+
                       return FutureBuilder(
                         future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
                         builder: (context, snapshot) {
                           var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
 
                           if(snapshot.hasData) {
-                            var docSnapshot = snapshot.data as DocumentSnapshot<Map<String, dynamic>>?;
-                            var userData = docSnapshot!.data();
+                            var docSnapshot = snapshot.data as Map<String, dynamic>;
+                            var userData = docSnapshot;
 
                             return Padding(
                               padding: EdgeInsets.symmetric(vertical: 10),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  MyAvatar(photo: userData!['photo_url']),
+                                  MyAvatar(photo: userData['photo_url']),
                                   Expanded(
                                     child: Container(
                                       padding: EdgeInsets.only(left: 10),

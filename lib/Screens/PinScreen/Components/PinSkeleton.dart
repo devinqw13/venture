@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:paginate_firestore/paginate_firestore.dart';
+// import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Components/ExpandableText.dart';
@@ -98,42 +99,42 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
         Expanded(
           child: SingleChildScrollView(
             controller: controller,
-            child: PaginateFirestore(
+            child: FirestoreListView(
+              padding: EdgeInsets.all(0),
               physics: NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               query: FirebaseAPI().commentQuery("76Rk5UxIg8K23uFaa4Uh"),
-              itemBuilderType: PaginateBuilderType.listView,
-              isLive: false,
-              itemsPerPage: 20,
-              onEmpty: Container(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
-                    // SizedBox(height: 20,),
-                    Text('Be the first to comment.'),
-                  ],
-                ),
-              ),
-              itemBuilder: (context, documentSnapshot, index) {
+              emptyBuilder: (context) {
+                return Container(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
+                      // SizedBox(height: 20,),
+                      Text('Be the first to comment.'),
+                    ],
+                  ),
+                );
+              },
+              itemBuilder: (context, documentSnapshot) {
                 // String documentId = documentSnapshot[index].id;
-                var commentData = documentSnapshot[index].data() as Map<String, dynamic>;
+                var commentData = documentSnapshot.data() as Map<String, dynamic>;
                 return FutureBuilder(
                   future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
                   builder: (context, snapshot) {
                     var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
 
                     if(snapshot.hasData) {
-                      var docSnapshot = snapshot.data as DocumentSnapshot<Map<String, dynamic>>?;
-                      var userData = docSnapshot!.data();
+                      var docSnapshot = snapshot.data as Map<String, dynamic>;
+                      var userData = docSnapshot;
 
                       return Padding(
                         padding: EdgeInsets.symmetric(vertical: 10),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            MyAvatar(photo: userData!['photo_url']),
+                            MyAvatar(photo: userData['photo_url']),
                             Expanded(
                               child: Container(
                                 padding: EdgeInsets.only(left: 10),

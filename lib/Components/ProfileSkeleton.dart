@@ -557,14 +557,14 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
         setState(() {
           // userData.followers.removeWhere((e) => e == FirebaseAPI().firebaseId());
           userData.isFollowing = false;
+          userData.followerCount--;
         });
       }
     }else {
-      // FirebaseAPI().updateFollowStatus(widget.user.fid, !userData.followers.contains(FirebaseAPI().firebaseId()));
-      FirebaseAPI().updateFollowStatus(widget.user.fid, !userData.isFollowing!);
+      FirebaseAPI().updateFollowStatusV2(widget.user.fid, !userData.isFollowing!);
       setState(() {
-        // userData.followers.add(FirebaseAPI().firebaseId()!);
         userData.isFollowing = true;
+        userData.followerCount++;
       });
     }
   }

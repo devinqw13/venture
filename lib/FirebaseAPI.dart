@@ -71,9 +71,9 @@ class FirebaseAPI extends ChangeNotifier {
 
   Future<int> getUserFollowingCount(String firebaseId) async {
     try {
-      var doc = await _firestore.collection('users').doc(firebaseId).collection('following').get();
-        
-      return doc.docs.length;
+      AggregateQuerySnapshot query = await _firestore.collection('users').doc(firebaseId).collection('following').count().get();
+
+      return query.count;
     } catch (e) {
       print(e);
       return 0;
@@ -82,9 +82,9 @@ class FirebaseAPI extends ChangeNotifier {
 
   Future<int> getUserFollowerCount(String firebaseId) async {
     try {
-      var doc = await _firestore.collection('users').doc(firebaseId).collection('followers').get();
-        
-      return doc.docs.length;
+      AggregateQuerySnapshot query = await _firestore.collection('users').doc(firebaseId).collection('followers').count().get();
+
+      return query.count;
     } catch (e) {
       print(e);
       return 0;
@@ -129,7 +129,7 @@ class FirebaseAPI extends ChangeNotifier {
           }
           int followingCount = await getUserFollowingCount(v.docs.first.id);
           data.update('following_count', (value) => value, ifAbsent: () => followingCount);
-          int followerCount = await getUserFollowingCount(v.docs.first.id);
+          int followerCount = await getUserFollowerCount(v.docs.first.id);
           data.update('follower_count', (value) => value, ifAbsent: () => followerCount);
           return data;
         });

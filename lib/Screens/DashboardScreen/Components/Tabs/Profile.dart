@@ -40,10 +40,10 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
       // TODO: Incorporate user data caching
       // var res = await getUser(context, userKey);
       // return res;
-      var res = await FirebaseAPI().getUserDetails(userKey: userKey.toString());
+      var res = await FirebaseAPI().getUserDetailsV2(userKey: userKey.toString());
 
       if(res != null) {
-        var user = UserModel.fromFirebaseMap(res.docs.first.data());
+        var user = UserModel.fromFirebaseMap(res);
         return user;
       }else {
         return null;

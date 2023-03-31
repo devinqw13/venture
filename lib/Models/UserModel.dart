@@ -50,8 +50,8 @@ class UserModel {
     userBio = input['user_bio'];
     userAvatar = input['user_avatar'];
     userLocation = input['user_location'];
-    followingCount = input['following_count'];
-    followerCount = input['follower_count'];
+    followingCount = input['following_count'] ?? 0;
+    followerCount = input['follower_count'] ?? 0;
     pinCount = input['pin_count'];
   }
 }
