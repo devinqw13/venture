@@ -1,10 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-// import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Components/ExpandableText.dart';
@@ -18,6 +15,7 @@ import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Screens/ProfileScreen.dart/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 
 class PinSkeleton extends StatefulWidget {
   final Pin pin;

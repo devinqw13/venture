@@ -6,7 +6,6 @@ import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Constants.dart';
