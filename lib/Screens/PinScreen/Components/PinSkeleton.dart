@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:venture/Components/Avatar.dart';
-import 'package:venture/FirebaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Components/ExpandableText.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
@@ -101,7 +101,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
             child: PaginateFirestore(
               physics: NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              query: FirebaseServices().commentQuery("76Rk5UxIg8K23uFaa4Uh"),
+              query: FirebaseAPI().commentQuery("76Rk5UxIg8K23uFaa4Uh"),
               itemBuilderType: PaginateBuilderType.listView,
               isLive: false,
               itemsPerPage: 20,
@@ -120,7 +120,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                 // String documentId = documentSnapshot[index].id;
                 var commentData = documentSnapshot[index].data() as Map<String, dynamic>;
                 return FutureBuilder(
-                  future: FirebaseServices().getUserFromFirebaseId(commentData['firebase_id']),
+                  future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
                   builder: (context, snapshot) {
                     var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
 
@@ -215,7 +215,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
     //       child: PaginateFirestore(
     //         scrollController: controller,
     //         shrinkWrap: true,
-    //         query: FirebaseServices().commentQuery("76Rk5UxIg8K23uFaa4Uh"),
+    //         query: FirebaseAPI().commentQuery("76Rk5UxIg8K23uFaa4Uh"),
     //         itemBuilderType: PaginateBuilderType.listView,
     //         isLive: false,
     //         itemsPerPage: 20,
@@ -234,7 +234,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
     //           // String documentId = documentSnapshot[index].id;
     //           var commentData = documentSnapshot[index].data() as Map<String, dynamic>;
     //           return FutureBuilder(
-    //             future: FirebaseServices().getUserFromFirebaseId(commentData['firebase_id']),
+    //             future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
     //             builder: (context, snapshot) {
     //               var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
 
@@ -553,6 +553,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                               ]
                             ),
                           )
+
                         ],
                       )
                     ),

@@ -92,7 +92,7 @@ class Content {
       active = input['content_active'] == "N" ? false : true;
       contentType = input['content_type'];
       timestamp = input['created_ts'];
-      contentCaption = input['content_caption'];
+      contentCaption = input['description']; //input['content_caption'];
       user = input['user'] != null ? UserModel(input['user']) : null;
       // contentLocation = input['content_location'];
       rating = input['avg_rating'];

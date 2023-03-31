@@ -11,7 +11,7 @@ import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/VenUser.dart';
 
-class FirebaseServices extends ChangeNotifier {
+class FirebaseAPI extends ChangeNotifier {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
  
   Stream<dynamic> getContent() {
@@ -69,6 +69,28 @@ class FirebaseServices extends ChangeNotifier {
         .get();
   }
 
+  Future<int> getUserFollowingCount(String firebaseId) async {
+    try {
+      var doc = await _firestore.collection('users').doc(firebaseId).collection('following').get();
+        
+      return doc.docs.length;
+    } catch (e) {
+      print(e);
+      return 0;
+    }
+  }
+
+  Future<int> getUserFollowerCount(String firebaseId) async {
+    try {
+      var doc = await _firestore.collection('users').doc(firebaseId).collection('followers').get();
+        
+      return doc.docs.length;
+    } catch (e) {
+      print(e);
+      return 0;
+    }
+  }
+
   Future<QuerySnapshot<Map<String, dynamic>>?> getUserDetails({String? username, String? userKey}) async {
     if(username != null) {
       return await _firestore.collection('users')
@@ -80,6 +102,37 @@ class FirebaseServices extends ChangeNotifier {
       return await _firestore.collection('users')
         .where('user_key', isEqualTo: userKey)
         .get();
+    }
+
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> getUserDetailsV2({String? username, String? userKey}) async {
+    if(username != null) {
+      return await _firestore.collection('users')
+        .where('username', isEqualTo: username)
+        .get().then((v) {
+          return v.docs.first.data();
+        });
+    }
+
+    if(userKey != null) {
+      return await _firestore.collection('users')
+        .where('user_key', isEqualTo: userKey)
+        .get().then((v) async {
+          Map<String, dynamic> data = v.docs.first.data();
+
+          if(FirebaseAuth.instance.currentUser != null && v.docs.first.id != FirebaseAuth.instance.currentUser!.uid) {
+            bool isFollowing = await checkIfFollowing(v.docs.first.id);
+
+            data.update('isFollowing', (value) => value, ifAbsent: () => isFollowing);
+          }
+          int followingCount = await getUserFollowingCount(v.docs.first.id);
+          data.update('following_count', (value) => value, ifAbsent: () => followingCount);
+          int followerCount = await getUserFollowingCount(v.docs.first.id);
+          data.update('follower_count', (value) => value, ifAbsent: () => followerCount);
+          return data;
+        });
     }
 
     return null;
@@ -298,10 +351,23 @@ class FirebaseServices extends ChangeNotifier {
     return FirebaseFirestore.instance.collection('content').doc(documentId).collection('comments').orderBy('timestamp', descending: true);
   }
 
-  Future<DocumentSnapshot<Map<String, dynamic>>> getUserFromFirebaseId(String id) async {
+  Query<Object?> followersQuery(String? documentId) {
+    return FirebaseFirestore.instance.collection('users');
+  }
+
+  Future<Map<String, dynamic>> getUserFromFirebaseId(String id) async {
     return await _firestore.collection('users')
       .doc(id)
-      .get();
+      .get().then((v) async {
+        Map<String, dynamic>? data = v.data();
+        if(id != FirebaseAuth.instance.currentUser!.uid) {
+          bool isFollowing = await checkIfFollowing(id);
+
+          data!.update('isFollowing', (value) => value, ifAbsent: () => isFollowing);
+        }
+
+        return data!;
+      });
   }
 
   Future<void> updateFollowStatus(String firebaseId, bool shouldFollow) async {
@@ -334,6 +400,41 @@ class FirebaseServices extends ChangeNotifier {
           "following": FieldValue.arrayRemove([firebaseId])
         }).catchError((error) {print("Failed to add message: $error");});
 
+      });
+    }
+  }
+
+  Future<bool> checkIfFollowing(String firebaseId) async {
+    try {
+      // Get reference to Firestore collection
+      var doc = await _firestore.collection('users').doc(firebaseId).collection('followers').doc(FirebaseAuth.instance.currentUser!.uid).get();
+
+      return doc.exists;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  Future<void> updateFollowStatusV2(String firebaseId, bool shouldFollow) async {
+    HapticFeedback.mediumImpact();
+
+    var followersCollection = _firestore.collection('users').doc(firebaseId).collection('followers');
+    var followingCollection = _firestore.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('following');
+
+    if(shouldFollow) {
+
+      followersCollection.doc(FirebaseAuth.instance.currentUser!.uid).set({
+        'timestamp': DateTime.now().toUtc(),
+      }).then((v) {
+        followingCollection.doc(firebaseId).set({
+          'timestamp': DateTime.now().toUtc(),
+        });
+      });
+
+    }else {
+      followersCollection.doc(FirebaseAuth.instance.currentUser!.uid).delete().then((v) {
+        followingCollection.doc(firebaseId).delete();
       });
     }
   }

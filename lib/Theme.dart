@@ -9,6 +9,13 @@ class Themes {
     fontFamily: 'SegoeUI',
     primarySwatch: Colors.blue,
     brightness: Brightness.light,
+    platform: TargetPlatform.iOS,
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      }
+    ),
     appBarTheme: AppBarTheme(
       backwardsCompatibility: false,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
@@ -115,6 +122,13 @@ class Themes {
     brightness: Brightness.dark,
     // scaffoldBackgroundColor: ColorConstants.gray900,
     scaffoldBackgroundColor: Colors.black,
+    platform: TargetPlatform.iOS,
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      }
+    ),
     appBarTheme: AppBarTheme(
       backwardsCompatibility: false,
       systemOverlayStyle: SystemUiOverlayStyle.light,

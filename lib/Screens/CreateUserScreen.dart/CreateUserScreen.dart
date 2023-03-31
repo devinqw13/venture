@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Constants.dart';
-import 'package:venture/FireBaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/VenUser.dart';
@@ -98,7 +98,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     if (!canRun) return;
 
     setState(() => isLoading = true);
-    var result = await FirebaseServices().createUserWithEmailAndPassword(
+    var result = await FirebaseAPI().createUserWithEmailAndPassword(
       context, 
       usernameTextController.text, 
       emailTextController.text, 

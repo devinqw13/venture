@@ -16,6 +16,7 @@ class CustomDialogBox extends StatefulWidget {
   final String? title;
   final String? description;
   final TextAlign? descAlignment;
+  final Axis buttonDirection;
   final Map<String, dynamic>? buttons;
 
   CustomDialogBox({
@@ -23,6 +24,7 @@ class CustomDialogBox extends StatefulWidget {
     @required this.title,
     @required this.description,
     @required this.descAlignment,
+    this.buttonDirection = Axis.horizontal,
     @required this.buttons
   }) : super(key: key);
 
@@ -31,6 +33,18 @@ class CustomDialogBox extends StatefulWidget {
 }
 
 class _CustomDialogBoxState extends State<CustomDialogBox> {
+  List<Widget> vertButtons = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if(widget.buttonDirection == Axis.vertical) {
+      widget.buttons!.forEach((k,v) {
+        vertButtons.add(buildVertButton(k,v));
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -80,11 +94,14 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
                   ],
                 ),
               ),
+              widget.buttonDirection == Axis.horizontal ?
               Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: buildButtons()
-              )
+                children: buildHorzButtons()
+              ) : Container(),
+              for(var widget in vertButtons)
+                widget
               // Align(
               //   alignment: Alignment.bottomRight,
               //   child: FlatButton(
@@ -100,7 +117,38 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
     );
   }
 
-  buildButtons() {
+  Widget buildVertButton(String k, Map<dynamic, dynamic> v) {
+    return Row(
+      children: [
+        Expanded(
+          child: ZoomTapAnimation(
+            onTap: v['action'],
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.grey,
+                    width: 0.1
+                  )
+                )
+              ),
+              child: Text(
+                k,
+                textAlign: v['alignment'] ?? TextAlign.center,
+                style: TextStyle(
+                  color: v['textColor'],
+                  fontWeight: v['fontWeight']
+                ),
+              ),
+            )
+          )
+        )
+      ],
+    );
+  }
+
+  buildHorzButtons() {
     List<Widget> buttons = [];
     widget.buttons!.forEach((k,v) {
       buttons.add(
@@ -136,7 +184,8 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
                 k,
                 textAlign: v['alignment'] ?? TextAlign.center,
                 style: TextStyle(
-                  color: v['textColor']
+                  color: v['textColor'],
+                  fontWeight: v['fontWeight']
                 ),
               ),
             )

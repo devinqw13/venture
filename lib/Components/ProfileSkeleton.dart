@@ -1,11 +1,13 @@
 import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:iconly/iconly.dart';
 import 'package:get/get.dart';
 import 'package:venture/Calls.dart';
-import 'package:venture/FireBaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
+import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Components/Skeleton.dart';
@@ -13,7 +15,6 @@ import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Helpers/MapPreview.dart';
 import 'package:venture/Helpers/NumberFormat.dart';
 import 'package:venture/Helpers/RefreshIndicator.dart';
-import 'package:venture/Helpers/RouteTransition.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
@@ -229,7 +230,8 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
   }
 
   Future<void> _refreshUser() async {
-    var result = await FirebaseServices().getUserDetails(userKey: userData.userKey.toString());
+    HapticFeedback.mediumImpact();
+    var result = await FirebaseAPI().getUserDetails(userKey: userData.userKey.toString());
     if(result != null) {
       var u = UserModel.fromFirebaseMap(result.docs.first.data());
       setState(() => userData = u);
@@ -451,7 +453,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                         children: [
                           ZoomTapAnimation(
                             child: Text(
-                              NumberFormat.format(userData.followers.length),
+                              NumberFormat.format(userData.followerCount),
                               style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 18),
                             )
                           ),
@@ -477,7 +479,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                         children: [
                           ZoomTapAnimation(
                             child: Text(
-                              NumberFormat.format(userData.following.length),
+                              NumberFormat.format(userData.followingCount),
                               style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 18),
                             )
                           ),
@@ -524,16 +526,45 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
     );
   }
 
-  handleFollowStatus() {
-    FirebaseServices().updateFollowStatus(widget.user.fid, !userData.followers.contains(FirebaseServices().firebaseId()));
+  handleFollowStatus() async {
 
-    if(userData.followers.contains(FirebaseServices().firebaseId())) {
-      setState(() {
-        userData.followers.removeWhere((e) => e == FirebaseServices().firebaseId());
-      });
+    if(userData.isFollowing!) {
+
+      var result = await showCustomDialog(
+        context: context,
+        title: 'Unfollow ${userData.userName}', 
+        description: "Are you sure you want to unfollow ${userData.userName}.",
+        descAlignment: TextAlign.center,
+        buttonDirection: Axis.vertical,
+        buttons: {
+          "Unfollow": {
+            "action": () => Navigator.of(context).pop(true),
+            "textColor": primaryOrange,
+            "fontWeight": FontWeight.bold,
+            "alignment": TextAlign.center
+          },
+          "Cancel": {
+            "action": () => Navigator.of(context).pop(),
+            "textColor": Colors.white,
+            "alignment": TextAlign.center
+          }
+        }
+      );
+
+      if(result != null && result) {
+        FirebaseAPI().updateFollowStatusV2(widget.user.fid, !userData.isFollowing!);
+
+        setState(() {
+          // userData.followers.removeWhere((e) => e == FirebaseAPI().firebaseId());
+          userData.isFollowing = false;
+        });
+      }
     }else {
+      // FirebaseAPI().updateFollowStatus(widget.user.fid, !userData.followers.contains(FirebaseAPI().firebaseId()));
+      FirebaseAPI().updateFollowStatus(widget.user.fid, !userData.isFollowing!);
       setState(() {
-        userData.followers.add(FirebaseServices().firebaseId()!);
+        // userData.followers.add(FirebaseAPI().firebaseId()!);
+        userData.isFollowing = true;
       });
     }
   }
@@ -557,16 +588,16 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
               onPressed: () => widget.isUser ? _showEditProfileModal(user, theme) : handleFollowStatus(),
               child: Text(
                 widget.isUser ? "Edit Profile" :
-                userData.followers.contains(FirebaseServices().firebaseId()) ? "Following" : "Follow"
+                userData.isFollowing! ? "Following" : "Follow"
               ),
               style: ElevatedButton.styleFrom(
                 // minimumSize: Size(150, 35),
                 elevation: 0,
-                primary: widget.isUser ? primaryOrange : userData.followers.contains(FirebaseServices().firebaseId()) ? _themesController.getContainerBgColor() : primaryOrange,
+                primary: widget.isUser ? primaryOrange : userData.isFollowing! ? _themesController.getContainerBgColor() : primaryOrange,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: widget.isUser ? Colors.transparent :  userData.followers.contains(FirebaseServices().firebaseId()) ? Get.isDarkMode ? Colors.white : Colors.black : Colors.transparent
+                    color: widget.isUser ? Colors.transparent :  userData.isFollowing! ? Get.isDarkMode ? Colors.white : Colors.black : Colors.transparent
                   )
                 )
               ),
@@ -596,8 +627,8 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
   SliverToBoxAdapter _buildTabs() {
     return SliverToBoxAdapter(
       child: TabBar(
-        // unselectedLabelColor: Get.isDarkMode ? Colors.white : Colors.black,
-        // labelColor: primaryOrange,
+        unselectedLabelColor: Get.isDarkMode ? null : Colors.black,
+        labelColor: Get.isDarkMode ? null : primaryOrange,
         indicatorColor: primaryOrange,
         tabs: [
           Tab(
@@ -959,14 +990,15 @@ class PinBuilder extends StatelessWidget {
               children: [
                 Expanded(
                   child: Container(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withOpacity(0.4),
                     child: Text(
                       pin.pinName!,
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white
                       ),
                     ),
                   )

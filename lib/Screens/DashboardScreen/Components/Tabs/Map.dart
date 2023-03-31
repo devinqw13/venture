@@ -212,6 +212,8 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
 
       BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
 
+      // BitmapDescriptor mkr = await getMarkerIcon(context, "assets/icons/pin-2.svg", color: Colors.green);
+
       final Marker marker = Marker(
         markerId: markerKey,
         position: LatLng(double.parse(loc[0]), double.parse(loc[1])),

@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
-import 'package:venture/FirebaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Constants.dart';
@@ -37,14 +37,14 @@ class _LoginOverlay extends State<LoginOverlay>  {
       return;
     }
     // bool? _ = await postLogin(context, userTextController.text, pwdTextController.text);
-    var _ = await FirebaseServices().login(
+    var _ = await FirebaseAPI().login(
       context,
       userTextController.text,
       pwdTextController.text
     );
 
     setState(() => isLoading = false);
-    if(widget.enableBackButton && FirebaseServices().firebaseId() != null) Navigator.pop(context);
+    if(widget.enableBackButton && FirebaseAPI().firebaseId() != null) Navigator.pop(context);
   }
 
   void goToSettings() {

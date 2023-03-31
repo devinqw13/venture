@@ -6,7 +6,7 @@ import 'package:venture/Screens/LoginScreen/LoginScreen.dart';
 import 'package:venture/Screens/SettingsScreen/ChangePassword.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
-import 'package:venture/FireBaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:get_storage/get_storage.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
@@ -23,8 +23,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen>  {
     storage.remove("user_key");
     VenUser().userKey.value = 0;
     VenUser().onChange();
-    // await FirebaseServices().removeFirebaseTokens();
-    await FirebaseServices().logout();
+    // await FirebaseAPI().removeFirebaseTokens();
+    await FirebaseAPI().logout();
     // Navigator.pop(context);
 
     // Implemented force login. This will remove all screens and navigate to login screen

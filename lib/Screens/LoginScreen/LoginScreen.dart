@@ -7,7 +7,7 @@ import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Screens/CreateUserScreen.dart/CreateUserScreen.dart';
-import 'package:venture/FirebaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:iconly/iconly.dart';
 import 'package:get/get.dart';
@@ -31,7 +31,7 @@ class _LoginScreen extends State<LoginScreen> {
     
     if(result != null && result) showSignup();
 
-    if(FirebaseServices().firebaseId() != null) {
+    if(FirebaseAPI().firebaseId() != null) {
       Get.toNamed('/home');
     }
   }
@@ -40,7 +40,7 @@ class _LoginScreen extends State<LoginScreen> {
     final CreateUserScreen screen = CreateUserScreen();
     await Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 300));
 
-    if(FirebaseServices().firebaseId() != null) {
+    if(FirebaseAPI().firebaseId() != null) {
       Get.toNamed('/home');
     }
   }
@@ -165,14 +165,14 @@ class _LoginPopup extends State<LoginPopup> {
     }
     setState(() => isLoading = true);
     // bool? _ = await postLogin(context, userTextController.text, pwdTextController.text);
-    var _ = await FirebaseServices().login(
+    var _ = await FirebaseAPI().login(
       context,
       userTextController.text,
       pwdTextController.text
     );
 
     setState(() => isLoading = false);
-    if(FirebaseServices().firebaseId() != null) Navigator.pop(context);
+    if(FirebaseAPI().firebaseId() != null) Navigator.pop(context);
   }
 
   @override

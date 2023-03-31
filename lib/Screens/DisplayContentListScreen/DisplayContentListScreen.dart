@@ -70,18 +70,38 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
           ],
         )
       ),
-      body: widget.contents.isNotEmpty && widget.contents.length > 1 ? PageView.builder(
-        controller: scrollController,
-        itemCount: widget.contents.length,
-        physics: AlwaysScrollableScrollPhysics(),
-        scrollDirection: Axis.vertical,
-        itemBuilder: (context, i) {
-          if(widget.contents[i] == widget.content) {
-            return PostSkeleton(content: widget.contents[i], heroTag: widget.contents[i].contentUrls.first);
-          }
-          return PostSkeleton(content: widget.contents[i]);
-        }
-      ) :
+      // body: widget.contents.isNotEmpty && widget.contents.length > 1 ? PageView.builder(
+      //   controller: scrollController,
+      //   itemCount: widget.contents.length,
+      //   physics: AlwaysScrollableScrollPhysics(),
+      //   scrollDirection: Axis.vertical,
+      //   itemBuilder: (context, i) {
+      //     if(widget.contents[i] == widget.content) {
+      //       return PostSkeleton(content: widget.contents[i], heroTag: widget.contents[i].contentUrls.first);
+      //     }
+      //     return PostSkeleton(content: widget.contents[i]);
+      //   }
+      // ) :
+      // PostSkeleton(content: widget.content, heroTag: widget.content.contentUrls.first)
+      body: widget.contents.isNotEmpty && widget.contents.length > 1 ? 
+      Column(
+        children: [
+          Expanded(
+            child: PageView.builder(
+              controller: scrollController,
+              itemCount: widget.contents.length,
+              physics: AlwaysScrollableScrollPhysics(),
+              scrollDirection: Axis.vertical,
+              itemBuilder: (context, i) {
+                if(widget.contents[i] == widget.content) {
+                  return PostSkeleton(content: widget.contents[i], heroTag: widget.contents[i].contentUrls.first);
+                }
+                return PostSkeleton(content: widget.contents[i]);
+              }
+            )
+          )
+         ]
+       ) :
       PostSkeleton(content: widget.content, heroTag: widget.content.contentUrls.first)
     );
   }

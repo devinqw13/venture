@@ -7,7 +7,7 @@ import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/ThemeController.dart';
-import 'package:venture/FirebaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -51,7 +51,7 @@ class _CommentScreen extends State<CommentScreen> {
   submitComment() {
     if(textController.text.isEmpty) return;
 
-    FirebaseServices().addComment(widget.documentId, widget.contentKey, textController.text);
+    FirebaseAPI().addComment(widget.documentId, widget.contentKey, textController.text);
     textController.clear();
   }
 
@@ -89,7 +89,7 @@ class _CommentScreen extends State<CommentScreen> {
                   PaginateFirestore(
                     physics: NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
-                    query: FirebaseServices().commentQuery(widget.documentId),
+                    query: FirebaseAPI().commentQuery(widget.documentId),
                     itemBuilderType: PaginateBuilderType.listView,
                     isLive: true,
                     itemsPerPage: 20,
@@ -127,7 +127,7 @@ class _CommentScreen extends State<CommentScreen> {
                       // String documentId = documentSnapshot[index].id;
                       var commentData = documentSnapshot[index].data() as Map<String, dynamic>;
                       return FutureBuilder(
-                        future: FirebaseServices().getUserFromFirebaseId(commentData['firebase_id']),
+                        future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
                         builder: (context, snapshot) {
                           var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
 

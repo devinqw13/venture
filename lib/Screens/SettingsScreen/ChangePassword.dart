@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:iconly/iconly.dart';
 import 'package:get/get.dart';
 import 'package:venture/Constants.dart';
-import 'package:venture/FirebaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -56,7 +56,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
 
     setState(() => isLoading = true);
-    await FirebaseServices().updatePassword(
+    await FirebaseAPI().updatePassword(
       context,
       pwdTextController.text
     );

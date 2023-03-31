@@ -5,7 +5,7 @@ import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/SettingsScreen/ChangePassword.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
-import 'package:venture/FireBaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:get_storage/get_storage.dart';
 
 class PrivacySettingsScreen extends StatefulWidget {

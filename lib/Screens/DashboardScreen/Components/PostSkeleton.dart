@@ -12,7 +12,7 @@ import 'package:venture/Components/FadeOverlay.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
-import 'package:venture/FirebaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Indicator.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
@@ -307,7 +307,7 @@ class _PostSkeleton extends State<PostSkeleton> {
   }
 
   Widget buildReactionButton(List<String>? reactions, String? documentId, Content content) {
-    if(FirebaseServices().firebaseId() == null) {
+    if(FirebaseAPI().firebaseId() == null) {
       return ZoomTapAnimation(
         onTap: () => showLogin(),
         child: Row(
@@ -323,7 +323,7 @@ class _PostSkeleton extends State<PostSkeleton> {
             CustomIcon(
               icon: 'assets/icons/favorite.svg',
               size: 27,
-              color: Colors.white,
+              color: Get.isDarkMode ? Colors.white : Colors.black,
             )
           ],
         )
@@ -346,19 +346,19 @@ class _PostSkeleton extends State<PostSkeleton> {
             )
           ),
           // SizedBox(width: 10),
-          reactions != null && reactions.contains(FirebaseServices().firebaseId()) ? ZoomTapAnimation(
-              onTap: () => FirebaseServices().removeReactionV2(documentId!),
+          reactions != null && reactions.contains(FirebaseAPI().firebaseId()) ? ZoomTapAnimation(
+              onTap: () => FirebaseAPI().removeReactionV2(documentId!),
               child: CustomIcon(
                 icon: 'assets/icons/favorite-filled.svg',
                 size: 27,
                 color: Colors.red,
               ),
             ) : ZoomTapAnimation(
-            onTap: () => FirebaseServices().addReactionV2(documentId, content.contentKey),
+            onTap: () => FirebaseAPI().addReactionV2(documentId, content.contentKey),
             child: CustomIcon(
               icon: 'assets/icons/favorite.svg',
               size: 27,
-              color: Colors.white,
+              color: Get.isDarkMode ? Colors.white : Colors.black,
             ),
           )
         ],
@@ -389,7 +389,7 @@ class _PostSkeleton extends State<PostSkeleton> {
             CustomIcon(
               icon: 'assets/icons/chat.svg',
               size: 27,
-              color: Colors.white,
+              color: Get.isDarkMode ? Colors.white : Colors.black,
             )
           ],
         ),
@@ -404,7 +404,7 @@ class _PostSkeleton extends State<PostSkeleton> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           StreamBuilder(
-            stream: FirebaseServices().getContentDoc(content.contentKey.toString()),
+            stream: FirebaseAPI().getContentDoc(content.contentKey.toString()),
             builder: (context, contentDocSnapshot) {
               Map<String, dynamic>? data = contentDocSnapshot.data as Map<String, dynamic>?;
               String? documentId = data?['documentId'];
@@ -412,7 +412,7 @@ class _PostSkeleton extends State<PostSkeleton> {
                 children: [
                   // build reactions amount & icon
                   StreamBuilder(
-                    stream: FirebaseServices().getReactionsV2(content.contentKey.toString(), documentId),
+                    stream: FirebaseAPI().getReactionsV2(content.contentKey.toString(), documentId),
                     builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>?> reactionSnapshot) {
                       
                       List<String>? reactions = reactionSnapshot.data?.docs.map((e) => e.id).toList();
@@ -424,7 +424,7 @@ class _PostSkeleton extends State<PostSkeleton> {
                   SizedBox(width: 20),
                   // build comment amount & icon
                   FutureBuilder(
-                    future: FirebaseServices().getComments(documentId),
+                    future: FirebaseAPI().getComments(documentId),
                     builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>?> commentSnapshot) {
                       List<String>? comments = commentSnapshot.data?.docs.map((e) => e.id).toList();
 
@@ -466,7 +466,7 @@ class _PostSkeleton extends State<PostSkeleton> {
                   minScale: 1,
                   child: GestureDetector(
                     onDoubleTap: () async {
-                      await FirebaseServices().addReactionV2(null, content.contentKey);
+                      await FirebaseAPI().addReactionV2(null, content.contentKey);
                       showLikeHeart(context: context, offset: doubleTapPosition);
                     },
                     onDoubleTapDown: (details) {

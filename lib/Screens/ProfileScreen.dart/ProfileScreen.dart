@@ -3,7 +3,8 @@ import 'package:async/async.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Constants.dart';
-import 'package:venture/FirebaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Components/ProfileSkeleton.dart';
@@ -26,10 +27,10 @@ class _ProfileScreenState extends State<ProfileScreen>  {
       // var res = await getUser(context, userKey);
       // return res;
 
-      var res = await FirebaseServices().getUserDetails(userKey: userKey.toString());
+      var res = await FirebaseAPI().getUserDetailsV2(userKey: userKey.toString());
       
       if(res != null) {
-        var user = UserModel.fromFirebaseMap(res.docs.first.data());
+        var user = UserModel.fromFirebaseMap(res);
         return user;
       }else {
         return null;

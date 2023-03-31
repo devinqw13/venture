@@ -6,7 +6,7 @@ import 'package:iconly/iconly.dart';
 import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Constants.dart';
-import 'package:venture/FirebaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Screens/ProfileScreen.dart/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
@@ -29,10 +29,10 @@ class _LikedByScreen extends State<LikedByScreen> {
   }
 
   buildFollowButton(Map<String, dynamic> data) {
-    bool isFollowing = data['followers'].contains(FirebaseServices().firebaseId());
+    bool isFollowing = data['followers'].contains(FirebaseAPI().firebaseId());
 
-    return FirebaseServices().firebaseId() != data['firebase_id'] ? ElevatedButton(
-      onPressed: () => FirebaseServices().updateFollowStatus(data['firebase_id'], !isFollowing),
+    return FirebaseAPI().firebaseId() != data['firebase_id'] ? ElevatedButton(
+      onPressed: () => FirebaseAPI().updateFollowStatus(data['firebase_id'], !isFollowing),
       child: Text(
         isFollowing ? "Following" : "Follow"
       ),
@@ -78,7 +78,7 @@ class _LikedByScreen extends State<LikedByScreen> {
           PaginateFirestore(
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            query: FirebaseServices().likedByQuery(widget.documentId),
+            query: FirebaseAPI().likedByQuery(widget.documentId),
             itemBuilderType: PaginateBuilderType.listView,
             isLive: true, 
             itemsPerPage: 20,
@@ -117,12 +117,11 @@ class _LikedByScreen extends State<LikedByScreen> {
             itemBuilder: (context, documentSnapshot, index) {
               String userFirebaseId = documentSnapshot[index].id;
               return FutureBuilder(
-                future: FirebaseServices().getUserFromFirebaseId(userFirebaseId),
+                future: FirebaseAPI().getUserFromFirebaseId(userFirebaseId),
                 builder: (context, snapshot) {
                   if(snapshot.hasData) {
-                    var docSnapshot = snapshot.data as DocumentSnapshot<Map<String, dynamic>>?;
-                    var data = docSnapshot!.data();
-                    return UserLikeCard(user: data!);
+                    var docSnapshot = snapshot.data as Map<String, dynamic>?;
+                    return UserLikeCard(user: docSnapshot!);
                   }
                   return Container();
                 }
@@ -162,31 +161,33 @@ class _UserLikeCard extends State<UserLikeCard> {
   }
 
   _handleFollowStatus(bool isFollowing) {
-    FirebaseServices().updateFollowStatus(user['firebase_id'], !isFollowing);
+    FirebaseAPI().updateFollowStatusV2(user['firebase_id'], !isFollowing);
 
     if(isFollowing) {
       setState(() {
-        user['followers'].removeWhere((e) => e == FirebaseServices().firebaseId());
+        // user['followers'].removeWhere((e) => e == FirebaseAPI().firebaseId());
+        user['isFollowing'] = false;
       });
     }else {
       setState(() {
-        user['followers'].add(FirebaseServices().firebaseId());
+        // user['followers'].add(FirebaseAPI().firebaseId());
+        user['isFollowing'] = true;
       });
     }
   }
 
   buildFollowButton() {
-    bool isFollowing = user['followers'].contains(FirebaseServices().firebaseId());
+    // bool isFollowing = user['followers'].contains(FirebaseAPI().firebaseId());
 
-    return FirebaseServices().firebaseId() != user['firebase_id'] ? ElevatedButton(
-      onPressed: () => _handleFollowStatus(isFollowing),
+    return FirebaseAPI().firebaseId() != user['firebase_id'] ? ElevatedButton(
+      onPressed: () => _handleFollowStatus(user['isFollowing']),
       child: Text(
-        isFollowing ? "Following" : "Follow"
+        user['isFollowing'] ? "Following" : "Follow"
       ),
       style: ElevatedButton.styleFrom(
         minimumSize: Size(100, 30),
         elevation: 0,
-        primary: isFollowing ? 
+        primary: user['isFollowing'] ? 
         ColorConstants.gray600 : primaryOrange,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),

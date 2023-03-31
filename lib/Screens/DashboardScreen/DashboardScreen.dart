@@ -3,6 +3,7 @@ import 'package:venture/Globals.dart' as globals;
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Constants.dart';
+import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';

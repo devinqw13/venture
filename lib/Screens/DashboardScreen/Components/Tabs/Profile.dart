@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
 import 'package:venture/Calls.dart';
-import 'package:venture/FirebaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Screens/DashboardScreen/Components/LoginOverlay.dart';
@@ -40,7 +40,7 @@ class _ProfileTabState extends State<ProfileTab> with AutomaticKeepAliveClientMi
       // TODO: Incorporate user data caching
       // var res = await getUser(context, userKey);
       // return res;
-      var res = await FirebaseServices().getUserDetails(userKey: userKey.toString());
+      var res = await FirebaseAPI().getUserDetails(userKey: userKey.toString());
 
       if(res != null) {
         var user = UserModel.fromFirebaseMap(res.docs.first.data());

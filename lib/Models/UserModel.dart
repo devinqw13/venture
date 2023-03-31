@@ -1,4 +1,4 @@
-import 'package:venture/FirebaseServices.dart';
+import 'package:venture/FirebaseAPI.dart';
 
 class UserModel {
   late String fid;
@@ -6,16 +6,16 @@ class UserModel {
   String? userEmail;
   bool? isPrivate;
   bool? isVerified;
-  // bool? isFollowing;
+  bool? isFollowing;
   String? userName;
   String? displayName;
   String? userBio;
   String? userAvatar;
   String? userLocation;
-  List<dynamic> followers = []; // List<String>
-  List<dynamic> following = []; // List<String>
-  int? followingCount;
-  int? followerCount;
+  // List<dynamic> followers = []; // List<String>
+  // List<dynamic> following = []; // List<String>
+  int followingCount = 0;
+  int followerCount = 0;
   int? pinCount;
 
   UserModel.fromFirebaseMap(Map<String, dynamic> input) {
@@ -24,17 +24,18 @@ class UserModel {
     userEmail = input['email'];
     isPrivate = input['user_is_private'] == 'Y' ? true : false;
     isVerified = input['verified'];
+    isFollowing = input['isFollowing'];
     // isFollowing = 
-    //   FirebaseServices().firebaseId() != input['firebase_id'] ? input['followers'].contains(FirebaseServices().firebaseId()) : null;
+    //   FirebaseAPI().firebaseId() != input['firebase_id'] ? input['followers'].contains(FirebaseAPI().firebaseId()) : null;
     userName = input['username'];
     displayName = input['display_name'];
     userBio = input['biography'];
     userAvatar = input['photo_url'];
     // userLocation = input['user_location'];
-    followers = input['followers'];
-    following = input['following'];
-    followingCount = input['following'].length;
-    followerCount = input['followers'].length;
+    // followers = input['followers'];
+    // following = input['following'];
+    followingCount = input['following_count'] ?? 0;
+    followerCount = input['follower_count'] ?? 0;
     pinCount = input['pin_count'] ?? 0;
   }
 

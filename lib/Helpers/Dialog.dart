@@ -6,6 +6,7 @@ Future<dynamic> showCustomDialog({
   @required String? title,
   @required String? description, 
   @required TextAlign? descAlignment, 
+  Axis buttonDirection = Axis.horizontal,
   @required Map<String, dynamic>? buttons
 }) async {
   var response = await showDialog(
@@ -15,6 +16,7 @@ Future<dynamic> showCustomDialog({
         title: title!,
         description: description!,
         descAlignment: descAlignment!,
+        buttonDirection: buttonDirection,
         buttons: buttons!,
       );
     }
