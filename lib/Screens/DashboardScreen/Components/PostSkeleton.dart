@@ -367,7 +367,7 @@ class _PostSkeleton extends State<PostSkeleton> {
   }
 
   goToCommentScreen(String? documentId, int? numOfComments, int contentKey) {
-    CommentScreen screen = CommentScreen(documentId: documentId!, numOfComments: numOfComments, contentKey: contentKey);
+    CommentScreen screen = CommentScreen(documentId: documentId, numOfComments: numOfComments, contentKey: contentKey);
     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 

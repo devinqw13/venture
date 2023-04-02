@@ -14,7 +14,7 @@ import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class CommentScreen extends StatefulWidget {
-  final String documentId;
+  final String? documentId;
   final int? numOfComments;
   final int contentKey;
   CommentScreen({Key? key, required this.documentId, this.numOfComments = 0, required this.contentKey}) : super(key: key);
@@ -24,8 +24,9 @@ class CommentScreen extends StatefulWidget {
 }
 
 class _CommentScreen extends State<CommentScreen> {
+  String? documentId;
   late int numOfComments;
-  bool allowPost = false;
+  var allowPost = false.obs;
   TextEditingController textController = TextEditingController();
   final ThemesController _themeController = Get.put(ThemesController());
   ScrollController scrollController = ScrollController();
@@ -33,13 +34,17 @@ class _CommentScreen extends State<CommentScreen> {
   @override
   void initState() {
     super.initState();
+    documentId = widget.documentId;
+    print(documentId);
     numOfComments = widget.numOfComments ?? 0;
 
     textController.addListener(() {
       if(textController.text.isEmpty) {
-        setState(() => allowPost = false);
-      } else {
-        setState(() => allowPost = true);
+        // setState(() => allowPost = false);
+        allowPost.value = false;
+      } else if(textController.text.isNotEmpty && !allowPost.value) {
+        // setState(() => allowPost = true);
+        allowPost.value = true;
       }
     });
   }
@@ -54,10 +59,13 @@ class _CommentScreen extends State<CommentScreen> {
 
   }
 
-  submitComment() {
+  submitComment() async {
     if(textController.text.isEmpty) return;
 
-    FirebaseAPI().addComment(widget.documentId, widget.contentKey, textController.text);
+    print(documentId);
+    var result = await FirebaseAPI().addComment(documentId, widget.contentKey, textController.text);
+    if(documentId == null) setState(() => documentId = result);
+    print(documentId);
     textController.clear();
     scrollController.animateTo(
       scrollController.position.minScrollExtent,
@@ -67,7 +75,7 @@ class _CommentScreen extends State<CommentScreen> {
   }
 
   void deleteComment(String commentId) {
-    FirebaseAPI().deleteComment(widget.documentId, commentId);
+    FirebaseAPI().deleteComment(documentId!, commentId);
     print("comment deleted...");
   }
 
@@ -106,7 +114,7 @@ class _CommentScreen extends State<CommentScreen> {
                   FirestoreListView(
                     physics: NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
-                    query: FirebaseAPI().commentQuery(widget.documentId),
+                    query: FirebaseAPI().commentQuery(documentId),
                     pageSize: 20,
                     emptyBuilder: (context) {
                       return Container(
@@ -237,37 +245,39 @@ class _CommentScreen extends State<CommentScreen> {
                                     color: Get.isDarkMode ? ColorConstants.gray600 : Colors.white,
                                     borderRadius: BorderRadius.circular(50),
                                   ),
-                                  child: TextField(
-                                    controller: textController,
-                                    // onChanged: (value) => setTyper(),
-                                    textInputAction: TextInputAction.send,
-                                    onSubmitted: (string) => submitComment(),
-                                    minLines: 1,
-                                    maxLines: 5,
-                                    decoration: InputDecoration(
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.only(right: 16, left: 20, bottom: 10, top: 10),
-                                      hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-                                      hintText: 'Type a message',
-                                      suffixIcon: allowPost ? ZoomTapAnimation(
-                                        child: ElevatedButton(
-                                          onPressed: () => submitComment(),
-                                          child: Text(
-                                            "Post",
-                                            style: TextStyle(
-                                              color: allowPost ? primaryOrange : null
+                                  child: Obx(() => 
+                                    TextField(
+                                      controller: textController,
+                                      // onChanged: (value) => setTyper(),
+                                      textInputAction: TextInputAction.send,
+                                      onSubmitted: (string) => submitComment(),
+                                      minLines: 1,
+                                      maxLines: 5,
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.only(right: 16, left: 20, bottom: 10, top: 10),
+                                        hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                                        hintText: 'Type a message',
+                                        suffixIcon: allowPost.value ? ZoomTapAnimation(
+                                          child: ElevatedButton(
+                                            onPressed: () => submitComment(),
+                                            child: Text(
+                                              "Post",
+                                              style: TextStyle(
+                                                color: allowPost.value ? primaryOrange : null
+                                              ),
                                             ),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            primary: Colors.transparent,
-                                            shadowColor: Colors.transparent,
-                                            splashFactory: NoSplash.splashFactory,
+                                            style: ElevatedButton.styleFrom(
+                                              elevation: 0,
+                                              primary: Colors.transparent,
+                                              shadowColor: Colors.transparent,
+                                              splashFactory: NoSplash.splashFactory,
+                                            )
                                           )
-                                        )
-                                      ) : null
+                                        ) : null
+                                      ),
                                     ),
-                                  ),
+                                  )
                                 ),
                               ),
                             ],

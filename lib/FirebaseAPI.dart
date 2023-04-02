@@ -498,7 +498,7 @@ class FirebaseAPI extends ChangeNotifier {
     await _firestore.collection('content').doc(contentId).collection('comments').doc(commentId).delete();
   }
 
-  Future<void> addComment(String? documentId, int contentKey, String comment) async {
+  Future<String> addComment(String? documentId, int contentKey, String comment) async {
     // HapticFeedback.mediumImpact();
 
     if(documentId != null) {
@@ -509,6 +509,7 @@ class FirebaseAPI extends ChangeNotifier {
       });
     }else {
       var rxRef = _firestore.collection('content').doc();
+      documentId = rxRef.id;
       rxRef.set({
         'content_key': contentKey.toString(),
       }, SetOptions(merge: true)).then((value) {
@@ -520,6 +521,8 @@ class FirebaseAPI extends ChangeNotifier {
         });
       });
     }
+
+    return documentId;
   }
 
   // void firebaseCloudMessagingListeners() async {
