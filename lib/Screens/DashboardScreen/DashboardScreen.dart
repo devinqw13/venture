@@ -29,7 +29,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   checkUserStatus() {
-    print(globals.userDisabled);
+    //TODO: CHECK IF USER IS DISABLED AND TAKE APPROPRIATE ACTION IF SO.
   }
 
   Widget _bottomAppBarItem({icon, page, double? iconSize}) {

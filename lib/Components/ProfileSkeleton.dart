@@ -5,10 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:iconly/iconly.dart';
 import 'package:get/get.dart';
 import 'package:venture/Calls.dart';
+import 'package:venture/Components/Avatar.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Dialog.dart';
-import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Components/Skeleton.dart';
 import 'package:venture/Controllers/ThemeController.dart';
@@ -21,6 +21,8 @@ import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Helpers/PhotoHero.dart';
 import 'package:venture/Screens/DisplayContentListScreen/DisplayContentListScreen.dart';
+import 'package:venture/Screens/EditProfileScreen/EditProfileScreen.dart';
+import 'package:venture/Screens/FollowStatsScreen.dart/FollowStatsScreen.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:venture/Screens/SettingsScreen/SettingsScreen.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
@@ -73,160 +75,22 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
 
   void goToSettings() {
     SettingsScreen screen = SettingsScreen();
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 
-  _saveProfileData(String name, String bio) {
-    Get.back();
+  void goToUserFollowInfo(int tab) {
+    FollowStatsScreen screen = FollowStatsScreen(user: userData, tab: tab);
+    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 
-  _showEditProfileModal(UserModel user, ThemeData theme) {
-    TextEditingController nameController = TextEditingController(text: user.displayName);
-    TextEditingController bioController = TextEditingController(text: user.userBio);
+  void goToEditProfile() async {
+    EditProfileScreen screen = EditProfileScreen(user: userData);
 
-    Get.bottomSheet(
-      DismissKeyboard(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Get.isDarkMode ? ColorConstants.gray900 : Colors.grey.shade50,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-            )
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  MaterialButton(
-                    onPressed: () => Get.back(),
-                    child: Text(
-                      "Cancel",
-                      style: theme.textTheme.subtitle1
-                    ),
-                  ),
-                  Text("Edit profile", style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.w500)),
-                  MaterialButton(
-                    onPressed: () => _saveProfileData(nameController.text, bioController.text),
-                    child: Text(
-                      "Save",
-                      style: theme.textTheme.subtitle1!.copyWith(
-                        fontWeight: FontWeight.bold
-                      )
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: ListView(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: NetworkImage(
-                            user.userAvatar!,
-                          ),
-                          fit: BoxFit.cover
-                        )
-                      ),
-                      child: ClipRRect(
-                        child: BackdropFilter(
-                          filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            alignment: Alignment.center,
-                            color: Colors.white.withOpacity(0.3),
-                            child: Container(
-                              height: getProportionateScreenHeight(80),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: _themesController.getContainerBgColor(),
-                                  width: 2.0
-                                ),
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  fit: BoxFit.contain,
-                                  image: NetworkImage(user.userAvatar!)
-                                )
-                              )
-                            ),
-                          )
-                        )
-                      )
-                    ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: Get.isDarkMode ? ColorConstants.gray600 : ColorConstants.gray50,
-                          borderRadius: BorderRadius.circular(10)
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              "Name",
-                              style: theme.textTheme.bodyText2,
-                            ),
-                            Flexible(
-                              child: TextField(
-                                controller: nameController,
-                                readOnly: isLoading,
-                                // controller: descTxtController,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                                  hintText: "",
-                                ),
-                              )
-                            )
-                          ],
-                        ),
-                      )
-                    ),
-                    SizedBox(height: 10),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Get.isDarkMode ? ColorConstants.gray600 : ColorConstants.gray50,
-                          borderRadius: BorderRadius.circular(10)
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Bio",
-                              style: theme.textTheme.bodyText2,
-                            ),
-                            Flexible(
-                              child: TextField(
-                                maxLines: 5,
-                                readOnly: isLoading,
-                                // controller: descTxtController,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                                  hintText: "",
-                                ),
-                              )
-                            )
-                          ],
-                        ),
-                      )
-                    ),
-                    SizedBox(height: 50)
-                  ],
-                )
-              )
-            ],
-          ),
-        )
-      )
-    );
+    var result = await Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 300));
+
+    if(result != null) {
+      setState(() => userData = result);
+    }
   }
 
   Future<void> _refreshUser() async {
@@ -287,7 +151,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
                               shadowColor: Colors.transparent,
-                              primary: _themesController.getContainerBgColor(),
+                              backgroundColor: _themesController.getContainerBgColor(),
                               shape: CircleBorder(),
                             ),
                           ): Container(),
@@ -299,7 +163,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                             ),
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
-                              primary: _themesController.getContainerBgColor(),
+                              backgroundColor: _themesController.getContainerBgColor(),
                               shape: CircleBorder(),
                             ),
                           ) : Container()
@@ -401,14 +265,18 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                 color: _themesController.getContainerBgColor(),
                 border: Border.all(
                   color: _themesController.getContainerBgColor(),
-                  width: 2.0
+                  width: 0.1
                 ),
                 shape: BoxShape.circle,
-                image: DecorationImage(
-                  fit: BoxFit.contain,
-                  image: NetworkImage(user.userAvatar!)
-                )
-              )
+                // image: DecorationImage(
+                //   fit: BoxFit.contain,
+                //   image: NetworkImage(user.userAvatar!)
+                // )
+              ),
+              child: MyAvatar(
+                photo: user.userAvatar!,
+                size: getProportionateScreenHeight(50),
+              ),
             ),
           )
         ],
@@ -423,25 +291,72 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
         shrinkWrap: true,
         physics: NeverScrollableScrollPhysics(),
         children: [
-          Center(
-            child: Padding(
-              padding: EdgeInsets.only(top: 10.0),
+          Padding(
+            padding: EdgeInsets.only(top: 10.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      children: [
+                        user.displayName != null && user.displayName != '' ? RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: userData.displayName! + "\n",
+                                style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(
+                                text: userData.userName,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14
+                                )
+                              ),
+                            ],
+                          ),
+                        ) :
+                        Text(
+                          user.userName!,
+                          style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    )
+                  )
+                ),
+              ],
+            )
+          ),
+          // Center(
+          //   child: Padding(
+          //     padding: EdgeInsets.only(top: 10.0),
+          //     // child: Text(
+          //     //   user.displayName != null && user.displayName != '' ? user.displayName! : user.userName!,
+          //     //   style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
+          //     // )
+          //     child: Row(
+          //       mainAxisAlignment: MainAxisAlignment.center,
+          //       children: [
+          //         Text(
+          //           user.displayName != null && user.displayName != '' ? user.displayName! : user.userName!,
+          //           style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
+          //         ),
+          //       ],
+          //     )
+          //   )
+          // ),
+          user.userBio == null || user.userBio == '' ? Container() : Padding(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            child: Center(
               child: Text(
-                user.displayName != null && user.displayName != '' ? user.displayName! : user.userName!,
-                style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
+                user.userBio!,
+                style: TextStyle(
+                  fontSize: 16.0
+                ),
               )
             )
           ),
-          user.userBio == null ? Container() : Center(
-            child: Text(
-              user.userBio!,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 15.0
-              ),
-            )
-          ),
-          SizedBox(height: 10),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * .15),
             child: IntrinsicHeight(
@@ -449,19 +364,20 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                 children: [
                   Expanded(
                     child: Center(
-                      child: Column(
-                        children: [
-                          ZoomTapAnimation(
-                            child: Text(
+                      child: ZoomTapAnimation(
+                        onTap: () => goToUserFollowInfo(0),
+                        child: Column(
+                          children: [
+                            Text(
                               NumberFormat.format(userData.followerCount),
                               style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 18),
+                            ),
+                            Text(
+                              "Followers",
+                              style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey, fontSize: 12),
                             )
-                          ),
-                          Text(
-                            "Followers",
-                            style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey, fontSize: 12),
-                          )
-                        ],
+                          ],
+                        )
                       )
                     )
                   ),
@@ -475,19 +391,20 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
 
                   Expanded(
                     child: Center(
-                      child: Column(
-                        children: [
-                          ZoomTapAnimation(
-                            child: Text(
+                      child: ZoomTapAnimation(
+                        onTap: () => goToUserFollowInfo(1),
+                          child: Column(
+                          children: [
+                            Text(
                               NumberFormat.format(userData.followingCount),
                               style: theme.textTheme.headline6!.copyWith(color: primaryOrange, fontWeight: FontWeight.bold, fontSize: 18),
+                            ),
+                            Text(
+                              "Following",
+                              style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey, fontSize: 12),
                             )
-                          ),
-                          Text(
-                            "Following",
-                            style: theme.textTheme.bodyText2!.copyWith(color: Colors.grey, fontSize: 12),
-                          )
-                        ],
+                          ],
+                        )
                       )
                     )
                   ),
@@ -585,7 +502,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
             //   ),
             // ),
             ElevatedButton(
-              onPressed: () => widget.isUser ? _showEditProfileModal(user, theme) : handleFollowStatus(),
+              onPressed: () => widget.isUser ? goToEditProfile() : handleFollowStatus(),
               child: Text(
                 widget.isUser ? "Edit Profile" :
                 userData.isFollowing! ? "Following" : "Follow"
@@ -593,11 +510,15 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
               style: ElevatedButton.styleFrom(
                 // minimumSize: Size(150, 35),
                 elevation: 0,
-                primary: widget.isUser ? primaryOrange : userData.isFollowing! ? _themesController.getContainerBgColor() : primaryOrange,
+                // primary: widget.isUser ? primaryOrange : userData.isFollowing! ? _themesController.getContainerBgColor() : primaryOrange,
+                backgroundColor: widget.isUser ? _themesController.getContainerBgColor() : userData.isFollowing! ? _themesController.getContainerBgColor() : primaryOrange,
+                shadowColor: Colors.transparent,
+                splashFactory: NoSplash.splashFactory,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: widget.isUser ? Colors.transparent :  userData.isFollowing! ? Get.isDarkMode ? Colors.white : Colors.black : Colors.transparent
+                    color: widget.isUser ? Get.isDarkMode ? Colors.white : Colors.black  :  userData.isFollowing! ? Get.isDarkMode ? Colors.white : Colors.black : Colors.transparent,
+                    width: 0.5
                   )
                 )
               ),
@@ -1042,12 +963,14 @@ class PinContentBuilder extends StatelessWidget {
           ),
           pinContent.contentUrls.length > 1 ? Padding(
             padding: EdgeInsets.symmetric(horizontal: 3, vertical: 3),
-            child: Align(
-              alignment: Alignment.topRight,
-              child: CustomIcon(
-                icon: 'assets/icons/photo-gallery.svg',
-                size: 30,
-                color: Colors.white,
+            child: IgnorePointer(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: CustomIcon(
+                  icon: 'assets/icons/photo-gallery.svg',
+                  size: 30,
+                  color: Colors.white,
+                )
               )
             ),
           ) : Container()

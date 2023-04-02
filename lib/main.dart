@@ -101,11 +101,11 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> checkUserLoginStatus() async {
     globals.auth!.idTokenChanges().listen((User? user) async {
-      if (user == null) {
-        VenUser().clear();
-      } else {
-        var userKey = storage.read('user_key');
-        VenUser().userKey.value = userKey ?? 0;
+      var userKey = storage.read('user_key');
+      var userEmail = storage.read('user_email');
+      if (user != null && userKey != null && userEmail != null) {
+        VenUser().userKey.value = userKey;
+        VenUser().email = userEmail;
         try {
           await FirebaseAuth.instance.currentUser!.reload();
         } on FirebaseAuthException catch (e) {
@@ -127,16 +127,8 @@ class _MyAppState extends State<MyApp> {
             );
           }
         }
-        // VenUser().userKey.value = userKey ?? 0;
-        // if (user.displayName != null) {
-        //   VenUser().displayName = user.displayName!;
-        // }
-        // VenUser().email = user.email!;
-        // if (!alreadyCalled) {
-        //   alreadyCalled = true;
-        //   await getUserInfo(user.email);
-        //   createUserDevice(user.email!);
-        // }
+      } else {
+        VenUser().clear();
       }
     });
   }
@@ -145,10 +137,12 @@ class _MyAppState extends State<MyApp> {
     // Implemented force login screen if not signed in.
     // remove if statement to disable force login.
     // note: remove pushAndRemoveUntil in logout func if disabling force login.
-    if(FirebaseAuth.instance.currentUser == null) {
-      return '/login';
-    } else {
+    var userKey = storage.read('user_key');
+    var userEmail = storage.read('user_email');
+    if(FirebaseAuth.instance.currentUser != null && userKey != null && userEmail != null) {
       return '/home';
+    } else {
+      return '/login';
     }
     // return '/home';
   }

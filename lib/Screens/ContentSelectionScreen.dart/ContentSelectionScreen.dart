@@ -18,7 +18,8 @@ import 'package:venture/Controllers/ThemeController.dart';
 class ContentSelectionScreen extends StatefulWidget {
   final bool allowMultiSelect;
   final bool photoOnly;
-  ContentSelectionScreen({Key? key, required this.allowMultiSelect, required this.photoOnly}) : super(key: key);
+  final bool circleMask;
+  ContentSelectionScreen({Key? key, required this.allowMultiSelect, required this.photoOnly, this.circleMask = false}) : super(key: key);
 
   @override
   _ContentSelectionScreenState createState() => _ContentSelectionScreenState();
@@ -245,6 +246,7 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
               //   }
               // },
               maxScale: 5.0,
+              cropLayerPainter: widget.circleMask ? CircleEditorCropLayerPainter() : EditorCropLayerPainter(),
               cropRectPadding: const EdgeInsets.all(0.0),
               hitTestSize: 20.0,
               initCropRectType: InitCropRectType.layoutRect,
@@ -481,4 +483,43 @@ class CustomAssetEntity {
   // GlobalKey<ExtendedImageEditorState> editorKey = GlobalKey();
 
   CustomAssetEntity({required this.entity});
+}
+
+class CircleEditorCropLayerPainter extends EditorCropLayerPainter {
+  const CircleEditorCropLayerPainter();
+
+  @override
+  void paintCorners(
+      Canvas canvas, Size size, ExtendedImageCropLayerPainter painter) {
+    // do nothing
+  }
+
+  @override
+  void paintMask(
+      Canvas canvas, Size size, ExtendedImageCropLayerPainter painter) {
+    final Rect rect = Offset.zero & size;
+    final Rect cropRect = painter.cropRect;
+    final Color maskColor = painter.maskColor;
+    canvas.saveLayer(rect, Paint());
+    canvas.drawRect(
+        rect,
+        Paint()
+          ..style = PaintingStyle.fill
+          ..color = maskColor);
+    canvas.drawCircle(cropRect.center, cropRect.width / 2.0,
+        Paint()..blendMode = BlendMode.clear);
+    canvas.restore();
+  }
+
+  @override
+  void paintLines(
+      Canvas canvas, Size size, ExtendedImageCropLayerPainter painter) {
+    final Rect cropRect = painter.cropRect;
+    if (painter.pointerDown) {
+      canvas.save();
+      canvas.clipPath(Path()..addOval(cropRect));
+      super.paintLines(canvas, size, painter);
+      canvas.restore();
+    }
+  }
 }

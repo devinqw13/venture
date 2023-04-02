@@ -260,7 +260,7 @@ Future<Content?> handleContentUpload(BuildContext context, File file, int userKe
   return content;
 }
 
-Future<Content?> handleContentUploadV2(BuildContext context, List<File?> files, int userKey, String contentType, {String? contentCaption, int? pinKey = 20, int? circleKey}) async {
+Future<dynamic> handleContentUploadV2(BuildContext context, List<File?> files, int userKey, String contentType, {String? contentCaption, int? pinKey, int? circleKey}) async {
 
   List<String> contentNames = [];
 
@@ -285,8 +285,8 @@ Future<Content?> handleContentUploadV2(BuildContext context, List<File?> files, 
 
     contentNames.add(name);
   }
-  print(jsonMap);
-  Content? content = await createContentDetails(context, jsonMap);
+  
+  var content = await createContentDetails(context, jsonMap);
   if(content == null) return null;
 
   return content;
@@ -333,7 +333,7 @@ Future<Map<String, dynamic>?> getS3SignedUrl(BuildContext context, int userKey, 
   }
 }
 
-Future<Content?> createContentDetails(BuildContext context, Map<String, dynamic> jsonMap) async {
+Future<dynamic> createContentDetails(BuildContext context, Map<String, dynamic> jsonMap) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
@@ -358,10 +358,18 @@ Future<Content?> createContentDetails(BuildContext context, Map<String, dynamic>
     jsonResponse = json.decode(response.body);
   }
 
-  print(jsonResponse);
   if (jsonResponse['result'] == true) {
-    Content content = Content(jsonResponse['results']);
-    return content;
+    Map<String, dynamic> data = jsonResponse['results'];
+    if(data.containsKey('content_type')) {
+      if(data['content_type'] == "post") {
+        Content content = Content(jsonResponse['results']);
+        return content;
+      }
+
+      if(data['content_type'] == "update-avatar") {
+        return data['user_avatar'];
+      }
+    }
   }
   else {
     showToast(context: context, color: Colors.red, msg: jsonResponse['results']);

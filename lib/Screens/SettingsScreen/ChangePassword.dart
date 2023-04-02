@@ -8,6 +8,7 @@ import 'package:venture/Constants.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/Toast.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  final TextEditingController currentPwdTextController = TextEditingController();
   final TextEditingController pwdTextController = TextEditingController();
   final TextEditingController pwdRepeatTextController = TextEditingController();
   bool isLoading = false;
@@ -35,7 +37,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     if(isLoading) return;
     KeyboardUtil.hideKeyboard(context);
 
-    if(pwdTextController.text.isEmpty || pwdRepeatTextController.text.isEmpty) {
+    if(pwdTextController.text.isEmpty || pwdRepeatTextController.text.isEmpty || currentPwdTextController.text.isEmpty) {
       showToast(context: context, gravity: ToastGravity.BOTTOM, msg: "Password fields must not be empty.");
       return;
     }
@@ -56,193 +58,240 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
 
     setState(() => isLoading = true);
-    await FirebaseAPI().updatePassword(
-      context,
-      pwdTextController.text
+    print(VenUser().email);
+    bool didReauth = await FirebaseAPI().reauthenticate(
+      context, 
+      VenUser().email,
+      currentPwdTextController.text
     );
-    setState(() => isLoading = false);
 
-    Navigator.pop(context);
+    if(didReauth) {
+      await FirebaseAPI().updatePassword(
+        context,
+        pwdTextController.text
+      );
+      Navigator.pop(context);
+    }
+    setState(() => isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(IconlyLight.arrow_left, size: 25),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          !isLoading ? enableButton ? Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Center(
-              child: ZoomTapAnimation(
-                onTap: _changePassword,
+    return DismissKeyboard(
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(IconlyLight.arrow_left, size: 25),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          actions: [
+            !isLoading ? enableButton ? Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: ZoomTapAnimation(
+                  onTap: _changePassword,
+                  child: Text(
+                    "Done",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Get.isDarkMode ? Colors.white : Colors.black
+                    ),
+                  )
+                )
+              )
+            ) : Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
                 child: Text(
                   "Done",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Get.isDarkMode ? Colors.white : Colors.black
+                    color: Get.isDarkMode ? ColorConstants.gray400 : Colors.grey
                   ),
                 )
               )
-            )
-          ) : Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Center(
-              child: Text(
-                "Done",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Get.isDarkMode ? ColorConstants.gray400 : Colors.grey
-                ),
+            ) : Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: CupertinoActivityIndicator(
+                radius: 13,
               )
             )
-          ) : Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: CupertinoActivityIndicator(
-              radius: 13,
-            )
-          )
-        ],
-        backgroundColor: Colors.transparent,
-        flexibleSpace: ClipRect(
-          child: BackdropFilter(
-            filter: Get.isDarkMode ? ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7) : ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Get.isDarkMode ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.8),
+          ],
+          backgroundColor: Colors.transparent,
+          flexibleSpace: ClipRect(
+            child: BackdropFilter(
+              filter: Get.isDarkMode ? ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7) : ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                color: Get.isDarkMode ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.8),
+              ),
             ),
           ),
+          centerTitle: false,
+          title: Text(
+            'Change your password',
+            style: theme.textTheme.headline6,
+          )
         ),
-        centerTitle: false,
-        title: Text(
-          'Change your password',
-          style: theme.textTheme.headline6,
-        )
-      ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
-        child: ListView(
-          children: [
-            // Text("Set a password", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-            // SizedBox(height: 10),
-            Text("Create a new secure password.", 
-              style: TextStyle(fontSize: 16, height: 1.5, color: Colors.grey.shade600)),
-            SizedBox(height: 30),
-            TextField(
-              controller: pwdTextController,
-              readOnly: isLoading,
-              obscureText: true,
-              decoration: InputDecoration(
-                // suffixIcon: Padding(
-                //   padding: const EdgeInsets.all(5.0),
-                //   child: ZoomTapAnimation(
-                //     onTap: () => setState(() => obsecure = !obsecure),
-                //     child: Container(
-                //       width: 40,
-                //       decoration: BoxDecoration(
-                //         color: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey.shade100,
-                //         borderRadius: BorderRadius.circular(10)
-                //       ),
-                //       child: Center(
-                //         child: Icon(obsecure ? IconlyLight.show : IconlyLight.hide, color: Colors.grey),
-                //       ),
-                //     )
-                //   )
-                // ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.black)
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: ListView(
+            children: [
+              Text("Enter your current password.", 
+                style: TextStyle(fontSize: 16, height: 1.5, color: Colors.grey.shade600)),
+              SizedBox(height: 30),
+              TextField(
+                controller: currentPwdTextController,
+                readOnly: isLoading,
+                obscureText: true,
+                decoration: InputDecoration(
+                  // suffixIcon: Padding(
+                  //   padding: const EdgeInsets.all(5.0),
+                  //   child: ZoomTapAnimation(
+                  //     onTap: () => setState(() => obsecure = !obsecure),
+                  //     child: Container(
+                  //       width: 40,
+                  //       decoration: BoxDecoration(
+                  //         color: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey.shade100,
+                  //         borderRadius: BorderRadius.circular(10)
+                  //       ),
+                  //       child: Center(
+                  //         child: Icon(obsecure ? IconlyLight.show : IconlyLight.hide, color: Colors.grey),
+                  //       ),
+                  //     )
+                  //   )
+                  // ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.black)
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Get.isDarkMode ? primaryOrange : Colors.black)
+                  ),
+                  hintText: "Current password",
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Get.isDarkMode ? primaryOrange : Colors.black)
-                ),
-                hintText: "New password",
-                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               ),
-            ),
-            SizedBox(height: 10),
-            // Row(
-            //   children: [
-            //     AnimatedContainer(
-            //       duration: Duration(milliseconds: 300),
-            //       width: 20,
-            //       height: 20,
-            //       decoration: BoxDecoration(
-            //         color: _isPasswordLengthAccepted ?  Colors.green : Colors.transparent,
-            //         border: _isPasswordLengthAccepted ? Border.all(color: Colors.transparent) :
-            //           Border.all(color: Colors.grey.shade400),
-            //         borderRadius: BorderRadius.circular(50)
-            //       ),
-            //       child: Center(child: Icon(Icons.check, color: Get.isDarkMode ? ColorConstants.gray900 : Colors.grey.shade50, size: 15)),
-            //     ),
-            //     SizedBox(width: 10),
-            //     Text("Contains at least 6 characters")
-            //   ],
-            // ),
-            // SizedBox(height: 10),
-            // Row(
-            //   children: [
-            //     AnimatedContainer(
-            //       duration: Duration(milliseconds: 300),
-            //       width: 20,
-            //       height: 20,
-            //       decoration: BoxDecoration(
-            //         color: _hasPasswordOneNumber ?  Colors.green : Colors.transparent,
-            //         border: _hasPasswordOneNumber ? Border.all(color: Colors.transparent) :
-            //           Border.all(color: Colors.grey.shade400),
-            //         borderRadius: BorderRadius.circular(50)
-            //       ),
-            //       child: Center(child: Icon(Icons.check, color: Get.isDarkMode ? ColorConstants.gray900 : Colors.grey.shade50, size: 15)),
-            //     ),
-            //     SizedBox(width: 10,),
-            //     Text("Contains at least 1 number")
-            //   ],
-            // ),
-            // SizedBox(height: 30),
-            TextField(
-              controller: pwdRepeatTextController,
-              readOnly: isLoading,
-              onChanged: (password) => onPasswordChanged(),
-              obscureText: true,
-              decoration: InputDecoration(
-                // suffixIcon: Padding(
-                //   padding: const EdgeInsets.all(5.0),
-                //   child: ZoomTapAnimation(
-                //     onTap: () => setState(() => obsecure2 = !obsecure2),
-                //     child: Container(
-                //       width: 40,
-                //       decoration: BoxDecoration(
-                //         color: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey.shade100,
-                //         borderRadius: BorderRadius.circular(10)
-                //       ),
-                //       child: Center(
-                //         child: Icon(obsecure2 ? IconlyLight.show : IconlyLight.hide, color: Colors.grey),
-                //       ),
-                //     )
-                //   )
-                // ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.black)
+              SizedBox(height: 5),
+              // Text("Set a password", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+              // SizedBox(height: 10),
+              Text("Create a new secure password.", 
+                style: TextStyle(fontSize: 16, height: 1.5, color: Colors.grey.shade600)),
+              SizedBox(height: 30),
+              TextField(
+                controller: pwdTextController,
+                readOnly: isLoading,
+                obscureText: true,
+                decoration: InputDecoration(
+                  // suffixIcon: Padding(
+                  //   padding: const EdgeInsets.all(5.0),
+                  //   child: ZoomTapAnimation(
+                  //     onTap: () => setState(() => obsecure = !obsecure),
+                  //     child: Container(
+                  //       width: 40,
+                  //       decoration: BoxDecoration(
+                  //         color: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey.shade100,
+                  //         borderRadius: BorderRadius.circular(10)
+                  //       ),
+                  //       child: Center(
+                  //         child: Icon(obsecure ? IconlyLight.show : IconlyLight.hide, color: Colors.grey),
+                  //       ),
+                  //     )
+                  //   )
+                  // ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.black)
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Get.isDarkMode ? primaryOrange : Colors.black)
+                  ),
+                  hintText: "New password",
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Get.isDarkMode ? primaryOrange : Colors.black)
-                ),
-                hintText: "Confirm password",
-                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               ),
-            ),
-          ],
+              SizedBox(height: 10),
+              // Row(
+              //   children: [
+              //     AnimatedContainer(
+              //       duration: Duration(milliseconds: 300),
+              //       width: 20,
+              //       height: 20,
+              //       decoration: BoxDecoration(
+              //         color: _isPasswordLengthAccepted ?  Colors.green : Colors.transparent,
+              //         border: _isPasswordLengthAccepted ? Border.all(color: Colors.transparent) :
+              //           Border.all(color: Colors.grey.shade400),
+              //         borderRadius: BorderRadius.circular(50)
+              //       ),
+              //       child: Center(child: Icon(Icons.check, color: Get.isDarkMode ? ColorConstants.gray900 : Colors.grey.shade50, size: 15)),
+              //     ),
+              //     SizedBox(width: 10),
+              //     Text("Contains at least 6 characters")
+              //   ],
+              // ),
+              // SizedBox(height: 10),
+              // Row(
+              //   children: [
+              //     AnimatedContainer(
+              //       duration: Duration(milliseconds: 300),
+              //       width: 20,
+              //       height: 20,
+              //       decoration: BoxDecoration(
+              //         color: _hasPasswordOneNumber ?  Colors.green : Colors.transparent,
+              //         border: _hasPasswordOneNumber ? Border.all(color: Colors.transparent) :
+              //           Border.all(color: Colors.grey.shade400),
+              //         borderRadius: BorderRadius.circular(50)
+              //       ),
+              //       child: Center(child: Icon(Icons.check, color: Get.isDarkMode ? ColorConstants.gray900 : Colors.grey.shade50, size: 15)),
+              //     ),
+              //     SizedBox(width: 10,),
+              //     Text("Contains at least 1 number")
+              //   ],
+              // ),
+              // SizedBox(height: 30),
+              TextField(
+                controller: pwdRepeatTextController,
+                readOnly: isLoading,
+                onChanged: (password) => onPasswordChanged(),
+                obscureText: true,
+                decoration: InputDecoration(
+                  // suffixIcon: Padding(
+                  //   padding: const EdgeInsets.all(5.0),
+                  //   child: ZoomTapAnimation(
+                  //     onTap: () => setState(() => obsecure2 = !obsecure2),
+                  //     child: Container(
+                  //       width: 40,
+                  //       decoration: BoxDecoration(
+                  //         color: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey.shade100,
+                  //         borderRadius: BorderRadius.circular(10)
+                  //       ),
+                  //       child: Center(
+                  //         child: Icon(obsecure2 ? IconlyLight.show : IconlyLight.hide, color: Colors.grey),
+                  //       ),
+                  //     )
+                  //   )
+                  // ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.black)
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Get.isDarkMode ? primaryOrange : Colors.black)
+                  ),
+                  hintText: "Confirm password",
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+      )
     );
   }
 }

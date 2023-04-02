@@ -7,9 +7,11 @@ import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/FirebaseAPI.dart';
+import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class CommentScreen extends StatefulWidget {
   final String documentId;
@@ -48,6 +50,10 @@ class _CommentScreen extends State<CommentScreen> {
     
   }
 
+  void _dismiss() {
+
+  }
+
   submitComment() {
     if(textController.text.isEmpty) return;
 
@@ -58,6 +64,11 @@ class _CommentScreen extends State<CommentScreen> {
       duration: Duration(milliseconds: 500),
       curve: Curves.fastOutSlowIn,
     );
+  }
+
+  void deleteComment(String commentId) {
+    FirebaseAPI().deleteComment(widget.documentId, commentId);
+    print("comment deleted...");
   }
 
   @override
@@ -117,59 +128,81 @@ class _CommentScreen extends State<CommentScreen> {
                       // String documentId = documentSnapshot.id;
                       var commentData = documentSnapshot.data() as Map<String, dynamic>;
 
-                      return FutureBuilder(
-                        future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
-                        builder: (context, snapshot) {
-                          var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
+                      return Slidable(
+                        enabled: commentData['firebase_id'] == FirebaseAPI().firebaseId() ? true : false,
+                        key: ValueKey(documentSnapshot.id),
+                        endActionPane: ActionPane(
+                          extentRatio: 0.15,
+                          motion: const BehindMotion(),
+                          dismissible: commentData['firebase_id'] == FirebaseAPI().firebaseId() ? DismissiblePane(
+                            onDismissed: () => deleteComment(documentSnapshot.id)
+                          ) : null,
+                          children: [
+                            CustomSlidableAction(
+                              backgroundColor: Colors.red,
+                              onPressed: (context) => deleteComment(documentSnapshot.id),
+                              child: CustomIcon(
+                                icon: 'assets/icons/trash-2.svg',
+                                color: Colors.white,
+                                size: 35,
+                              )
+                            ),
+                          ],
+                        ),
+                        child: FutureBuilder(
+                          future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
+                          builder: (context, snapshot) {
+                            var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
 
-                          if(snapshot.hasData) {
-                            var docSnapshot = snapshot.data as Map<String, dynamic>;
-                            var userData = docSnapshot;
+                            if(snapshot.hasData) {
+                              var docSnapshot = snapshot.data as Map<String, dynamic>;
+                              var userData = docSnapshot;
 
-                            return Padding(
-                              padding: EdgeInsets.symmetric(vertical: 10),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  MyAvatar(photo: userData['photo_url']),
-                                  Expanded(
-                                    child: Container(
-                                      padding: EdgeInsets.only(left: 10),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text(
-                                            userData['username'],
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14
-                                            ),
-                                          ),
-                                          SizedBox(height: 7),
-                                          Text(
-                                            commentData['comment'],
-                                            style: TextStyle(
-                                              fontSize: 16
-                                            ),
-                                          ),
-                                          SizedBox(height: 5),
-                                          TimeFormat()
-                                            .withoutDate(
-                                              date,
+                              return Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    MyAvatar(photo: userData['photo_url']),
+                                    Expanded(
+                                      child: Container(
+                                        padding: EdgeInsets.only(left: 10),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(
+                                              userData['username'],
                                               style: TextStyle(
-                                                color: Colors.grey
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14
+                                              ),
+                                            ),
+                                            SizedBox(height: 7),
+                                            Text(
+                                              commentData['comment'],
+                                              style: TextStyle(
+                                                fontSize: 16
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            TimeFormat()
+                                              .withoutDate(
+                                                date,
+                                                style: TextStyle(
+                                                  color: Colors.grey
+                                                )
                                               )
-                                            )
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              )
-                            );
+                                  ],
+                                )
+                              );
+                            }
+                            return Container();
                           }
-                          return Container();
-                        }
+                        )
                       );
                     }
                   )

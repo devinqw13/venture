@@ -13,6 +13,7 @@ class PhotoHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Hero(
+      transitionOnUserGestures: true,
       tag: tag,
       child: Material(
         color: Colors.transparent,

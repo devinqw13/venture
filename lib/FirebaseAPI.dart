@@ -219,7 +219,7 @@ class FirebaseAPI extends ChangeNotifier {
         VenUser().userKey.value = userKey;
         VenUser().onChange();
         storage.write('user_key', VenUser().userKey.value);
-
+        storage.write('user_email', user);
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -252,10 +252,38 @@ class FirebaseAPI extends ChangeNotifier {
     return userCredential;
   }
 
-  void reauthenticate() async {
+  Future<bool> reauthenticate(BuildContext context, String email, String password) async {
     final user = FirebaseAuth.instance.currentUser;
-    print(user?.providerData);
-    // await user?.reauthenticateWithCredential(credential);
+
+    try {
+      var credential = EmailAuthProvider.credential(
+        email: email,
+        password: password
+      );
+      UserCredential? userData = await user?.reauthenticateWithCredential(credential);
+
+      if(userData != null) return true;
+
+      return false;
+    } on FirebaseAuthException catch(e) {
+      if(e.code == 'wrong-password') {
+        showCustomDialog(
+          context: context,
+          title: 'Wrong password', 
+          description: "The password you have entered was incorrect. Please try again.",
+          descAlignment: TextAlign.center,
+          buttonDirection: Axis.vertical,
+          buttons: {
+            "OK": {
+              "action": () => Navigator.of(context).pop(),
+              "textColor": Colors.white,
+              "alignment": TextAlign.center
+            },
+          }
+        );
+      }
+      return false;
+    }
   }
 
   Future<void> logout() async {
@@ -264,6 +292,29 @@ class FirebaseAPI extends ChangeNotifier {
 
   String? firebaseId() {
     return FirebaseAuth.instance.currentUser?.uid;
+  }
+
+  Future<bool> updateUserData(BuildContext context, String firebaseId, {String? username, String? displayName, String? email, String? bio, String? avatar}) async {
+    Map<String, dynamic> updatedData = {};
+
+    if(displayName != null) updatedData['display_name'] = displayName;
+    if(bio != null) updatedData['biography'] = bio;
+    if(avatar != null) updatedData['photo_url'] = avatar;
+
+    if(username != null) {
+      var result = await checkUsername(username);
+      if(result.docs.isNotEmpty) {
+        showToast(context: context, msg: "The username already exists.");
+      }else {
+        updatedData['username'] = username;
+      }
+    }
+
+    bool result = true;
+    var userRef = _firestore.collection('users').doc(firebaseId);
+    userRef.update(updatedData).catchError((error) {print("Failed to update user: $error");}).onError((error, stackTrace) => result = false);
+
+    return result;
   }
 
   Future<void> updatePassword(BuildContext context, String password) async {
@@ -348,11 +399,15 @@ class FirebaseAPI extends ChangeNotifier {
   }
 
   Query<Object?> commentQuery(String? documentId) {
-    return FirebaseFirestore.instance.collection('content').doc(documentId).collection('comments').orderBy('timestamp', descending: true);
+    return _firestore.collection('content').doc(documentId).collection('comments').orderBy('timestamp', descending: true);
   }
 
   Query<Object?> followersQuery(String? documentId) {
-    return FirebaseFirestore.instance.collection('users');
+    return _firestore.collection('users').doc(documentId).collection('followers');
+  }
+
+  Query<Object?> followingQuery(String? documentId) {
+    return _firestore.collection('users').doc(documentId).collection('following');
   }
 
   Future<Map<String, dynamic>> getUserFromFirebaseId(String id) async {
@@ -437,6 +492,10 @@ class FirebaseAPI extends ChangeNotifier {
         followingCollection.doc(firebaseId).delete();
       });
     }
+  }
+
+  Future<void> deleteComment(String contentId, String commentId) async {
+    await _firestore.collection('content').doc(contentId).collection('comments').doc(commentId).delete();
   }
 
   Future<void> addComment(String? documentId, int contentKey, String comment) async {
