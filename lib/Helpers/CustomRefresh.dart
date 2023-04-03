@@ -1,6 +1,80 @@
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'dart:math' as math;
+
+class CustomRefresh extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onAction;
+  final double edgeOffset;
+
+  const CustomRefresh({
+    Key? key,
+    required this.child,
+    required this.onAction,
+    this.edgeOffset = 0.0,
+  }) : super(key: key);
+
+  @override
+  _CustomRefreshState createState() => _CustomRefreshState();
+}
+
+class _CustomRefreshState extends State<CustomRefresh>
+    with SingleTickerProviderStateMixin {
+  static const _indicatorSize = 50.0;
+
+  ScrollDirection prevScrollDirection = ScrollDirection.idle;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomRefreshIndicator(
+      offsetToArmed: _indicatorSize,
+      onRefresh: () async => widget.onAction(),
+      child: widget.child,
+      // completeStateDuration: const Duration(seconds: 2),
+      onStateChanged: (change) {
+        if (change.didChange(to: IndicatorState.armed)) {
+          HapticFeedback.mediumImpact();
+        }
+      },
+      builder: (
+        BuildContext context,
+        Widget child,
+        IndicatorController controller,
+      ) {
+        return Stack(
+          children: <Widget>[
+            controller.state != IndicatorState.idle ? Container(
+              margin: EdgeInsets.only(top: widget.edgeOffset),
+              alignment: Alignment.topCenter,
+              child: AnimatedBuilder(
+              animation: controller,
+              builder: (BuildContext context, Widget? _) {
+                return SizedBox(
+                  height: controller.value * _indicatorSize,
+                  child: CupertinoActivityIndicator(
+                    radius: 13,
+                  )
+                );
+              },
+            )) : Container(),
+            AnimatedBuilder(
+              builder: (context, _) {
+                return Transform.translate(
+                  offset: Offset(0.0, controller.value * _indicatorSize),
+                  child: child,
+                );
+              },
+              animation: controller,
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
 
 typedef WidgetIndicatorBuilder = Widget Function(
   BuildContext context,

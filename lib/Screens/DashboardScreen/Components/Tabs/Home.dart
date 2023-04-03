@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
-// import 'package:flutter/cupertino.dart';
 import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
+import 'package:venture/Helpers/CustomRefresh.dart';
 import 'package:venture/Helpers/DeleteContent.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Helpers/Toast.dart';
@@ -93,9 +93,9 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
     
   }
 
-  Future<void> _pullRefresh() async {
-    Future.delayed(const Duration(milliseconds: 500), () {
-      
+  Future<void> _refreshExplore() async {
+    await Future.delayed(const Duration(seconds: 5), () {
+      print("DONE FETCHING DATA...");
     });
   }
 
@@ -104,123 +104,128 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
     super.build(context);
     final theme = Theme.of(context);
 
-    return ValueListenableBuilder(
-      valueListenable: VenUser().userKey, 
-      builder: (context, userKey, _) {
-        return DefaultTabController(
-          length: 2,
-          initialIndex: 1,
-          child: Scaffold(
-            extendBody: true,
-            extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.transparent,
-              flexibleSpace: ClipRect(
-                child: BackdropFilter(
-                  filter: Get.isDarkMode ? ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7) : ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    color: Get.isDarkMode ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.8),
-                  ),
-                ),
-              ),
-              title: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TabBar(
-                    onTap: (page) {
-                      if(page == 1) setState(() => _homeController.homeFeedController = exploreController);
+    AppBar appBar = AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: Colors.transparent,
+      flexibleSpace: ClipRect(
+        child: BackdropFilter(
+          filter: Get.isDarkMode ? ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7) : ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            color: Get.isDarkMode ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.8),
+          ),
+        ),
+      ),
+      title: ValueListenableBuilder(
+        valueListenable: VenUser().userKey, 
+        builder: (context, userKey, _) {
+          return  Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TabBar(
+                onTap: (page) {
+                  if(page == 1) setState(() => _homeController.homeFeedController = exploreController);
 
-                      if(page == 0) setState(() => _homeController.homeFeedController = followingController);
-                    },
-                    enableFeedback: true,
-                    isScrollable: true,
-                    // indicator: CircleTabIndicator(color: primaryOrange, radius: 3),
-                    indicatorColor: Colors.white.withOpacity(0),
-                    labelPadding: EdgeInsets.only(right: userKey != 0 ? 10.0 : 0.0),
-                    unselectedLabelColor: Get.isDarkMode ? Colors.white : Colors.black,
-                    labelColor: primaryOrange,
-                    tabs: [
-                      userKey != 0 ? Tab(
-                        child: Text(
-                          "Following",
-                          style: TextStyle(
-                            fontFamily: "CoolveticaCondensed",
-                            // fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                            fontSize: 23
-                          ),
-                        )
-                      ) : Container(),
-                      Tab(
-                        child: Text(
-                          "Explore",
-                          style: TextStyle(
-                            fontFamily: "CoolveticaCondensed",
-                            // fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                            fontSize: 23
-                          ),
-                        )
-                      ),
-                    ],
-                  ),
-                  userKey != 0 ? ZoomTapAnimation(
-                    onTap: () => goToMessaging(),
-                    child: Container(
-                      padding: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: Get.isDarkMode ? ColorConstants.gray800.withOpacity(0.35) : ColorConstants.gray25.withOpacity(0.35),
-                        borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Center(
-                        child: CustomIcon(
-                          icon: 'assets/icons/send.svg',
-                          color: primaryOrange,
-                          size: 27,
-                        )
+                  if(page == 0) setState(() => _homeController.homeFeedController = followingController);
+                },
+                enableFeedback: true,
+                isScrollable: true,
+                // indicator: CircleTabIndicator(color: primaryOrange, radius: 3),
+                indicatorColor: Colors.white.withOpacity(0),
+                labelPadding: EdgeInsets.only(right: userKey != 0 ? 10.0 : 0.0),
+                unselectedLabelColor: Get.isDarkMode ? Colors.white : Colors.black,
+                labelColor: primaryOrange,
+                tabs: [
+                  userKey != 0 ? Tab(
+                    child: Text(
+                      "Following",
+                      style: TextStyle(
+                        fontFamily: "CoolveticaCondensed",
+                        // fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                        fontSize: 23
                       ),
                     )
-                  ) : Container()
+                  ) : Container(),
+                  Tab(
+                    child: Text(
+                      "Explore",
+                      style: TextStyle(
+                        fontFamily: "CoolveticaCondensed",
+                        // fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                        fontSize: 23
+                      ),
+                    )
+                  ),
                 ],
               ),
-            ),
-            body: Stack(
-              children: [
-                TabBarView(
-                  physics: NeverScrollableScrollPhysics(),
-                  children: [
-                    Container(),
-                    RefreshIndicator(
-                      onRefresh: _pullRefresh,
-                      child: PageView.builder(
-                        controller: exploreController,
-                        physics: AlwaysScrollableScrollPhysics(),
-                        scrollDirection: Axis.vertical,
-                        itemCount: content.isEmpty ? 1 : content.length,
-                        itemBuilder: (context, i) {
-                          if(content.isEmpty) {
-                            return Padding(
-                              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
-                              child: PostSkeletonShimmer()
-                            );
-                          }else {
-                            return Padding(
-                              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .125),
-                              child: PostSkeleton(content: content[i])
-                            );
-                          }
-                        }
-                      )
+              userKey != 0 ? ZoomTapAnimation(
+                onTap: () => goToMessaging(),
+                child: Container(
+                  padding: EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Get.isDarkMode ? ColorConstants.gray800.withOpacity(0.35) : ColorConstants.gray25.withOpacity(0.35),
+                    borderRadius: BorderRadius.circular(10)
+                  ),
+                  child: Center(
+                    child: CustomIcon(
+                      icon: 'assets/icons/send.svg',
+                      color: primaryOrange,
+                      size: 27,
                     )
-                  ]
+                  ),
+                )
+              ) : Container()
+            ],
+          );
+        }
+      )
+    );
+
+    final topPadding = appBar.preferredSize.height + MediaQuery.of(context).padding.top;
+
+    return DefaultTabController(
+      length: 2,
+      initialIndex: 1,
+      child: Scaffold(
+        extendBody: true,
+        extendBodyBehindAppBar: true,
+        appBar: appBar,
+        body: Stack(
+          children: [
+            TabBarView(
+              physics: NeverScrollableScrollPhysics(),
+              children: [
+                Container(),
+                CustomRefresh(
+                  edgeOffset: topPadding,
+                  onAction: _refreshExplore,
+                  child: PageView.builder(
+                    controller: exploreController,
+                    physics: AlwaysScrollableScrollPhysics(),
+                    scrollDirection: Axis.vertical,
+                    itemCount: content.isEmpty ? 1 : content.length,
+                    itemBuilder: (context, i) {
+                      if(content.isEmpty) {
+                        return Padding(
+                          padding: EdgeInsets.only(top: topPadding),
+                          child: PostSkeletonShimmer()
+                        );
+                      }else {
+                        return Padding(
+                          padding: EdgeInsets.only(top: topPadding),
+                          child: PostSkeleton(content: content[i])
+                        );
+                      }
+                    }
+                  ),
                 )
               ]
             )
-          )
-        );
-      }
+          ]
+        )
+      )
     );
   }
 }

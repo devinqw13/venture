@@ -35,7 +35,6 @@ class _CommentScreen extends State<CommentScreen> {
   void initState() {
     super.initState();
     documentId = widget.documentId;
-    print(documentId);
     numOfComments = widget.numOfComments ?? 0;
 
     textController.addListener(() {
