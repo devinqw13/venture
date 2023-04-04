@@ -266,7 +266,7 @@ class _UserCard extends State<UserCard> {
       elevation: 0,
       color: Colors.transparent,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
         children: [
           MyAvatar(
             photo: user['photo_url']
@@ -274,10 +274,11 @@ class _UserCard extends State<UserCard> {
           SizedBox(width: 15),
           Expanded(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+              // mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     user['display_name'] != null && user['display_name'] != '' ?
@@ -310,7 +311,13 @@ class _UserCard extends State<UserCard> {
                     ),
                     buildFollowButton()
                   ],
+                ),
+                user['biography'] != null && user['biography'] != '' ? Text(
+                  user['biography'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 )
+                : Container()
               ],
             )
           )

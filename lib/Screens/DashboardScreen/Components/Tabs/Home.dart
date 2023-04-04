@@ -5,16 +5,13 @@ import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Constants.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/CustomRefresh.dart';
-import 'package:venture/Helpers/DeleteContent.dart';
-import 'package:venture/Helpers/NavigationSlideAnimation.dart';
-import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/DashboardScreen/Components/PostSkeleton.dart';
 import 'package:venture/Screens/MessagingScreen/ConversationScreen.dart';
-import 'package:venture/Screens/UploadContentScreen/UploadContentScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class HomeTab extends StatefulWidget {
@@ -27,10 +24,12 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<HomeTab>, SingleTickerProviderStateMixin {
   final ThemesController _themesController = Get.find();
   final HomeController _homeController = Get.find();
-  List<Content> content = [];
-  bool isLoading = false;
-  PageController exploreController = PageController();
-  PageController followingController = PageController();
+  List<Content> exploreContent = [];
+  List<Content> followingContent = [];
+  bool isExploreLoading = false;
+  bool isFollowingLoading = false;
+  PageController exploreController = PageController(keepPage: true);
+  PageController followingController = PageController(keepPage: true);
 
   @override
   bool get wantKeepAlive => true;
@@ -44,13 +43,39 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   }
 
   _initializeAsyncDependencies() async {
+    _getExploreContent();
+    // if(FirebaseAPI().firebaseId() != null) _getFollowingContent();
+  }
+
+  Future<void> _getFollowingContent() async {
+    print("HERE");
+    setState(() => isFollowingLoading = true);
+    var result = await FirebaseAPI().followingQuery(FirebaseAPI().firebaseId()).get();
+
+    List<String> firebaseIds = result.docs.map((e) => e.id).toList();
+    firebaseIds.add(FirebaseAPI().firebaseId()!);
+
+    List<int> userKeys = [];
+    for(var id in firebaseIds) {
+      var user = await FirebaseAPI().getUserFromFirebaseId(id);
+      userKeys.add(int.parse(user['user_key']));
+    }
+
+    List<Content> results = await getContent(context, userKeys, 0);
+    print(results.length);
+    setState(() => isFollowingLoading = false);
+
+    setState(() => followingContent = results);
+  }
+
+  Future<void> _getExploreContent() async {
     // await _fetchCache();
-    setState(() => isLoading = true);
-    List<Content> results = await getContent(context, [0]);
-    setState(() => isLoading = false);
+    setState(() => isExploreLoading = true);
+    List<Content> results = await getContent(context, [0], 0);
+    setState(() => isExploreLoading = false);
 
     setState(() {
-      content = results;
+      exploreContent = results;
     });
   }
 
@@ -58,31 +83,19 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   //   //TODO: RETRIEVE CACHED DATA AND SET
   // }
 
-  // _refresh() async {
-  //   if (isLoading) return;
-  //   // setState(() => isLoading = true);
-  //   // List<Content> results = await getContent(context, 0);
-  //   // setState(() => isLoading = false);
+  // goToUploadContent() async {
+  //   UploadContentScreen screen = UploadContentScreen();
+  //   var result = await Navigator.of(context).push(SlideUpDownPageRoute(page: screen));
 
-  //   // setState(() {
-  //   //   content = results;
-  //   // });
-  //   Future.delayed(const Duration(milliseconds: 3000), () {});
+  //   if(result != null) {
+  //     Content item = result[0] as Content;
+  //     showToast(context: context, color: Colors.green, msg: "Posted to ${item.user!.userName}", type: ToastType.INFO);
+  //     setState(() {
+  //       exploreContent.insert(0, item);
+  //     });
+  //     deleteFile(result[1]);
+  //   }
   // }
-
-  goToUploadContent() async {
-    UploadContentScreen screen = UploadContentScreen();
-    var result = await Navigator.of(context).push(SlideUpDownPageRoute(page: screen));
-
-    if(result != null) {
-      Content item = result[0] as Content;
-      showToast(context: context, color: Colors.green, msg: "Posted to ${item.user!.userName}", type: ToastType.INFO);
-      setState(() {
-        content.insert(0, item);
-      });
-      deleteFile(result[1]);
-    }
-  }
 
   goToMessaging() async {
     ConversationScreen screen = ConversationScreen();
@@ -93,10 +106,18 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
     
   }
 
+  Future<void> _refreshFollowing() async {
+    await _getFollowingContent();
+    // await Future.delayed(const Duration(seconds: 5), () {
+    //   print("DONE FETCHING DATA...");
+    // });
+  }
+
   Future<void> _refreshExplore() async {
-    await Future.delayed(const Duration(seconds: 5), () {
-      print("DONE FETCHING DATA...");
-    });
+    await _getExploreContent();
+    // await Future.delayed(const Duration(seconds: 5), () {
+    //   print("DONE FETCHING DATA...");
+    // });
   }
 
   @override
@@ -118,7 +139,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
       title: ValueListenableBuilder(
         valueListenable: VenUser().userKey, 
         builder: (context, userKey, _) {
-          return  Row(
+          return Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -126,7 +147,11 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
                 onTap: (page) {
                   if(page == 1) setState(() => _homeController.homeFeedController = exploreController);
 
-                  if(page == 0) setState(() => _homeController.homeFeedController = followingController);
+                  if(page == 0) {
+                    setState(() => _homeController.homeFeedController = followingController);
+
+                    if(FirebaseAPI().firebaseId() != null && followingContent.isEmpty) _getFollowingContent();
+                  }
                 },
                 enableFeedback: true,
                 isScrollable: true,
@@ -197,7 +222,34 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
             TabBarView(
               physics: NeverScrollableScrollPhysics(),
               children: [
-                Container(),
+                CustomRefresh(
+                  edgeOffset: topPadding,
+                  onAction: _refreshFollowing,
+                  child: PageView.builder(
+                    controller: followingController,
+                    physics: AlwaysScrollableScrollPhysics(),
+                    scrollDirection: Axis.vertical,
+                    itemCount: followingContent.isEmpty ? 1 : followingContent.length,
+                    itemBuilder: (context, i) {
+                      if(followingContent.isEmpty && isFollowingLoading) {
+                        return Padding(
+                          padding: EdgeInsets.only(top: topPadding),
+                          child: PostSkeletonShimmer()
+                        );
+                      } else if(followingContent.isEmpty && !isFollowingLoading) {
+                        return Container(
+                          child: Text("START FOLLOWING USERS"),
+                        );
+                      } else {
+                        return Padding(
+                          padding: EdgeInsets.only(top: topPadding),
+                          child: PostSkeleton(content: followingContent[i])
+                        );
+                      }
+                    }
+                  ),
+                ),
+                
                 CustomRefresh(
                   edgeOffset: topPadding,
                   onAction: _refreshExplore,
@@ -205,17 +257,17 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
                     controller: exploreController,
                     physics: AlwaysScrollableScrollPhysics(),
                     scrollDirection: Axis.vertical,
-                    itemCount: content.isEmpty ? 1 : content.length,
+                    itemCount: exploreContent.isEmpty ? 1 : exploreContent.length,
                     itemBuilder: (context, i) {
-                      if(content.isEmpty) {
+                      if(exploreContent.isEmpty && isExploreLoading) {
                         return Padding(
                           padding: EdgeInsets.only(top: topPadding),
                           child: PostSkeletonShimmer()
                         );
-                      }else {
+                      } else {
                         return Padding(
                           padding: EdgeInsets.only(top: topPadding),
-                          child: PostSkeleton(content: content[i])
+                          child: PostSkeleton(content: exploreContent[i])
                         );
                       }
                     }

@@ -37,10 +37,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       icon = SvgPicture.asset(
         icon,
         height: iconSize,
-        color: _homeController.currentPage == page ? primaryOrange : Get.isDarkMode ? Colors.white : Colors.grey
+        color: _homeController.currentPage.value == page ? primaryOrange : Get.isDarkMode ? Colors.white : Colors.grey
       );
     } else {
-      icon = Icon(icon, color: _homeController.currentPage == page ? primaryOrange : Get.isDarkMode ? Colors.white : Colors.grey, size: iconSize);
+      icon = Icon(icon, color: _homeController.currentPage.value == page ? primaryOrange : Get.isDarkMode ? Colors.white : Colors.grey, size: iconSize);
     }
     return ZoomTapAnimation(
       onTap: () {

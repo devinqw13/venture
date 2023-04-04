@@ -377,13 +377,13 @@ Future<dynamic> createContentDetails(BuildContext context, Map<String, dynamic> 
   }
 }
 
-Future<List<Content>> getContent(BuildContext context, List<int> userKey) async {
+Future<List<Content>> getContent(BuildContext context, List<int> userKey, int dataFormat) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
   };
 
-  String url = "${globals.apiBaseUrl}/getContent?user_key=$userKey";
+  String url = "${globals.apiBaseUrl}/getContent?user_key=$userKey&type=$dataFormat";
 
   Map jsonResponse = {};
   http.Response response;
