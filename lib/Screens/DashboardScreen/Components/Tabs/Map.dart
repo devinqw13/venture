@@ -347,6 +347,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    // print(MediaQuery.of(context).padding.bottom);
     final theme = Theme.of(context);
     return DismissKeyboard(
       child: Stack(
@@ -391,8 +392,14 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
               String latlng = "${centerLatLng.latitude},${centerLatLng.longitude}";
 
               mapFetchTimer = Timer(Duration(seconds: 1), () async {
+                var screenCoord = await _themesController.googleMapController!.getScreenCoordinate(centerLatLng);
+
+                double zoom = await _themesController.googleMapController!.getZoomLevel();
+
+                var radiusInMiles = LocationHandler().calculateZoomRadius(zoom, centerLatLng.latitude, screenCoord.y);
+
                 setState(() => isLoading = true);
-                var results = await getMapPins(context, latlng: latlng);
+                var results = await getMapPins(context, latlng: latlng, radius: double.parse(radiusInMiles.toString()));
                 setState(() => isLoading = false);
 
                 displayGatheredPins(results);
@@ -569,7 +576,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
           isLoading ? Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * .0798),
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
               child: LinearProgressIndicator(
                 backgroundColor: Colors.transparent,
                 color: primaryOrange

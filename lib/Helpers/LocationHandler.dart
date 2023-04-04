@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -48,12 +49,14 @@ class LocationHandler {
         'Location permissions are permanently denied, we cannot request permissions.');
     }
 
-    return true;
+    return serviceEnabled;
   }
 
-  static Future<Position?> determineDeviceLocation() async {
-    bool results = await requestPermissions();
-    if(!results) return null;
+  static Future<Position?> determineDeviceLocation({bool checkPermissions = true}) async {
+    if(checkPermissions) {
+      bool results = await requestPermissions();
+      if(!results) return null;
+    }
 
     Position? position;
 
@@ -73,16 +76,26 @@ class LocationHandler {
     return position;
   }
 
-  static Future<num?> getDistanceFromCoords(String latlng) async {
+  Future<dynamic> getDistanceFromCoords(String latlng) async {
     bool results = await requestPermissions();
-    if(!results) return null;
+    if(!results) return;
 
-    Position? position = await determineDeviceLocation();
+    Position? position = await determineDeviceLocation(checkPermissions: false);
     List locList = latlng.split(',');
 
     double distanceInMeters = Geolocator.distanceBetween(position!.latitude, position.longitude, double.parse(locList[0]), double.parse(locList[1]));
 
     double miles = double.parse((distanceInMeters * 0.000621371).toStringAsFixed(1));
+
+    return miles % 1 == 0 ? miles.toInt() : miles;
+  }
+
+  num calculateZoomRadius(double zoom, double lat, int pixels) {
+    var metersPerPx = 156543.03392 * math.cos(lat * math.pi / 180) / math.pow(2, zoom);
+
+    double totalMeters = metersPerPx * pixels;
+
+    double miles = double.parse((totalMeters * 0.000621371).toStringAsFixed(1));
 
     return miles % 1 == 0 ? miles.toInt() : miles;
   }

@@ -49,6 +49,11 @@ class _PostSkeleton extends State<PostSkeleton> {
   int currentIndex = 0;
   late Offset doubleTapPosition;
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   _showOptions(ThemeData theme) {
     Get.bottomSheet(
       Container(
@@ -237,7 +242,7 @@ class _PostSkeleton extends State<PostSkeleton> {
               ),
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
               child: FutureBuilder(
-                future: LocationHandler.getDistanceFromCoords(content.pinLocation!),
+                future: LocationHandler().getDistanceFromCoords(content.pinLocation!),
                 builder: (context, snapshot) {
                   if(!snapshot.hasData) {
                     return SizedBox(
@@ -453,82 +458,95 @@ class _PostSkeleton extends State<PostSkeleton> {
     );
   }
 
+  buildCarouselSlider(Content content) {
+    return CarouselSlider(
+      carouselController: controller,
+      items: List<Widget>.generate(content.contentUrls.length, (index) {
+        return ZoomOverlay(
+          twoTouchOnly: true,
+          minScale: 1,
+          child: GestureDetector(
+            onDoubleTap: () async {
+              await FirebaseAPI().addReactionV2(null, content.contentKey);
+              showLikeHeart(context: context, offset: doubleTapPosition);
+            },
+            onDoubleTapDown: (details) {
+              // final RenderBox box = context.findRenderObject() as RenderBox;
+              doubleTapPosition = details.globalPosition;
+            },
+            child: ClipRRect(
+              // borderRadius: BorderRadius.circular(20.0),
+              child: CachedNetworkImage(
+                // fit: BoxFit.contain,
+                fit: BoxFit.cover,
+                imageUrl: content.contentUrls[index].toString(),
+                progressIndicatorBuilder: (context, url, downloadProgress) {
+                  return Skeleton.rectangular(
+                    height: 250,
+                    // borderRadius: 20.0
+                  );
+                }
+              )
+              // child: widget.heroTag != null ?
+              //   PhotoHero(
+              //     tag: widget.heroTag!,
+              //     photoUrl: content.contentUrls[index].toString()
+              //   ) : CachedNetworkImage(
+              //     // fit: BoxFit.contain,
+              //     fit: BoxFit.cover,
+              //     imageUrl: content.contentUrls[index].toString(),
+              //     progressIndicatorBuilder: (context, url, downloadProgress) {
+              //       return Skeleton.rectangular(
+              //         height: 250,
+              //         // borderRadius: 20.0
+              //       );
+              //     }
+              //   )
+
+            )
+          )
+        );
+      }),
+      options: CarouselOptions(
+        enableInfiniteScroll: false,
+        disableCenter: true,
+        viewportFraction: 1.0,
+        onPageChanged: (index, _) {
+          setState(() {
+            currentIndex = index;
+          });
+        }
+      ),
+    );
+  }
+
   _buildContent(Content content) {
     return Expanded(
       child: Stack(
         children: [
           Positioned.fill(
-            child: CarouselSlider(
-              carouselController: controller,
-              items: List<Widget>.generate(content.contentUrls.length, (index) {
-                return ZoomOverlay(
-                  twoTouchOnly: true,
-                  minScale: 1,
-                  child: GestureDetector(
-                    onDoubleTap: () async {
-                      await FirebaseAPI().addReactionV2(null, content.contentKey);
-                      showLikeHeart(context: context, offset: doubleTapPosition);
-                    },
-                    onDoubleTapDown: (details) {
-                      // final RenderBox box = context.findRenderObject() as RenderBox;
-                      doubleTapPosition = details.globalPosition;
-                    },
-                    child: ClipRRect(
-                      // borderRadius: BorderRadius.circular(20.0),
-                      // child: CachedNetworkImage(
-                      //   // fit: BoxFit.contain,
-                      //   fit: BoxFit.cover,
-                      //   imageUrl: content.contentUrls[index].toString(),
-                      //   progressIndicatorBuilder: (context, url, downloadProgress) {
-                      //     return Skeleton.rectangular(
-                      //       height: 250,
-                      //       // borderRadius: 20.0
-                      //     );
-                      //   }
-                      // )
-                      child: widget.heroTag != null ?
-                        PhotoHero(
-                          tag: widget.heroTag!,
-                          photoUrl: content.contentUrls[index].toString()
-                        ) : CachedNetworkImage(
-                          // fit: BoxFit.contain,
-                          fit: BoxFit.cover,
-                          imageUrl: content.contentUrls[index].toString(),
-                          progressIndicatorBuilder: (context, url, downloadProgress) {
-                            return Skeleton.rectangular(
-                              height: 250,
-                              // borderRadius: 20.0
-                            );
-                          }
-                        )
-
-                    )
-                  )
-                );
-              }),
-              options: CarouselOptions(
-                enableInfiniteScroll: false,
-                disableCenter: true,
-                viewportFraction: 1.0,
-                onPageChanged: (index, _) {
-                  setState(() {
-                    currentIndex = index;
-                  });
-                }
-              ),
-            )
+            child: widget.heroTag != null ? Hero(
+              transitionOnUserGestures: true,
+              tag: widget.heroTag!,
+              child: Material(
+                color: Colors.transparent,
+                child: buildCarouselSlider(content)
+              )
+            ) : buildCarouselSlider(content)
           ),
-          content.contentUrls.length > 1 ? Padding(
+          content.contentUrls.length > 1 ? IgnorePointer(
+            child: Padding(
             padding: EdgeInsets.symmetric(vertical: 5),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Indicator(
-                  length: content.contentUrls.length,
-                  index: currentIndex
-                )
-              ],
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Indicator(
+                    length: content.contentUrls.length,
+                    index: currentIndex
+                  )
+                ],
+              )
             )
           ): Container()
         ]

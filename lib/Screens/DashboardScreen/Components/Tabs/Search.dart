@@ -137,6 +137,10 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
       );
     }
   }
+  //TODO: Build RECENT SEARCHES
+  Widget buildRecentSearches() {
+    return Container();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -172,7 +176,7 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                 padding: EdgeInsets.symmetric(vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.max,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 15),
@@ -290,15 +294,21 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                         ],
                       )
                     ) :
+                    // Expanded(
+                    //   child: Padding(
+                    //     padding: EdgeInsets.only(top: 8),
+                    //     child: Column(
+                    //       children: [
+                    //         Divider(color: Colors.grey),
+                    //         showSearchResults ? buildSearch() : Container() //TODO: show recent searches or GOTOs
+                    //       ],
+                    //     )
+                    //   )
+                    // )
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.only(top: 8),
-                        child: Column(
-                          children: [
-                            Divider(color: Colors.grey),
-                            showSearchResults ? buildSearch() : Container() //TODO: show recent searches or GOTOs
-                          ],
-                        )
+                        child: showSearchResults ? buildSearch() : buildRecentSearches()
                       )
                     )
                   ],

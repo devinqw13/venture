@@ -436,13 +436,13 @@ Future<List<Content>> getContent(BuildContext context, List<int> userKey, int da
   }
 }
 
-Future<List<Pin>> getMapPins(BuildContext context, {String? latlng = "", String? pinKey = ""}) async {
+Future<List<Pin>> getMapPins(BuildContext context, {String? latlng = "", String? pinKey = "", double radius = 2}) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
   };
 
-  String url = "${globals.apiBaseUrl}/getPins?pinKey=$pinKey&latlng=$latlng";
+  String url = "${globals.apiBaseUrl}/getPins?pinKey=$pinKey&latlng=$latlng&radius=$radius";
   
   Map jsonResponse = {};
   http.Response response;
