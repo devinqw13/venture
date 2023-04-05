@@ -624,4 +624,8 @@ class FirebaseAPI extends ChangeNotifier {
       'firebase_tokens': tokens
     }).then((value) {}).catchError((error) {print("Failed to remove firebase token: $error");});
   }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> getNotifications() async {
+    return await FirebaseFirestore.instance.collection('notifications').doc(FirebaseAuth.instance.currentUser!.uid).get();
+  }
 }

@@ -48,7 +48,6 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   }
 
   Future<void> _getFollowingContent() async {
-    print("HERE");
     setState(() => isFollowingLoading = true);
     var result = await FirebaseAPI().followingQuery(FirebaseAPI().firebaseId()).get();
 
@@ -62,9 +61,8 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
     }
 
     List<Content> results = await getContent(context, userKeys, 0);
-    print(results.length);
     setState(() => isFollowingLoading = false);
-
+    
     setState(() => followingContent = results);
   }
 
