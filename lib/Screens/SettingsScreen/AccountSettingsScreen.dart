@@ -25,7 +25,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen>  {
     storage.remove("user_email");
     VenUser().userKey.value = 0;
     VenUser().onChange();
-    // await FirebaseAPI().removeFirebaseTokens();
+
+    await FirebaseAPI().removeFirebaseTokens();
     await FirebaseAPI().logout();
     // Navigator.pop(context);
 

@@ -122,7 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen>  {
                     // return Text(_.theme);
                   }),
                   GetBuilder<ThemesController>(builder: (_) {
-                    return _buildToggleTile('Map Satelite', Icons.map_rounded, _.mapType == MapType.satellite, Colors.blue, theme, onTap: () => _toggleSatelite(_.mapType));
+                    return _buildToggleTile('Map Satelite', Icons.map_rounded, _.mapType.value == MapType.satellite, Colors.blue, theme, onTap: () => _toggleSateliteV2());
                     // return Text(_.theme);
                   }),
                   // GetBuilder<ThemesController>(builder: (_) {
@@ -257,16 +257,28 @@ class _SettingsScreenState extends State<SettingsScreen>  {
     );
   }
 
-  _toggleSatelite(MapType type) {
+  // _toggleSatelite(MapType type) {
 
-    if(type == MapType.satellite) {
-      setState(() => _themesController.mapType = MapType.normal);
+  //   if(type == MapType.satellite) {
+  //     setState(() => _themesController.mapType = MapType.normal);
+
+  //   }else {
+  //     setState(() => _themesController.mapType = MapType.satellite);
+  //   }
+
+  //   storage.write('maptype', _themesController.mapType == MapType.satellite ? "satellite" : "normal");
+  // }
+
+  _toggleSateliteV2() {
+
+    if(_themesController.mapType.value == MapType.satellite) {
+      setState(() => _themesController.mapType.value = MapType.normal);
 
     }else {
-      setState(() => _themesController.mapType = MapType.satellite);
+      setState(() => _themesController.mapType.value = MapType.satellite);
     }
 
-    storage.write('maptype', _themesController.mapType == MapType.satellite ? "satellite" : "normal");
+    storage.write('maptype', _themesController.mapType.value == MapType.satellite ? "satellite" : "normal");
   }
 
   // _showMapThemeModal(ThemeData theme) {

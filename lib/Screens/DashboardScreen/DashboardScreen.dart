@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Globals.dart' as globals;
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -26,6 +28,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     checkUserStatus();
+
+    if(FirebaseAuth.instance.currentUser != null){
+      FirebaseAPI().firebaseCloudMessagingListeners();
+    }
   }
 
   checkUserStatus() {

@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_storage/get_storage.dart';
@@ -13,6 +15,7 @@ import 'package:venture/Models/VenUser.dart';
 
 class FirebaseAPI extends ChangeNotifier {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
  
   Stream<dynamic> getContent() {
     return _firestore.collection('pins')
@@ -167,14 +170,14 @@ class FirebaseAPI extends ChangeNotifier {
           'email': userCredential.user!.email,
           'firebase_id': FirebaseAuth.instance.currentUser!.uid,
           'photo_url': 'https://venture-content.s3.amazonaws.com/images/default-avatar.jpg',
-          'followers': [],
-          'following': [],
+          // 'followers': [],
+          // 'following': [],
           'biography': null,
           'verified': false
         }, SetOptions(merge: true)).then((value) {
         }).catchError((error) {print("Failed to add message: $error");});
 
-          //TODO: call setFirebaseToken
+        // setFirebaseToken();
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
@@ -525,102 +528,107 @@ class FirebaseAPI extends ChangeNotifier {
     return documentId;
   }
 
-  // void firebaseCloudMessagingListeners() async {
-  //   if (Platform.isIOS) iOSPermission();
+  Future<void> firebaseCloudMessagingListeners() async {
+    if (Platform.isIOS) {
+      NotificationSettings settings = await _firebaseMessaging.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
 
-  //   const AndroidNotificationChannel channel = AndroidNotificationChannel(
-  //     'high_importance_channel', // id
-  //     'High Importance Notifications', // title
-  //     description: 'This channel is used for important notifications.', // description
-  //     importance: Importance.max,
-  //   );
+      print('User granted permission: ${settings.authorizationStatus}');
+    }
 
-  //   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  //   // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
-  //   const AndroidInitializationSettings initializationSettingsAndroid =
-  //       AndroidInitializationSettings('ic_launcher');
-  //   final IOSInitializationSettings initializationSettingsIOS =
-  //       IOSInitializationSettings(
-  //           onDidReceiveLocalNotification: onDidReceiveLocalNotification); 
-  //   final MacOSInitializationSettings initializationSettingsMacOS =
-  //       MacOSInitializationSettings();
-  //   final InitializationSettings initializationSettings = InitializationSettings(
-  //       android: initializationSettingsAndroid,
-  //       iOS: initializationSettingsIOS,
-  //       macOS: initializationSettingsMacOS);
-  //   await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-  //       onSelectNotification: selectNotification);
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true, // Required to display a heads up notification
+      badge: true,
+      sound: true,
+    );
 
-  //   await flutterLocalNotificationsPlugin
-  //     .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-  //     ?.createNotificationChannel(channel);
+    setFirebaseToken();
 
-  //   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-  //     alert: true, // Required to display a heads up notification
-  //     badge: true,
-  //     sound: true,
-  //   );
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (message.data.containsKey('type')) {
+        if (message.data['type'] == 'message') {
+          if (message.data.containsKey('owners')) {
+            List<String> _ = message.data['owners'].toString().replaceAll(' ', '').split(',');
+            // MessagingScreen messagingScreen = new MessagingScreen(goToConversation: true, owners: owners);
+            // Navigator.of(context).push(MaterialPageRoute(builder: (context) => messagingScreen));
+          }
+        }
+      }
+    });
 
-        //TODO: set this function as its own and call in createUser
-  //   _firebaseMessaging.getToken().then((token){
-  //     setFirebaseToken(context, token!);
-  //   });
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
 
-  //   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-  //     if (message.data.containsKey('type')) {
-  //       if (message.data['type'] == 'message') {
-  //         if (message.data.containsKey('owners')) {
-  //           List<String> _ = message.data['owners'].toString().replaceAll(' ', '').split(',');
-  //           // MessagingScreen messagingScreen = new MessagingScreen(goToConversation: true, owners: owners);
-  //           // Navigator.of(context).push(MaterialPageRoute(builder: (context) => messagingScreen));
-  //         }
-  //       }
-  //     }
-  //   });
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+      }
+      // RemoteNotification? notification = message.notification;
+      // AndroidNotification? android = message.notification?.android;
 
-  //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  //     print('Got a message whilst in the foreground!');
-  //     print('Message data: ${message.data}');
+      // If `onMessage` is triggered with a notification, construct our own
+      // local notification to show to users using the created channel.
+      // if (notification != null && android != null) {
+      //   flutterLocalNotificationsPlugin.show(
+      //     notification.hashCode,
+      //     notification.title,
+      //     notification.body,
+      //     NotificationDetails(
+      //       android: AndroidNotificationDetails(
+      //         channel.id,
+      //         channel.name,
+      //         channelDescription: channel.description,
+      //         icon: android.smallIcon,
+      //         priority: Priority.max
+      //         // other properties...
+      //       ),
+      //     )
+      //   );
+      // }
+    });
+  }
 
-  //     if (message.notification != null) {
-  //       print('Message also contained a notification: ${message.notification}');
-  //     }
-  //     RemoteNotification? notification = message.notification;
-  //     AndroidNotification? android = message.notification?.android;
+  Future<void> setFirebaseToken() async {
+    if(FirebaseAuth.instance.currentUser != null){
+      _firebaseMessaging.getToken().then((token) async {
+        var userRef = FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid);
 
-  //     // If `onMessage` is triggered with a notification, construct our own
-  //     // local notification to show to users using the created channel.
-  //     if (notification != null && android != null) {
-  //       flutterLocalNotificationsPlugin.show(
-  //         notification.hashCode,
-  //         notification.title,
-  //         notification.body,
-  //         NotificationDetails(
-  //           android: AndroidNotificationDetails(
-  //             channel.id,
-  //             channel.name,
-  //             channelDescription: channel.description,
-  //             icon: android.smallIcon,
-  //             priority: Priority.max
-  //             // other properties...
-  //           ),
-  //         )
-  //       );
-  //     }
-  //   });
-  // }
+        final storage = FlutterSecureStorage();
+        String? deviceUniqueID = await storage.read(key: 'AppUID');
+
+        userRef.set({
+          'firebase_tokens': {
+            deviceUniqueID: token
+          }
+        }, SetOptions(merge: true)).then((value) {
+        }).catchError((error) {print("Failed to add message: $error");});
+      });
+    }
+  }
 
   Future<void> removeFirebaseTokens() async {
     // Find matching firebase token for current user and remove it from Firestore
     // so you don't receive push notifications on a specific device after logging out
     var userRef = FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid);
+
     final storage = FlutterSecureStorage();
     String? deviceUniqueID = await storage.read(key: 'AppUID');
+    print(deviceUniqueID);
+
     var doc = await userRef.get();
+
     Map<String, String> tokens = Map<String, String>.from(doc.get('firebase_tokens'));
+
     tokens.removeWhere((key, value) => key == deviceUniqueID);
 
-    userRef.update({
+    await userRef.update({
       'firebase_tokens': tokens
     }).then((value) {}).catchError((error) {print("Failed to remove firebase token: $error");});
   }
