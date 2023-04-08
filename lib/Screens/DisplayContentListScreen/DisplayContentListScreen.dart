@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Screens/DashboardScreen/Components/PostSkeleton.dart';
+import 'package:swipeable_page_route/swipeable_page_route.dart';
 
 class DisplayContentListScreen extends StatefulWidget {
   final Content content;
@@ -18,6 +19,7 @@ class DisplayContentListScreen extends StatefulWidget {
 
 class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
   late PageController scrollController;
+  // late SwipeablePageRoute<void> pageRoute;
 
   @override
   void initState() {
@@ -35,6 +37,8 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // pageRoute = context.getSwipeablePageRoute<void>()!;
+    // setState(() => pageRoute.canSwipe = false);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -92,6 +96,7 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
               itemCount: widget.contents.length,
               physics: AlwaysScrollableScrollPhysics(),
               scrollDirection: Axis.vertical,
+              onPageChanged: (index) {},
               itemBuilder: (context, i) {
                 if(widget.contents[i] == widget.content) {
                   return PostSkeleton(content: widget.contents[i], heroTag: widget.contents[i].contentUrls.first);
