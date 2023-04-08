@@ -653,3 +653,37 @@ Future<List<String>> getPlaces(String text, {String lang = "EN"}) async {
       throw Exception('Failed to fetch suggestion');
     }
 }
+
+Future<void> pushNotification(BuildContext context, String type, List<String> tokens, Map<String, dynamic> data) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "type": type,
+    "tokens": tokens,
+    "data": data
+  };
+
+  String url = "${globals.apiBaseUrl}/notification";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToast(context: context, color: Colors.red, msg: "Connection timeout.");
+    return;
+  }
+  print(response);
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  print(jsonResponse);
+}

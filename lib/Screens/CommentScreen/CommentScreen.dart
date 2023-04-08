@@ -10,14 +10,15 @@ import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/TimeFormat.dart';
+import 'package:venture/Models/Content.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class CommentScreen extends StatefulWidget {
   final String? documentId;
   final int? numOfComments;
-  final int contentKey;
-  CommentScreen({Key? key, required this.documentId, this.numOfComments = 0, required this.contentKey}) : super(key: key);
+  final Content content;
+  CommentScreen({Key? key, required this.documentId, this.numOfComments = 0, required this.content}) : super(key: key);
 
   @override
   _CommentScreen createState() => _CommentScreen();
@@ -61,10 +62,21 @@ class _CommentScreen extends State<CommentScreen> {
   submitComment() async {
     if(textController.text.isEmpty) return;
 
-    print(documentId);
-    var result = await FirebaseAPI().addComment(documentId, widget.contentKey, textController.text);
+    var result = await FirebaseAPI().addComment(
+      context,
+      documentId,
+      widget.content.contentKey,
+      textController.text,
+      data: {
+        "comment": textController.text,
+        "contentKey": widget.content.contentKey,
+        "user_key": widget.content.user!.userKey.toString(),
+        "documentId": documentId
+      }
+    );
+
     if(documentId == null) setState(() => documentId = result);
-    print(documentId);
+
     textController.clear();
     scrollController.animateTo(
       scrollController.position.minScrollExtent,

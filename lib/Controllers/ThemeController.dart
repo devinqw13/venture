@@ -9,7 +9,8 @@ import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 class ThemesController extends GetxController {
   final storage = GetStorage();
   GoogleMapController? googleMapController;
-  MapType mapType = MapType.satellite;
+  var mapType = MapType.satellite.obs;
+  // var mapType2 = MapType.normal.obs;
   String theme = 'dark';
   String mapStyle = 'orange';
   String lightModeMapStyle = 'orange';
@@ -33,7 +34,7 @@ class ThemesController extends GetxController {
 
   getMapState() {
     if (storage.read('maptype') != null) {
-      mapType = storage.read('maptype') == "normal" ? MapType.normal : MapType.satellite;
+      mapType.value = storage.read('maptype') == "normal" ? MapType.normal : MapType.satellite;
     }
 
     if (storage.read('mapstyle') != null) {

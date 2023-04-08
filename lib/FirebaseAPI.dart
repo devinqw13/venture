@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -348,30 +349,30 @@ class FirebaseAPI extends ChangeNotifier {
     }
   }
 
-  Future<void> addReactionV2(String? documentId, int contentKey) async {
+  Future<void> addReactionV2(BuildContext context, String? documentId, int contentKey, {Map<String, dynamic>? data}) async {
     HapticFeedback.mediumImpact();
 
     if(documentId != null) {
-      _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()});
+      _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()})
+      .then((v) async {
+        // SEND NOTIFICATION
+        reactionNotification(context, data);
+      });
     }else {
-      await addReactionFromKey(contentKey);
-      // var rxRef = _firestore.collection('content').doc();
-      // rxRef.set({
-      //   'content_key': contentKey.toString(),
-      //   // 'reactions': [FirebaseAuth.instance.currentUser!.uid]
-      // }, SetOptions(merge: true)).then((value) {
-      // }).then((value) {
-      //   rxRef.collection("reactions").doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()});
-      // });
+      await addReactionFromKey(context, contentKey, data: data);
     }
   }
 
-  Future<void> addReactionFromKey(int contentKey) async {
+  Future<void> addReactionFromKey(BuildContext context, int contentKey, {Map<String, dynamic>? data}) async {
     var content = await _firestore.collection('content').where('content_key', isEqualTo: contentKey.toString()).get();
 
     if(content.docs.isNotEmpty) {
       var documentId = content.docs.first.id;
-      _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()});
+      _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()})
+      .then((v) {
+        // SEND NOTIFICATION
+        reactionNotification(context, data);
+      });
     } else {
       var rxRef = _firestore.collection('content').doc();
       rxRef.set({
@@ -379,8 +380,29 @@ class FirebaseAPI extends ChangeNotifier {
         // 'reactions': [FirebaseAuth.instance.currentUser!.uid]
       }, SetOptions(merge: true)).then((value) {
       }).then((value) {
-        rxRef.collection("reactions").doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()});
+        rxRef.collection("reactions").doc(FirebaseAuth.instance.currentUser!.uid).set({'timestamp': DateTime.now().toUtc()})
+        .then((v) {
+          // SEND NOTIFICATION
+          reactionNotification(context, data);
+        });
       });
+    }
+  }
+
+  Future<void> reactionNotification(BuildContext context, Map<String, dynamic>? data) async {
+    Map<String, dynamic> notiData = {};
+    var results = await getUserFromFirebaseId(FirebaseAuth.instance.currentUser!.uid);
+    notiData['reaction_by'] = json.encode(results);
+
+    if(data != null) notiData['content_data'] = json.encode(data);
+
+    if(results['user_key'] != data!['user_key'].toString()) {
+      sendNotification(
+        context,
+        "reactions",
+        notiData,
+        userKey: data['user_key'].toString()
+      );
     }
   }
 
@@ -501,7 +523,7 @@ class FirebaseAPI extends ChangeNotifier {
     await _firestore.collection('content').doc(contentId).collection('comments').doc(commentId).delete();
   }
 
-  Future<String> addComment(String? documentId, int contentKey, String comment) async {
+  Future<String> addComment(BuildContext context, String? documentId, int contentKey, String comment, {Map<String, dynamic>? data}) async {
     // HapticFeedback.mediumImpact();
 
     if(documentId != null) {
@@ -509,6 +531,9 @@ class FirebaseAPI extends ChangeNotifier {
         'timestamp': DateTime.now().toUtc(),
         'comment': comment,
         'firebase_id': FirebaseAuth.instance.currentUser!.uid
+      }).then((v) {
+        // SEND NOTIFICATION
+        commentNotification(context, data);
       });
     }else {
       var rxRef = _firestore.collection('content').doc();
@@ -521,11 +546,32 @@ class FirebaseAPI extends ChangeNotifier {
           'timestamp': DateTime.now().toUtc(),
           'comment': comment,
           'firebase_id': FirebaseAuth.instance.currentUser!.uid
+        }).then((v) {
+          // SEND NOTIFICATION
+          data?['documentId'] = documentId;
+          commentNotification(context, data);
         });
       });
     }
 
     return documentId;
+  }
+
+  Future<void> commentNotification(BuildContext context, Map<String, dynamic>? data) async {
+    Map<String, dynamic> notiData = {};
+    var results = await getUserFromFirebaseId(FirebaseAuth.instance.currentUser!.uid);
+    notiData['comment_by'] = json.encode(results);
+
+    if(data != null) notiData['comment_data'] = json.encode(data);
+
+    if(results['user_key'] != data!['user_key'].toString()) {
+      sendNotification(
+        context,
+        "content_comment",
+        notiData,
+        userKey: data['user_key'].toString()
+      );
+    }
   }
 
   Future<void> firebaseCloudMessagingListeners() async {
@@ -631,6 +677,46 @@ class FirebaseAPI extends ChangeNotifier {
     await userRef.update({
       'firebase_tokens': tokens
     }).then((value) {}).catchError((error) {print("Failed to remove firebase token: $error");});
+  }
+
+  Future<List<String>> getFirebaseTokens({String? firebaseId, String? userKey}) async {
+    if(firebaseId != null) {
+      var result = await _firestore.collection('users').doc(firebaseId).get();
+
+      Map<String, dynamic>? tokens = result.data()?['firebase_tokens'];
+      List<String>? fbTokens = (tokens?.values.toList())?.map((e) => e as String).toList();
+      return fbTokens ?? [];
+    }else if(userKey != null) {
+      var result = await _firestore.collection('users').where('user_key', isEqualTo: userKey).get();
+
+      if(result.docs.isNotEmpty) {
+        Map<String, dynamic>? tokens = result.docs.first.data()['firebase_tokens'];
+        List<String>? fbTokens = (tokens?.values.toList())?.map((e) => e as String).toList();
+        return fbTokens ?? [];
+      }
+    }
+
+    return [];
+  }
+
+  Future<void> sendNotification(BuildContext context, String type, Map<String, dynamic> data, {String? firebaseId, String? userKey}) async {
+
+    List<String> tokens = [];
+    if(firebaseId != null) {
+      tokens = await FirebaseAPI().getFirebaseTokens(firebaseId: firebaseId);
+    }else if(userKey != null) {
+      print(userKey);
+      tokens = await FirebaseAPI().getFirebaseTokens(userKey: userKey);
+    }
+
+    if(tokens.isNotEmpty) {
+      pushNotification(
+        context,
+        type,
+        tokens,
+        data
+      );
+    }
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getNotifications() async {

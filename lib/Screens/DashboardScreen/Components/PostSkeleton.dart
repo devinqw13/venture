@@ -42,12 +42,15 @@ class PostSkeleton extends StatefulWidget{
   _PostSkeleton createState() => _PostSkeleton();
 }
 
-class _PostSkeleton extends State<PostSkeleton> {
+class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMixin<PostSkeleton> {
   final ThemesController _themesController = Get.find();
   final HomeController _homeController = Get.find();
   CarouselController controller = CarouselController();
   int currentIndex = 0;
   late Offset doubleTapPosition;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -359,7 +362,15 @@ class _PostSkeleton extends State<PostSkeleton> {
                 color: Colors.red,
               ),
             ) : ZoomTapAnimation(
-            onTap: () => FirebaseAPI().addReactionV2(documentId, content.contentKey),
+            onTap: () => FirebaseAPI().addReactionV2(
+              context,
+              documentId,
+              content.contentKey,
+              data: {
+                "content_key": content.contentKey,
+                "user_key": content.user!.userKey
+              }
+            ),
             child: CustomIcon(
               icon: 'assets/icons/favorite.svg',
               size: 27,
@@ -372,7 +383,7 @@ class _PostSkeleton extends State<PostSkeleton> {
   }
 
   goToCommentScreen(String? documentId, int? numOfComments, int contentKey) {
-    CommentScreen screen = CommentScreen(documentId: documentId, numOfComments: numOfComments, contentKey: contentKey);
+    CommentScreen screen = CommentScreen(documentId: documentId, numOfComments: numOfComments, content: widget.content);
     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 
@@ -467,7 +478,15 @@ class _PostSkeleton extends State<PostSkeleton> {
           minScale: 1,
           child: GestureDetector(
             onDoubleTap: () async {
-              await FirebaseAPI().addReactionV2(null, content.contentKey);
+              await FirebaseAPI().addReactionV2(
+                context,
+                null,
+                content.contentKey,
+                data: {
+                  "content_key": content.contentKey,
+                  "user_key": content.user!.userKey
+                }
+              );
               showLikeHeart(context: context, offset: doubleTapPosition);
             },
             onDoubleTapDown: (details) {
@@ -574,6 +593,7 @@ class _PostSkeleton extends State<PostSkeleton> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final theme = Theme.of(context);
     SizeConfig().init(context);
     return Container(
