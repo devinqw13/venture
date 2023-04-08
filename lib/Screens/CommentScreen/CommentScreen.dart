@@ -122,108 +122,111 @@ class _CommentScreen extends State<CommentScreen> {
               child: ListView(
                 controller: scrollController,
                 children: [
-                  FirestoreListView(
-                    physics: NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    query: FirebaseAPI().commentQuery(documentId),
-                    pageSize: 20,
-                    emptyBuilder: (context) {
-                      return Container(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
-                            // SizedBox(height: 20,),
-                            Text(
-                              'Be the first to comment.'
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    itemBuilder: (context, documentSnapshot) {
-                      // String documentId = documentSnapshot.id;
-                      var commentData = documentSnapshot.data() as Map<String, dynamic>;
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: FirestoreListView(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      query: FirebaseAPI().commentQuery(documentId),
+                      pageSize: 20,
+                      emptyBuilder: (context) {
+                        return Container(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
+                              // SizedBox(height: 20,),
+                              Text(
+                                'Be the first to comment.'
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      itemBuilder: (context, documentSnapshot) {
+                        // String documentId = documentSnapshot.id;
+                        var commentData = documentSnapshot.data() as Map<String, dynamic>;
 
-                      return Slidable(
-                        enabled: commentData['firebase_id'] == FirebaseAPI().firebaseId() ? true : false,
-                        key: ValueKey(documentSnapshot.id),
-                        endActionPane: ActionPane(
-                          extentRatio: 0.15,
-                          motion: const BehindMotion(),
-                          dismissible: commentData['firebase_id'] == FirebaseAPI().firebaseId() ? DismissiblePane(
-                            onDismissed: () => deleteComment(documentSnapshot.id)
-                          ) : null,
-                          children: [
-                            CustomSlidableAction(
-                              backgroundColor: Colors.red,
-                              onPressed: (context) => deleteComment(documentSnapshot.id),
-                              child: CustomIcon(
-                                icon: 'assets/icons/trash-2.svg',
-                                color: Colors.white,
-                                size: 35,
-                              )
-                            ),
-                          ],
-                        ),
-                        child: FutureBuilder(
-                          future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
-                          builder: (context, snapshot) {
-                            var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
+                        return Slidable(
+                          enabled: commentData['firebase_id'] == FirebaseAPI().firebaseId() ? true : false,
+                          key: ValueKey(documentSnapshot.id),
+                          endActionPane: ActionPane(
+                            extentRatio: 0.15,
+                            motion: const BehindMotion(),
+                            dismissible: commentData['firebase_id'] == FirebaseAPI().firebaseId() ? DismissiblePane(
+                              onDismissed: () => deleteComment(documentSnapshot.id)
+                            ) : null,
+                            children: [
+                              CustomSlidableAction(
+                                backgroundColor: Colors.red,
+                                onPressed: (context) => deleteComment(documentSnapshot.id),
+                                child: CustomIcon(
+                                  icon: 'assets/icons/trash-2.svg',
+                                  color: Colors.white,
+                                  size: 35,
+                                )
+                              ),
+                            ],
+                          ),
+                          child: FutureBuilder(
+                            future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
+                            builder: (context, snapshot) {
+                              var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
 
-                            if(snapshot.hasData) {
-                              var docSnapshot = snapshot.data as Map<String, dynamic>;
-                              var userData = docSnapshot;
+                              if(snapshot.hasData) {
+                                var docSnapshot = snapshot.data as Map<String, dynamic>;
+                                var userData = docSnapshot;
 
-                              return Padding(
-                                padding: EdgeInsets.symmetric(vertical: 10),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    MyAvatar(photo: userData['photo_url']),
-                                    Expanded(
-                                      child: Container(
-                                        padding: EdgeInsets.only(left: 10),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Text(
-                                              userData['username'],
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14
-                                              ),
-                                            ),
-                                            SizedBox(height: 7),
-                                            Text(
-                                              commentData['comment'],
-                                              style: TextStyle(
-                                                fontSize: 16
-                                              ),
-                                            ),
-                                            SizedBox(height: 5),
-                                            TimeFormat()
-                                              .withoutDate(
-                                                date,
+                                return Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      MyAvatar(photo: userData['photo_url']),
+                                      Expanded(
+                                        child: Container(
+                                          padding: EdgeInsets.only(left: 10),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              Text(
+                                                userData['username'],
                                                 style: TextStyle(
-                                                  color: Colors.grey
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14
+                                                ),
+                                              ),
+                                              SizedBox(height: 7),
+                                              Text(
+                                                commentData['comment'],
+                                                style: TextStyle(
+                                                  fontSize: 16
+                                                ),
+                                              ),
+                                              SizedBox(height: 5),
+                                              TimeFormat()
+                                                .withoutDate(
+                                                  date,
+                                                  style: TextStyle(
+                                                    color: Colors.grey
+                                                  )
                                                 )
-                                              )
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                )
-                              );
+                                    ],
+                                  )
+                                );
+                              }
+                              return Container();
                             }
-                            return Container();
-                          }
-                        )
-                      );
-                    }
+                          )
+                        );
+                      }
+                    )
                   )
                 ]
               )
