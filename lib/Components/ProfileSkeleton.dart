@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iconly/iconly.dart';
 import 'package:get/get.dart';
+import 'package:swipeable_page_route/swipeable_page_route.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/FirebaseAPI.dart';
@@ -14,7 +15,7 @@ import 'package:venture/Components/Skeleton.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Helpers/MapPreview.dart';
 import 'package:venture/Helpers/NumberFormat.dart';
-import 'package:venture/Helpers/RefreshIndicator.dart';
+import 'package:venture/Helpers/CustomRefresh.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
@@ -60,10 +61,10 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
     super.dispose();
   }
 
-  _initializeAsyncDependencies([bool showLoading = true]) async {
+  Future<void> _initializeAsyncDependencies([bool showLoading = true]) async {
     // TODO: Incorporate user content caching
     if(showLoading) setState(() => _isLoadingContent = true);
-    var results = await getContent(context, [userData.userKey!]);
+    var results = await getContent(context, [userData.userKey!], 1);
     setState(() => _isLoadingContent = false);
 
     setState(() {
@@ -95,13 +96,13 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
 
   Future<void> _refreshUser() async {
     HapticFeedback.mediumImpact();
-    var result = await FirebaseAPI().getUserDetails(userKey: userData.userKey.toString());
+    var result = await FirebaseAPI().getUserDetailsV2(userKey: userData.userKey.toString());
     if(result != null) {
-      var u = UserModel.fromFirebaseMap(result.docs.first.data());
+      var u = UserModel.fromFirebaseMap(result);
       setState(() => userData = u);
     }
 
-    _initializeAsyncDependencies(false);
+    await _initializeAsyncDependencies(false);
   }
 
   SliverAppBar _buildHeaderWithAvatar(UserModel user) {
@@ -554,7 +555,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
         tabs: [
           Tab(
             child: Text(
-              "Pins",
+              "Content",
               style: TextStyle(
                 fontWeight: FontWeight.bold
               ),
@@ -562,12 +563,12 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
           ),
           Tab(
             child: Text(
-              "Content",
+              "Pins",
               style: TextStyle(
                 fontWeight: FontWeight.bold
               ),
             )
-          )
+          ),
         ],
       ),
     );
@@ -600,42 +601,6 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
   _buildTabView() {
     return TabBarView(
       children: [
-        pins != null && pins!.isNotEmpty ? GridView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.all(0),
-          itemCount: pins!.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 1.0,
-            crossAxisSpacing: 1.0,
-            childAspectRatio: 1.0
-          ),
-          itemBuilder: (context, i) {
-            // return Text(pins![i].pinName!);
-            return PinBuilder(pin: pins![i]);
-          },
-        ) : Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: CustomIcon(
-                    size: MediaQuery.of(context).size.height * 0.1,
-                    color: Colors.white,
-                    icon: 'assets/icons/location2.svg'
-                  )
-                ),
-                Text(
-                  "No pins yet",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20
-                  ),
-                )
-              ],
-            )
-          ),
         pinContent != null && pinContent!.isNotEmpty ? GridView.builder(
           physics: NeverScrollableScrollPhysics(),
           padding: EdgeInsets.all(0),
@@ -671,6 +636,42 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
               ],
             )
           ),
+        pins != null && pins!.isNotEmpty ? GridView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.all(0),
+          itemCount: pins!.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            mainAxisSpacing: 1.0,
+            crossAxisSpacing: 1.0,
+            childAspectRatio: 1.0
+          ),
+          itemBuilder: (context, i) {
+            // return Text(pins![i].pinName!);
+            return PinBuilder(pin: pins![i]);
+          },
+        ) : Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.all(10),
+                child: CustomIcon(
+                  size: MediaQuery.of(context).size.height * 0.1,
+                  color: Colors.white,
+                  icon: 'assets/icons/location2.svg'
+                )
+              ),
+              Text(
+                "No pins yet",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20
+                ),
+              )
+            ],
+          )
+        ),
       ]
     );
   }
@@ -950,14 +951,14 @@ class PinContentBuilder extends StatelessWidget {
               tag: pinContent.contentUrls.first,
               photoUrl: pinContent.contentUrls.first,
               onTap: () {
+                // Navigator.of(context).push(SwipeablePageRoute(builder: (context) {
+                //   return DisplayContentListScreen(content: pinContent, user: user, contents: pinContents);
+                // }));
                 Navigator.of(context).push(CupertinoPageRoute<void>(
                   builder: (BuildContext context) {
                     return DisplayContentListScreen(content: pinContent, user: user, contents: pinContents);
                   }
                 ));
-                // Navigator.of(context).push(ScaleRoute(
-                //   page:
-                //     DisplayContentListScreen(content: pinContent, user: user, contents: pinContents)));
               },
             )
           ),
