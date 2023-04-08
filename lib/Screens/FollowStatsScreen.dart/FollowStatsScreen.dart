@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
-import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:iconly/iconly.dart';
 import 'package:get/get.dart';
 import 'package:venture/Components/Avatar.dart';
@@ -31,7 +32,7 @@ class FollowStatsScreenState extends State<FollowStatsScreen> {
     return FirestoreListView(
       shrinkWrap: true,
       pageSize: 50,
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       query: FirebaseAPI().followersQuery(widget.user.fid),
       emptyBuilder: (context) {
         return Container(
@@ -66,7 +67,7 @@ class FollowStatsScreenState extends State<FollowStatsScreen> {
     return FirestoreListView(
       shrinkWrap: true,
       pageSize: 50,
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       query: FirebaseAPI().followingQuery(widget.user.fid),
       emptyBuilder: (context) {
         return Container(
@@ -159,40 +160,6 @@ class FollowStatsScreenState extends State<FollowStatsScreen> {
             )
           ],
         ),
-        // body: Column(
-        //   children: [
-        //     Expanded(
-        //       child: ListView(
-        //         children: [
-        //           PaginateFirestore(
-        //             physics: NeverScrollableScrollPhysics(),
-        //             shrinkWrap: true,
-        //             query: FirebaseAPI().commentQuery(widget.documentId),
-        //             itemBuilderType: PaginateBuilderType.listView,
-        //             isLive: true,
-        //             itemsPerPage: 20,
-        //             onEmpty: Container(
-        //               padding: EdgeInsets.symmetric(vertical: 8),
-        //               child: Column(
-        //                 mainAxisAlignment: MainAxisAlignment.center,
-        //                 children: [
-        //                   // Icon(Icons.chat, size: 80, color: Colors.grey.shade400,),
-        //                   // SizedBox(height: 20,),
-        //                   Text('No Followers'),
-        //                 ],
-        //               ),
-        //             ),
-        //             itemBuilder: (context, documentSnapshot, index) {
-        //               // String documentId = documentSnapshot[index].id;
-        //               var userData = documentSnapshot[index].data() as Map<String, dynamic>;
-        //               return Container();
-        //             }
-        //           )
-        //         ]
-        //       )
-        //     ),
-        //   ],
-        // ),
       )
     );
   }
@@ -241,28 +208,42 @@ class _UserCard extends State<UserCard> {
   }
 
   Widget buildFollowButton() {
-    // bool isFollowing = user['followers'].contains(FirebaseAPI().firebaseId());
 
     return FirebaseAPI().firebaseId() != user['firebase_id'] ? ElevatedButton(
       onPressed: () => _handleFollowStatus(user['isFollowing']),
       child: Text(
-        user['isFollowing'] ? "Following" : "Follow"
+        user['isFollowing'] ? "Following" : "Follow",
+        style: TextStyle(
+          color: Colors.white
+        ),
       ),
       style: ElevatedButton.styleFrom(
-        minimumSize: Size(100, 30),
         elevation: 0,
-        backgroundColor: user['isFollowing'] ? 
-        ColorConstants.gray600 : primaryOrange,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-        )
-      ),
+          side: BorderSide(
+            color: user['isFollowing'] ? Get.isDarkMode ? Colors.white : Colors.black : Colors.transparent
+          )
+        ),
+        minimumSize: Size.zero,
+        padding: EdgeInsets.symmetric( vertical: 5, horizontal: 16),
+        backgroundColor: user['isFollowing'] ? 
+        ColorConstants.gray600 : primaryOrange,
+        foregroundColor: Colors.transparent
+      )
     ) : Container();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return InkWell(
+      onTap: () {
+        ProfileScreen screen = ProfileScreen(userKey: int.parse(user['user_key']));
+        Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+      },
+      child: Card(
+      margin: EdgeInsets.only(bottom: 10, top: 10),
       elevation: 0,
       color: Colors.transparent,
       child: Row(
@@ -323,6 +304,6 @@ class _UserCard extends State<UserCard> {
           )
         ],
       )
-    );
+    ));
   }
 }

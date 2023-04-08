@@ -120,7 +120,7 @@ class _MyAppState extends State<MyApp> {
               buttons: {
                 "OK": {
                   "action": () => Navigator.of(context).pop(),
-                  "textColor": Colors.white,
+                  "textColor": Get.isDarkMode ? Colors.white : Colors.black,
                   "alignment": TextAlign.center
                 },
               }

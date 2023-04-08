@@ -463,7 +463,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
           },
           "Cancel": {
             "action": () => Navigator.of(context).pop(),
-            "textColor": Colors.white,
+            "textColor": Get.isDarkMode ? Colors.white : Colors.black,
             "alignment": TextAlign.center
           }
         }
@@ -506,7 +506,10 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
               onPressed: () => widget.isUser ? goToEditProfile() : handleFollowStatus(),
               child: Text(
                 widget.isUser ? "Edit Profile" :
-                userData.isFollowing! ? "Following" : "Follow"
+                userData.isFollowing! ? "Following" : "Follow",
+                style: TextStyle(
+                  color: Get.isDarkMode ? Colors.white : Colors.black,
+                ),
               ),
               style: ElevatedButton.styleFrom(
                 // minimumSize: Size(150, 35),
@@ -622,7 +625,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                   padding: EdgeInsets.all(10),
                   child: CustomIcon(
                     size: MediaQuery.of(context).size.height * 0.1,
-                    color: Colors.white,
+                    color: Get.isDarkMode ? Colors.white : Colors.black,
                     icon: 'assets/icons/photo.svg'
                   )
                 ),
@@ -658,7 +661,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                 padding: EdgeInsets.all(10),
                 child: CustomIcon(
                   size: MediaQuery.of(context).size.height * 0.1,
-                  color: Colors.white,
+                  color: Get.isDarkMode ? Colors.white : Colors.black,
                   icon: 'assets/icons/location2.svg'
                 )
               ),
@@ -714,7 +717,8 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
           displacement: 0,
           backgroundColor: Colors.transparent,
           withRotation: false,
-          edgeOffset: MediaQuery.of(context).size.height * 0.06,
+          // edgeOffset: MediaQuery.of(context).size.height * 0.06,
+          edgeOffset: MediaQuery.of(context).padding.top,
           builder: (context, controller) {
             return CupertinoActivityIndicator(
               radius: 13,

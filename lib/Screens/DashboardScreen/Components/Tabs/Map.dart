@@ -815,7 +815,7 @@ class _MapOverlay extends State<MapOverlay> with TickerProviderStateMixin{
       buttons: {
         "OK": {
           "action": () => Navigator.of(context).pop(),
-          "textColor": Colors.white,
+          "textColor": Get.isDarkMode ? Colors.white : Colors.black,
           "alignment": TextAlign.center
         },
       }
@@ -952,7 +952,7 @@ class _MapOverlay extends State<MapOverlay> with TickerProviderStateMixin{
               alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: EdgeInsets.only(
-                  bottom: 25,
+                  bottom: 35,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -1015,7 +1015,7 @@ class _MapOverlay extends State<MapOverlay> with TickerProviderStateMixin{
               alignment: Alignment.bottomRight,
               child: Padding(
                 padding: EdgeInsets.only(
-                  bottom: 25,
+                  bottom: 35,
                 ),
                 child: FloatingActionButton(
                   backgroundColor: Get.isDarkMode ? ColorConstants.gray800 : Colors.white,

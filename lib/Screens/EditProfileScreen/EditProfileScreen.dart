@@ -96,6 +96,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => isLoading = false);
 
     checkDoneButton();
+    Navigator.pop(context);
   }
 
   selectPhoto() async {
@@ -231,6 +232,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               child: Icon(
                                 IconlyLight.camera,
                                 size: 40,
+                                color: Colors.black,
                               )
                             ),
                           )

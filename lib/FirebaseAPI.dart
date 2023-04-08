@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Constants.dart';
@@ -241,7 +242,7 @@ class FirebaseAPI extends ChangeNotifier {
           buttons: {
             "OK": {
               "action": () => Navigator.of(context).pop(),
-              "textColor": Colors.white,
+              "textColor": Get.isDarkMode ? Colors.white : Colors.black,
               "alignment": TextAlign.center
             },
           }
@@ -280,7 +281,7 @@ class FirebaseAPI extends ChangeNotifier {
           buttons: {
             "OK": {
               "action": () => Navigator.of(context).pop(),
-              "textColor": Colors.white,
+              "textColor": Get.isDarkMode ? Colors.white : Colors.black,
               "alignment": TextAlign.center
             },
           }
