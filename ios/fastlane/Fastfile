@@ -23,7 +23,8 @@ platform :ios do
       scheme: "Runner",
       export_options: {
         provisioningProfiles: {
-          "com.ven.venture" => "Production Provisioning Profile"
+          "com.ven.venture" => "Production Provisioning Profile",
+          "com.ven.venture.ImageNotification" => "WC Prod Provisioning Profile"
         }
       }
     )
