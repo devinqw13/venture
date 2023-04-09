@@ -71,7 +71,8 @@ class _CommentScreen extends State<CommentScreen> {
         "comment": textController.text,
         "contentKey": widget.content.contentKey,
         "user_key": widget.content.user!.userKey.toString(),
-        "documentId": documentId
+        "documentId": documentId,
+        "content_image_url": widget.content.contentUrls.first
       }
     );
 
@@ -163,7 +164,7 @@ class _CommentScreen extends State<CommentScreen> {
                                 backgroundColor: Colors.red,
                                 onPressed: (context) => deleteComment(documentSnapshot.id),
                                 child: CustomIcon(
-                                  icon: 'assets/icons/trash-2.svg',
+                                  icon: 'assets/icons/trash.svg',
                                   color: Colors.white,
                                   size: 35,
                                 )

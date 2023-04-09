@@ -368,7 +368,8 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
               content.contentKey,
               data: {
                 "content_key": content.contentKey,
-                "user_key": content.user!.userKey
+                "user_key": content.user!.userKey,
+                "content_image_url": content.contentUrls.first
               }
             ),
             child: CustomIcon(
@@ -484,7 +485,8 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                 content.contentKey,
                 data: {
                   "content_key": content.contentKey,
-                  "user_key": content.user!.userKey
+                  "user_key": content.user!.userKey,
+                  "content_image_url": content.contentUrls.first
                 }
               );
               showLikeHeart(context: context, offset: doubleTapPosition);
