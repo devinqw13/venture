@@ -80,14 +80,9 @@ class TimeFormat {
     final date2 = DateTime.now();
     final difference = date2.difference(date);
 
-    // print(">>>>>>>>");
-    // print(date2);
-    // print(date);
-    // print(">>>>>>>>");
-
     if (difference.inDays >= 7) {
       DateFormat format = date.year < date2.year ? DateFormat('MMM d, yyyy') : DateFormat('MMM d');
-      return Text(format.format(date2), style: style);
+      return Text(format.format(date), style: style);
     } else if (difference.inDays >= 1) {
       return (numericDates) ?
         Text('${difference.inDays}d', style: style) :

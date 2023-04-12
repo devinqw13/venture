@@ -115,25 +115,6 @@ class ConversationItemState extends State<ConversationItem> {
                               fontWeight: widget.conversation.showUnread! ? FontWeight.bold : FontWeight.normal
                             )
                           ),
-                          // Column(
-                          //   crossAxisAlignment: CrossAxisAlignment.end,
-                          //   children: [
-                          //     Text(
-                          //       dateString,
-                          //       style: TextStyle(
-                          //         fontSize: 12,
-                          //         fontWeight: widget.conversation.showUnread! ? FontWeight.bold : FontWeight.normal
-                          //       )
-                          //     ),
-                          //     Text(
-                          //       timeString,
-                          //       style: TextStyle(
-                          //         fontSize: 12,
-                          //         fontWeight: widget.conversation.showUnread! ? FontWeight.bold : FontWeight.normal
-                          //       )
-                          //     ),
-                          //   ],
-                          // ),
                           widget.conversation.showUnread! ?
                           Container(
                             margin: const EdgeInsets.only(left: 10),
