@@ -188,13 +188,13 @@ class _MyAppState extends State<MyApp> {
         }
         else {
           return Container(
-            color: primaryBlue,
+            color: primaryOrange,
             child: Center(
-              child: Container()
-              // child: Image.asset('assets/images/ATS_HW_Vertical_FullColor_02.png',
-              //   alignment: Alignment.center,
-              //   fit: BoxFit.fill,
-              // ),
+              child: Image.asset(
+                'assets/images/splash-logo.png',
+                width: 240,
+                height: 128,
+              )
             ),
           );
         }
