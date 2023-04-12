@@ -9,12 +9,16 @@ class CustomRefresh extends StatefulWidget {
   final Widget child;
   final VoidCallback onAction;
   final double edgeOffset;
+  final IndicatorController? controller;
+  final Key? indicatorKey;
 
   const CustomRefresh({
     Key? key,
     required this.child,
     required this.onAction,
     this.edgeOffset = 0.0,
+    this.controller,
+    this.indicatorKey
   }) : super(key: key);
 
   @override
@@ -30,6 +34,8 @@ class _CustomRefreshState extends State<CustomRefresh>
   @override
   Widget build(BuildContext context) {
     return CustomRefreshIndicator(
+      key: widget.indicatorKey,
+      controller: widget.controller,
       offsetToArmed: _indicatorSize,
       onRefresh: () async => widget.onAction(),
       child: widget.child,

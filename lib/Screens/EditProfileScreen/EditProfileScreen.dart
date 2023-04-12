@@ -1,17 +1,15 @@
 import 'dart:ui' as ui;
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:venture/Calls.dart';
-import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Components/FadeOverlay.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/FirebaseAPI.dart';
-import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
-import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Screens/ContentSelectionScreen.dart/ContentSelectionScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -199,7 +197,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   fit: BoxFit.cover
                 ) :
                 DecorationImage(
-                  image: NetworkImage(
+                  image: CachedNetworkImageProvider(
                     user.userAvatar!,
                   ),
                   fit: BoxFit.cover
@@ -223,7 +221,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ) :
                           CircleAvatar(
                             radius: getProportionateScreenHeight(45),
-                            backgroundImage: NetworkImage(user.userAvatar!),
+                            backgroundImage: CachedNetworkImageProvider(user.userAvatar!),
                           ),
                           CircleAvatar(
                             backgroundColor: Colors.white.withOpacity(0.5),

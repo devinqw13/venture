@@ -1,15 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:venture/FirebaseAPI.dart';
-import 'package:venture/Globals.dart' as globals;
 import 'package:get/get.dart';
-import 'package:iconly/iconly.dart';
 import 'package:venture/Constants.dart';
-import 'package:venture/Helpers/CustomIcon.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
-import 'package:iconsax/iconsax.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -31,6 +28,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if(FirebaseAuth.instance.currentUser != null){
       FirebaseAPI().firebaseCloudMessagingListeners();
+    }
+
+    _initializeAsyncDependencies();
+  }
+
+  _initializeAsyncDependencies() async {
+    initConvoIndicator();
+  }
+
+  initConvoIndicator() {
+    if(VenUser().userKey.value != 0) {
+      var result = FirebaseAPI().unreadMessagesStream(VenUser().userKey.value.toString());
+
+      result.listen((event) {
+        _homeController.messageTracker.clear();
+        for(var item in event) {
+          item.listen((e) {
+            _homeController.messageTracker.update(e.keys.first, (value) => e.values.first, ifAbsent: () => e.values.first);
+          });
+        }
+      });
     }
   }
 
@@ -60,12 +78,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _homeController.goToTab(page);
         setState(() => extendBody = page == 2 ? true : false);
       },
-      child: Container(
-        color: Colors.transparent,
-        padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        child: icon
+      // child: Container(
+      //   color: Colors.transparent,
+      //   padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      //   child: icon
+      // )
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            color: Colors.transparent,
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: icon
+          ),
+          page == 0 && hasUnread() ?  Container(
+            margin: EdgeInsets.only(top: 1),
+            height: 5,
+            width: 5,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.blue
+            ),
+          ) : Container(
+            margin: EdgeInsets.only(top: 1),
+            height: 5,
+            width: 5
+          ),
+        ]
       )
     );
+  }
+
+  bool hasUnread() {
+    List values = _homeController.messageTracker.values.where((element) => element.length > 0).toList();
+    return values.isNotEmpty;
   }
 
   @override
@@ -103,7 +149,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 elevation: 1.0,
                 child: Container(
                   color: Colors.transparent,
-                  padding: const EdgeInsets.only(left: 23, right: 23, top: 4),
+                  padding: const EdgeInsets.only(left: 23, right: 23, top: 9),
                   child: Obx(() => Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

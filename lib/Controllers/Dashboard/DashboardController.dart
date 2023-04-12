@@ -19,6 +19,8 @@ class HomeController extends GetxController {
   var currentPage = 2.obs;
   var currentBanner = 0.obs;
 
+  RxMap<dynamic, dynamic> messageTracker = {}.obs;
+
   List<Widget> pages = [
    HomeTab(),
    SearchTab(),

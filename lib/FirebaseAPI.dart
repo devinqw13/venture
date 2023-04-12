@@ -96,6 +96,12 @@ class FirebaseAPI extends ChangeNotifier {
     }
   }
 
+  Stream<Iterable<Stream<Map<String, List<QueryDocumentSnapshot<Map<String, dynamic>>>>>>> unreadMessagesStream(String userKey) {
+    var res = _firestore.collection('conversations').where('owners', arrayContains: userKey).snapshots().map((snapshot) => snapshot.docs.map((e) => _firestore.collection('conversations').doc(e.id).collection('messages').snapshots().map((snapshot2) => snapshot2.docs.where((doc) => doc['read'] == false && doc['user_key'] != userKey).toList()).map((event) => {e.id: event})));
+
+    return res;
+  }
+
   Future<QuerySnapshot<Map<String, dynamic>>?> getUserDetails({String? username, String? userKey}) async {
     if(username != null) {
       return await _firestore.collection('users')
