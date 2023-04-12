@@ -1,6 +1,8 @@
 import 'dart:ui' as ui;
+import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:venture/Components/NotificationBadge.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Calls.dart';
@@ -24,12 +26,19 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<HomeTab>, SingleTickerProviderStateMixin {
   final ThemesController _themesController = Get.find();
   final HomeController _homeController = Get.find();
+  bool didInitialFollowingFetch = false;
   List<Content> exploreContent = [];
   List<Content> followingContent = [];
   bool isExploreLoading = false;
   bool isFollowingLoading = false;
+  int tabIndex = 1;
+  late TabController tabController;
   PageController exploreController = PageController(keepPage: true);
   PageController followingController = PageController(keepPage: true);
+  IndicatorController exploreRefreshController = IndicatorController();
+  IndicatorController followingRefreshController = IndicatorController();
+  final exploreRefreshKey = GlobalKey<CustomRefreshIndicatorState>();
+  final followingRefreshKey = GlobalKey<CustomRefreshIndicatorState>();
 
   @override
   bool get wantKeepAlive => true;
@@ -37,7 +46,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   @override
   void initState() {
     super.initState();
-
+    tabController = TabController(length: 2, vsync: this, initialIndex: 1);
     _homeController.homeFeedController = exploreController;
     _initializeAsyncDependencies();
   }
@@ -61,9 +70,11 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
     }
 
     List<Content> results = await getContent(context, userKeys, 0);
-    setState(() => isFollowingLoading = false);
-    
-    setState(() => followingContent = results);
+    setState(() {
+      isFollowingLoading = false;
+      followingContent = results;
+      didInitialFollowingFetch = true;
+    });
   }
 
   Future<void> _getExploreContent() async {
@@ -106,16 +117,16 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
 
   Future<void> _refreshFollowing() async {
     await _getFollowingContent();
-    // await Future.delayed(const Duration(seconds: 5), () {
-    //   print("DONE FETCHING DATA...");
-    // });
   }
 
   Future<void> _refreshExplore() async {
     await _getExploreContent();
-    // await Future.delayed(const Duration(seconds: 5), () {
-    //   print("DONE FETCHING DATA...");
-    // });
+  }
+
+  RxInt unreadCount() {
+    var result = _homeController.messageTracker.values.where((element) => element.length > 0).toList();
+
+    return result.length.obs;
   }
 
   @override
@@ -142,18 +153,47 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TabBar(
-                onTap: (page) {
-                  if(page == 1) setState(() => _homeController.homeFeedController = exploreController);
+                controller: tabController,
+                onTap: (page) async {
+                  if(page == 1) {
+                    setState(() => _homeController.homeFeedController = exploreController);
+
+                    if(tabIndex == page) {
+                      await _homeController.homeFeedController?.animateToPage(
+                        0, 
+                        curve: Curves.decelerate,
+                        duration: Duration(milliseconds: 300)
+                      );
+
+                      exploreRefreshKey.currentState!.refresh(
+                        draggingCurve: Curves.easeOutBack,
+                      );
+                    }
+
+                  }
 
                   if(page == 0) {
                     setState(() => _homeController.homeFeedController = followingController);
 
-                    if(FirebaseAPI().firebaseId() != null && followingContent.isEmpty) _getFollowingContent();
+                    if(FirebaseAPI().firebaseId() != null && !didInitialFollowingFetch) _getFollowingContent();
+
+                    if(tabIndex == page) {
+                      await _homeController.homeFeedController?.animateToPage(
+                        0, 
+                        curve: Curves.decelerate,
+                        duration: Duration(milliseconds: 300)
+                      );
+
+                      followingRefreshKey.currentState!.refresh(
+                        draggingCurve: Curves.easeOutBack,
+                      );
+                    }
                   }
+
+                  setState(() => tabIndex = page);
                 },
                 enableFeedback: true,
                 isScrollable: true,
-                // indicator: CircleTabIndicator(color: primaryOrange, radius: 3),
                 indicatorColor: Colors.white.withOpacity(0),
                 labelPadding: EdgeInsets.only(right: userKey != 0 ? 10.0 : 0.0),
                 unselectedLabelColor: Get.isDarkMode ? Colors.white : Colors.black,
@@ -185,20 +225,15 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
               ),
               userKey != 0 ? ZoomTapAnimation(
                 onTap: () => goToMessaging(),
-                child: Container(
-                  padding: EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Get.isDarkMode ? ColorConstants.gray800.withOpacity(0.35) : ColorConstants.gray25.withOpacity(0.35),
-                    borderRadius: BorderRadius.circular(10)
-                  ),
-                  child: Center(
-                    child: CustomIcon(
-                      icon: 'assets/icons/send.svg',
-                      color: primaryOrange,
-                      size: 27,
-                    )
-                  ),
-                )
+                child: Obx(() => NotificationBadge(
+                  hideZero: true,
+                  itemCount: unreadCount().value,
+                  icon: CustomIcon(
+                    icon: 'assets/icons/send.svg',
+                    color: primaryOrange,
+                    size: 27,
+                  )
+                ))
               ) : Container()
             ],
           );
@@ -208,73 +243,80 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
 
     final topPadding = appBar.preferredSize.height + MediaQuery.of(context).padding.top;
 
-    return DefaultTabController(
-      length: 2,
-      initialIndex: 1,
-      child: Scaffold(
-        extendBody: true,
-        extendBodyBehindAppBar: true,
-        appBar: appBar,
-        body: Stack(
-          children: [
-            TabBarView(
-              physics: NeverScrollableScrollPhysics(),
-              children: [
-                CustomRefresh(
-                  edgeOffset: topPadding,
-                  onAction: _refreshFollowing,
-                  child: PageView.builder(
-                    controller: followingController,
-                    physics: AlwaysScrollableScrollPhysics(),
-                    scrollDirection: Axis.vertical,
-                    itemCount: followingContent.isEmpty ? 1 : followingContent.length,
-                    itemBuilder: (context, i) {
-                      if(followingContent.isEmpty && isFollowingLoading) {
-                        return Padding(
-                          padding: EdgeInsets.only(top: topPadding),
-                          child: PostSkeletonShimmer()
-                        );
-                      } else if(followingContent.isEmpty && !isFollowingLoading) {
-                        return Container(
-                          child: Text("START FOLLOWING USERS"),
-                        );
-                      } else {
-                        return Padding(
-                          padding: EdgeInsets.only(top: topPadding),
-                          child: PostSkeleton(content: followingContent[i])
-                        );
-                      }
+    return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      appBar: appBar,
+      body: Stack(
+        children: [
+          TabBarView(
+            controller: tabController,
+            physics: NeverScrollableScrollPhysics(),
+            children: [
+              CustomRefresh(
+                indicatorKey: followingRefreshKey,
+                controller: followingRefreshController,
+                edgeOffset: topPadding,
+                onAction: _refreshFollowing,
+                child: PageView.builder(
+                  controller: followingController,
+                  physics: AlwaysScrollableScrollPhysics(),
+                  scrollDirection: Axis.vertical,
+                  itemCount: followingContent.isEmpty ? 1 : followingContent.length,
+                  itemBuilder: (context, i) {
+                    if(followingContent.isEmpty && isFollowingLoading) {
+                      return Padding(
+                        padding: EdgeInsets.only(top: topPadding),
+                        child: PostSkeletonShimmer()
+                      );
+                    } else if(followingContent.isEmpty && !isFollowingLoading) {
+                      return Padding(
+                        padding: EdgeInsets.only(top: topPadding),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Start following users to view their pins/posts")
+                          ],
+                        )
+                      );
+                    } else {
+                      return Padding(
+                        padding: EdgeInsets.only(top: topPadding),
+                        child: PostSkeleton(content: followingContent[i])
+                      );
                     }
-                  ),
+                  }
                 ),
-                
-                CustomRefresh(
-                  edgeOffset: topPadding,
-                  onAction: _refreshExplore,
-                  child: PageView.builder(
-                    controller: exploreController,
-                    physics: AlwaysScrollableScrollPhysics(),
-                    scrollDirection: Axis.vertical,
-                    itemCount: exploreContent.isEmpty ? 1 : exploreContent.length,
-                    itemBuilder: (context, i) {
-                      if(exploreContent.isEmpty && isExploreLoading) {
-                        return Padding(
-                          padding: EdgeInsets.only(top: topPadding),
-                          child: PostSkeletonShimmer()
-                        );
-                      } else {
-                        return Padding(
-                          padding: EdgeInsets.only(top: topPadding),
-                          child: PostSkeleton(content: exploreContent[i])
-                        );
-                      }
+              ),
+              
+              CustomRefresh(
+                indicatorKey: exploreRefreshKey,
+                controller: exploreRefreshController,
+                edgeOffset: topPadding,
+                onAction: _refreshExplore,
+                child: PageView.builder(
+                  controller: exploreController,
+                  physics: AlwaysScrollableScrollPhysics(),
+                  scrollDirection: Axis.vertical,
+                  itemCount: exploreContent.isEmpty ? 1 : exploreContent.length,
+                  itemBuilder: (context, i) {
+                    if(exploreContent.isEmpty && isExploreLoading) {
+                      return Padding(
+                        padding: EdgeInsets.only(top: topPadding),
+                        child: PostSkeletonShimmer()
+                      );
+                    } else {
+                      return Padding(
+                        padding: EdgeInsets.only(top: topPadding),
+                        child: PostSkeleton(content: exploreContent[i])
+                      );
                     }
-                  ),
-                )
-              ]
-            )
-          ]
-        )
+                  }
+                ),
+              )
+            ]
+          )
+        ]
       )
     );
   }
