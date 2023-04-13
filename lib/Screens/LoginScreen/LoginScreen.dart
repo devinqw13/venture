@@ -165,14 +165,14 @@ class _LoginPopup extends State<LoginPopup> {
     }
     setState(() => isLoading = true);
     // bool? _ = await postLogin(context, userTextController.text, pwdTextController.text);
-    var _ = await FirebaseAPI().login(
+    var userCreds = await FirebaseAPI().login(
       context,
       userTextController.text,
       pwdTextController.text
     );
 
     setState(() => isLoading = false);
-    if(FirebaseAPI().firebaseId() != null) Navigator.pop(context);
+    if(userCreds != null) Navigator.pop(context);
   }
 
   @override
