@@ -689,7 +689,7 @@ void showLikeHeart({
   overlayEntry = OverlayEntry(
       builder: (context) => LikeHeartWidget(offset: offset, angle: angle)
   );
-  Overlay.of(context)?.insert(overlayEntry);
+  Overlay.of(context).insert(overlayEntry);
   Timer(Duration(milliseconds: 500), () =>  overlayEntry.remove());
 
 }

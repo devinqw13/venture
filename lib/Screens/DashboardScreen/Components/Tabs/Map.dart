@@ -196,7 +196,8 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       final MarkerId markerKey = MarkerId(result.pinKey.toString());
       List loc = result.latLng.split(',');
       
-      BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
+      // BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
+      BitmapDescriptor mkr = await getMarkerIconV2(context, null, pinColor: Colors.grey);
 
       final Marker marker = Marker(
         markerId: markerKey,
@@ -231,7 +232,9 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     final String key = '0';
     final MarkerId markerKey = MarkerId(key);
     
-    BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: primaryOrange, size: Size(45, 45));
+    // BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: primaryOrange, size: Size(45, 45));
+
+    BitmapDescriptor mkr = await getMarkerIconV2(context, 'assets/icons/bold-plus.svg', imageColor: Colors.white, pinColor: primaryOrange);
 
     final Marker marker = Marker(
       markerId: markerKey,
@@ -262,9 +265,9 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       final MarkerId markerKey = MarkerId(item.pinKey.toString());
       List loc = item.latLng.split(',');
 
-      BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
+      // BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
 
-      // BitmapDescriptor mkr = await getMarkerIcon(context, "assets/icons/pin-2.svg", color: Colors.green);
+      BitmapDescriptor mkr = await getMarkerIconV2(context, null, pinColor: Colors.grey);
 
       final Marker marker = Marker(
         markerId: markerKey,
