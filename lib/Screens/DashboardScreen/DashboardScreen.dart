@@ -45,6 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _homeController.messageTracker.clear();
         for(var item in event) {
           item.listen((e) {
+            print(e);
             _homeController.messageTracker.update(e.keys.first, (value) => e.values.first, ifAbsent: () => e.values.first);
           });
         }

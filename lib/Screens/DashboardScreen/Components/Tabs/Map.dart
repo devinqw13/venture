@@ -197,7 +197,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       List loc = result.latLng.split(',');
       
       // BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
-      BitmapDescriptor mkr = await getMarkerIconV2(context, null, pinColor: Colors.grey);
+      BitmapDescriptor mkr = await getMarkerIconV2(context, null, pinColor: ColorConstants.gray25);
 
       final Marker marker = Marker(
         markerId: markerKey,
@@ -267,7 +267,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
 
       // BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
 
-      BitmapDescriptor mkr = await getMarkerIconV2(context, null, pinColor: Colors.grey);
+      BitmapDescriptor mkr = await getMarkerIconV2(context, null, pinColor: ColorConstants.gray25);
 
       final Marker marker = Marker(
         markerId: markerKey,

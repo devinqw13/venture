@@ -6,9 +6,11 @@ import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mime/mime.dart';
 import 'package:venture/Components/CustomOptionsPopupMenu.dart';
 import 'package:venture/Components/DropShadow.dart';
 import 'package:venture/Components/FadeOverlay.dart';
+import 'package:venture/Components/VideoPlayer.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
@@ -477,7 +479,12 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
         return ZoomOverlay(
           twoTouchOnly: true,
           minScale: 1,
-          child: GestureDetector(
+          child: lookupMimeType(content.contentUrls[index].toString())!.contains("video") ?
+          VideoContentPlayer(
+            path: content.contentUrls[index].toString(),
+            showPauseIndicator: true,
+          )
+          : GestureDetector(
             onDoubleTap: () async {
               await FirebaseAPI().addReactionV2(
                 context,
@@ -529,6 +536,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
         );
       }),
       options: CarouselOptions(
+        pageViewKey: PageStorageKey(content.contentKey),
         enableInfiniteScroll: false,
         disableCenter: true,
         viewportFraction: 1.0,

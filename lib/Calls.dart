@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:mime/mime.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Models/VentureItem.dart';
@@ -248,7 +249,7 @@ Future<Content?> handleContentUpload(BuildContext context, File file, int userKe
   if(pinKey != null) jsonMap['pin_key'] = pinKey.toString();
   if(circleKey != null) jsonMap['circle_key'] = circleKey.toString();
 
-  Map<String, dynamic>? signedUrlDetails = await getS3SignedUrl(context, userKey, contentName, contentType, pinKey, circleKey);
+  Map<String, dynamic>? signedUrlDetails = await getS3SignedUrl(context, userKey, contentName, contentType, null, pinKey, circleKey);
   if(signedUrlDetails == null) return null;
 
   bool uploadResults = await uploadContentV2(context, file, signedUrlDetails);
@@ -275,9 +276,15 @@ Future<dynamic> handleContentUploadV2(BuildContext context, List<File?> files, i
   if(circleKey != null) jsonMap['circle_key'] = circleKey.toString();
 
   for(var item in files) {
-    String name = item!.path.substring(item.path.lastIndexOf('/') + 1) + '-${VenUser().userKey.value}' + '.png';
+    String? fileType = lookupMimeType(item!.path);
+    late String name;
+    if(fileType != null && fileType.contains('video')) {
+      name = item.path.substring(item.path.lastIndexOf('/') + 1);
+    } else {
+      name = item.path.substring(item.path.lastIndexOf('/') + 1) + '-${VenUser().userKey.value}' + '.png';
+    }
 
-    Map<String, dynamic>? signedUrlDetails = await getS3SignedUrl(context, userKey, name, contentType, pinKey, circleKey);
+    Map<String, dynamic>? signedUrlDetails = await getS3SignedUrl(context, userKey, name, contentType, fileType, pinKey, circleKey);
     if(signedUrlDetails == null) return null;
 
     bool uploadResults = await uploadContentV2(context, item, signedUrlDetails);
@@ -292,13 +299,13 @@ Future<dynamic> handleContentUploadV2(BuildContext context, List<File?> files, i
   return content;
 }
 
-Future<Map<String, dynamic>?> getS3SignedUrl(BuildContext context, int userKey, String contentName, String uploadType, int? pinKey, int? circleKey) async {
+Future<Map<String, dynamic>?> getS3SignedUrl(BuildContext context, int userKey, String contentName, String uploadType, String? contentType, int? pinKey, int? circleKey) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
   };
 
-  String url = "${globals.apiBaseUrl}/getS3SignedUrl?content_name=$contentName&user_key=$userKey&upload_type=$uploadType";
+  String url = "${globals.apiBaseUrl}/getS3SignedUrl?content_name=$contentName&user_key=$userKey&upload_type=$uploadType&content_type=$contentType";
 
   if(pinKey != null) url = url + '&pin_key=$pinKey';
   
@@ -323,7 +330,7 @@ Future<Map<String, dynamic>?> getS3SignedUrl(BuildContext context, int userKey, 
   } else {
     jsonResponse = json.decode(response.body);
   }
-
+  
   if (jsonResponse['result'] == true) {
     return jsonResponse['results'];
   }

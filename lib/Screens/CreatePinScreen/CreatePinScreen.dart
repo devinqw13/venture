@@ -5,10 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:mime/mime.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Components/DottedBorder.dart';
 import 'package:venture/Components/FadeOverlay.dart';
 import 'package:venture/Components/PhotoBuilder.dart';
+import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/DeleteContent.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Constants.dart';
@@ -66,7 +68,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
         )
       )
     );
-
+    
     if(result != null) {
       setState(() => content = result);
     }
@@ -78,7 +80,9 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
       deleteFile(item!);
     }
 
-    setState(() => content.clear());
+    if(mounted) {
+      setState(() => content.clear());
+    }
   }
 
   viewContent() {
@@ -159,6 +163,27 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
   //   );
   // }
 
+  _handleSubmit() async {
+    if(isLoading) return;
+
+    if(nameTxtController.text.isEmpty) {
+      return;
+    }
+
+    String location = "${widget.location.latitude},${widget.location.longitude}";
+
+    setState(() => isLoading = true);
+    Pin? pin = await createPin(context, nameTxtController.text, descTxtController.text, location, VenUser().userKey.value, circleKeys: circleKeys.isNotEmpty ? circleKeys : null);
+    if(content.isNotEmpty) {
+      var _ = await handleContentUploadV2(context, content, VenUser().userKey.value, "post", pinKey: pin?.pinKey);
+    }
+    setState(() => isLoading = false);
+
+    if(pin != null) {
+      Navigator.pop(context, pin);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -168,7 +193,10 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(Icons.close, size: 28),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              removeContent();
+              Navigator.of(context).pop();
+            },
           ),
           centerTitle: false,
           title: Text(
@@ -201,7 +229,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                           ),
                         ),
                       ),
-                      Text("Give the place or location a name. Typically, the name of the place this is better known as. Ex. Kings Island, Cosmosphere, etc.", 
+                      Text("Give the place or location a name. Typically, the name of the place that it is better known as. Ex. Kings Island, Cosmosphere, etc.", 
                           style: TextStyle(fontSize: 12, height: 1.5, color: Colors.grey.shade600, fontStyle: FontStyle.italic)),
                       SizedBox(height: 15),
                       Container(
@@ -286,7 +314,8 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                               width: double.infinity,
                               height: 150,
                               decoration: BoxDecoration(
-                                color: Colors.blue.shade50.withOpacity(.3),
+                                // color: Colors.blue.shade50.withOpacity(.3),
+                                color: Get.isDarkMode ? Colors.blue.shade50.withOpacity(.15) :  Colors.blue.shade50.withOpacity(.3),
                                 borderRadius: BorderRadius.circular(10)
                               ),
                               child: Column(
@@ -301,54 +330,110 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                           )
                         ),
                       ) :
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ZoomTapAnimation(
-                            child: IconButton(
-                              onPressed: () => removeContent(),
-                              icon: Icon(
-                                Icons.close,
-                                color: Get.isDarkMode ? ColorConstants.gray400 : Colors.grey,
-                              )
-                            )
-                          ),
-
-                          Expanded(
-                            child: Container(
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20.0),
+                        child: DottedBorder(
+                          borderType: BorderType.RRect,
+                          radius: Radius.circular(10),
+                          dashPattern: [10, 4],
+                          strokeCap: StrokeCap.round,
+                          color: Colors.blue.shade400,
+                          child: Container(
+                            width: double.infinity,
+                            height: 150,
                             decoration: BoxDecoration(
-                                color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
-                                borderRadius: BorderRadius.circular(10)
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                                    child: ZoomTapAnimation(
-                                      onTap: () => viewContent(),
-                                      child: OverlapPhotos(
-                                        files: content,
-                                        radius: 20,
-                                      )
-                                    )
-                                  ),
-                                  Expanded(
-                                    child: TextField(
-                                      maxLines: 5,
-                                      decoration: InputDecoration(
-                                        contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 0),
-                                        hintText: "Write a caption...",
-                                      )
+                              color: Get.isDarkMode ? Colors.blue.shade50.withOpacity(.15) :  Colors.blue.shade50.withOpacity(.3),
+                              borderRadius: BorderRadius.circular(10)
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                  child: ZoomTapAnimation(
+                                    onTap: () => viewContent(),
+                                    child: OverlapPhotos(
+                                      files: content,
+                                      radius: 30,
+                                      overlap: 30,
                                     )
                                   )
-                                ],
-                              ),
-                            )
-                          )
-                        ],
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => removeContent(),
+                                  child: CustomIcon(
+                                    icon: 'assets/icons/trash.svg',
+                                    color: Colors.red,
+                                    size: 25,
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: EdgeInsets.all(8),
+                                    elevation: 0,
+                                    shadowColor: Colors.transparent,
+                                    backgroundColor: Colors.black.withOpacity(0.4),
+                                    shape: CircleBorder(),
+                                  ),
+                                )
+                                // ZoomTapAnimation(
+                                //   onTap: () => removeContent,
+                                //   child: CustomIcon(
+                                //     icon: 'assets/icons/trash.svg',
+                                //     color: Colors.red,
+                                //   )
+                                // )
+                              ],
+                            ),
+                          ),
+                        )
                       ),
+                      // Row(
+                      //   mainAxisSize: MainAxisSize.max,
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      //   children: [
+                      //     ZoomTapAnimation(
+                      //       child: IconButton(
+                      //         onPressed: () => removeContent(),
+                      //         icon: Icon(
+                      //           Icons.close,
+                      //           color: Get.isDarkMode ? ColorConstants.gray400 : Colors.grey,
+                      //         )
+                      //       )
+                      //     ),
+
+                      //     Expanded(
+                      //       child: Container(
+                      //       decoration: BoxDecoration(
+                      //           color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
+                      //           borderRadius: BorderRadius.circular(10)
+                      //         ),
+                      //         child: Row(
+                      //           crossAxisAlignment: CrossAxisAlignment.start,
+                      //           children: [
+                      //             Padding(
+                      //               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      //               child: ZoomTapAnimation(
+                      //                 onTap: () => viewContent(),
+                      //                 child: OverlapPhotos(
+                      //                   files: content,
+                      //                   radius: 20,
+                      //                 )
+                      //               )
+                      //             ),
+                      //             Expanded(
+                      //               child: TextField(
+                      //                 maxLines: 5,
+                      //                 decoration: InputDecoration(
+                      //                   contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 0),
+                      //                   hintText: "Write a caption...",
+                      //                 )
+                      //               )
+                      //             )
+                      //           ],
+                      //         ),
+                      //       )
+                      //     )
+                      //   ],
+                      // ),
                     ],
                   )
                 )
@@ -373,27 +458,14 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                     child: Padding(
                       padding: EdgeInsets.only(bottom: 20, left: 20, right: 20),
                       child: ElevatedButton(
-                        onPressed: () async {
-                          String location = "${widget.location.latitude},${widget.location.longitude}";
-
-                          setState(() => isLoading = true);
-                          Pin? pin = await createPin(context, nameTxtController.text, descTxtController.text, location, VenUser().userKey.value, circleKeys: circleKeys.isNotEmpty ? circleKeys : null);
-                          if(content.isNotEmpty) {
-                            var _ = await handleContentUploadV2(context, content, VenUser().userKey.value, "post", pinKey: pin?.pinKey);
-                          }
-                          setState(() => isLoading = false);
-
-                          if(pin != null) {
-                            Navigator.pop(context, pin);
-                          }
-                        },
+                        onPressed: () => _handleSubmit(),
                         child: !isLoading ? Text("Continue") :
                         SizedBox(width: 30, height: 30, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)),
                         style: ElevatedButton.styleFrom(
                           minimumSize: Size(360, 40),
                           elevation: 10,
                           shadowColor: Colors.black.withOpacity(0.6),
-                          primary: primaryOrange,
+                          backgroundColor: primaryOrange,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20.0),
                           )

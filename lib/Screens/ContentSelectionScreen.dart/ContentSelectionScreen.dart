@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:venture/Components/VideoPlayer.dart';
 import 'package:venture/Helpers/DeleteContent.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -41,6 +43,8 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
   late bool allowMultiSelect;
   bool multiSelect = false;
   late bool photoOnly;
+  late String test;
+  bool showMultiSelectHelper = false;
 
   @override
   void initState() {
@@ -51,6 +55,19 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
   }
 
   _initializeAsyncDependencies() async {
+    await initializePhotoDependencies();
+    await initizalizeHelpers();
+  }
+
+  initizalizeHelpers() {
+    final storage = GetStorage();
+    bool? multiSelect = storage.read('helper_content_selection_multi_select');
+    if(multiSelect == null || !multiSelect) {
+      showMultiSelectHelper = true;
+    }
+  }
+
+  Future<void> initializePhotoDependencies() async {
     final PermissionState _ps = await PhotoManager.requestPermissionExtend();
     if (_ps.isAuth) {
       RequestType reqType = photoOnly ? RequestType.image : RequestType.common;
@@ -65,14 +82,18 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
 
   initializeAlbums(List<AssetPathEntity> results) async {
     for (AssetPathEntity item in results) {
-      List<AssetEntity> result = await item.getAssetListRange(start: 0 , end: item.assetCount);
-      PhotoAlbum i = PhotoAlbum(item, result);
-      albums.add(i);
+      int assetCount = await item.assetCountAsync;
+      if(assetCount > 0) {
+        List<AssetEntity> result = await item.getAssetListRange(start: 0 , end: assetCount);
+        PhotoAlbum i = PhotoAlbum(item, result);
+        albums.add(i);
+      }
     }
   }
 
   initializePhotos(List<AssetPathEntity> results) async {
-    entities = await results.firstWhere((e) => e.isAll).getAssetListRange(start: 0 , end: results.firstWhere((e) => e.isAll).assetCount);
+    int count = await results.firstWhere((e) => e.isAll).assetCountAsync;
+    entities = await results.firstWhere((e) => e.isAll).getAssetListRange(start: 0 , end: count);
     Uint8List? bytes = await entities.first.originBytes;
 
     List<CustomAssetEntity> eList = [];
@@ -151,27 +172,34 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
   }
 
   goToSubmit() async {
-    List<File?> photos = entityList.where((e) => e.createdPhoto != null).toList().map((f) => f.createdPhoto).toList();
+    List<File?> content = entityList.where((e) => e.createdPhoto != null).toList().map((f) => f.createdPhoto).toList();
 
-    setState(() => isLoading = true);
-    File? file = await crop();
-    setState(() => isLoading = false);
-
-    if(file == null) {
-      showToast(context: context, msg: "There was an error processing content.");
-      return;
+    // get any selected videos and add to list
+    var videoEntities = entityList.where((e) => e.entity.type == AssetType.video && e.selected).toList();
+    List<File?> videos = [];
+    for(var item in videoEntities) {
+      var result = await item.entity.file;
+      videos.add(result);
+      content.add(result);
     }
 
-    photos.add(file);
+    if (selectedPhoto!.type == AssetType.image) {
+      setState(() => isLoading = true);
+      File? file = await crop();
+      setState(() => isLoading = false);
+      if(file == null) {
+        showToast(context: context, msg: "There was an error processing content.");
+        return;
+      }
+      content.add(file);
+    }
 
-    Navigator.pop(context, photos);
-
-    // SubmitContentFormScreen screen = SubmitContentFormScreen(file: file,contentType: contentType);
-    // bool? result = await Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
-
-    // if(result != null && !result) {
-    //   deleteFile(file);
+    // if(videos.isNotEmpty) {
+    //   print("go to trim screen");
+    // }else {
+    //   Navigator.pop(context, content);
     // }
+    Navigator.pop(context, content);
   }
 
   Future<File?> crop() async {
@@ -226,34 +254,43 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: [
-        u8List != null ?
-        AspectRatio(
-          aspectRatio: 1,
-          child: ExtendedImage(
-            filterQuality: FilterQuality.high,
-            image: ExtendedMemoryImageProvider(u8List!, cacheRawData: true),
-            extendedImageEditorKey: editorKey,
-            mode: ExtendedImageMode.editor,
-            fit: BoxFit.contain,
-            initEditorConfigHandler: (_) => EditorConfig(
-              // editActionDetailsIsChanged: (details) {
-              //   if(multiSelect) {
-              //     CustomAssetEntity? ent = entityList.firstWhere((e) => e.entity == selectedPhoto);
-              //     print(ent.entity.createDateTime);
-              //     setState(() {
-              //       ent.editState = ent.editorKey.currentState;
-              //     });
-              //   }
-              // },
-              maxScale: 5.0,
-              cropLayerPainter: widget.circleMask ? CircleEditorCropLayerPainter() : EditorCropLayerPainter(),
-              cropRectPadding: const EdgeInsets.all(0.0),
-              hitTestSize: 20.0,
-              initCropRectType: InitCropRectType.layoutRect,
-              cropAspectRatio: 4 / 5, // Portrait: 4 / 5 , Square: 1/1, Landscape: 1.91 / 1 OR 16 / 9
+        selectedPhoto?.type == AssetType.image ?
+          u8List != null ?
+          AspectRatio(
+            aspectRatio: 1,
+            child: ExtendedImage(
+              filterQuality: FilterQuality.high,
+              image: ExtendedMemoryImageProvider(u8List!, cacheRawData: true),
+              extendedImageEditorKey: editorKey,
+              mode: ExtendedImageMode.editor,
+              fit: BoxFit.contain,
+              initEditorConfigHandler: (_) => EditorConfig(
+                // editActionDetailsIsChanged: (details) {
+                //   if(multiSelect) {
+                //     CustomAssetEntity? ent = entityList.firstWhere((e) => e.entity == selectedPhoto);
+                //     print(ent.entity.createDateTime);
+                //     setState(() {
+                //       ent.editState = ent.editorKey.currentState;
+                //     });
+                //   }
+                // },
+                maxScale: 5.0,
+                cropLayerPainter: widget.circleMask ? CircleEditorCropLayerPainter() : EditorCropLayerPainter(),
+                cropRectPadding: const EdgeInsets.all(0.0),
+                hitTestSize: 20.0,
+                initCropRectType: InitCropRectType.layoutRect,
+                cropAspectRatio: 4 / 5, // Portrait: 4 / 5 , Square: 1/1, Landscape: 1.91 / 1 OR 16 / 9
+              ),
             ),
-          ),
-        ) : Container(),
+          ) : Container() :
+        selectedPhoto?.type == AssetType.video ?
+          AspectRatio(
+            aspectRatio: 1,
+            child: VideoContentPlayer(
+              video: selectedPhoto,
+            )
+          )
+          : Container(),
         Container(
           color: _themesController.getContainerBgColor(),
           padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
@@ -267,17 +304,33 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
                   padding: EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: multiSelect ? Colors.blue : Get.isDarkMode ? ColorConstants.gray500 : Colors.white,
-                    shape: BoxShape.circle,
+                    // shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(50),
                     border: Border.all(
                       color: multiSelect ? Colors.blue : Colors.grey,
                       width: 0.2
                     )
                   ),
-                  child: Icon(
-                    Icons.photo_library_outlined,
-                    size: 18,
-                    color: multiSelect ? Colors.white : null,
-                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      showMultiSelectHelper ?
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 5),
+                        child: Text(
+                          "Select mulitple",
+                          style: TextStyle(
+                            color: multiSelect ? Colors.white : null
+                          ),
+                        )
+                      ) : Container(),
+                      Icon(
+                        Icons.photo_library_outlined,
+                        size: 18,
+                        color: multiSelect ? Colors.white : null,
+                      ),
+                    ],
+                  )
                 ),
               ) : Container()
             ],
@@ -298,7 +351,10 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
               itemBuilder: (contex, i) {
                 return GestureDetector(
                   onTap: () async {
-                    Uint8List? bytes = await entityList[i].entity.originBytes;
+                    Uint8List? bytes;
+                    if(entityList[i].entity.type == AssetType.image) {
+                      bytes = await entityList[i].entity.originBytes;
+                    }
 
                     if(multiSelect) {
                       if(entityList[i].selected && selectedPhoto == entityList[i].entity) {
@@ -307,7 +363,9 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
                           entityList[i].selected = false;
                         });
                       }else {
-                        if(entityList.firstWhere((e) => e.entity == selectedPhoto).createdPhoto == null) {
+                        bool isImage = entityList.firstWhere((e) => e.entity == selectedPhoto).entity.type == AssetType.image;
+
+                        if(entityList.firstWhere((e) => e.entity == selectedPhoto).createdPhoto == null && isImage) {
                           File? file = await crop();
                           if(file == null) {
                             showToast(context: context, msg: "There was an error processing content.");
@@ -334,7 +392,10 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
                     }
 
                     setState(() {
-                      if(selectedPhoto != entityList[i].entity) u8List = bytes;
+                      if(selectedPhoto != entityList[i].entity && entityList[i].entity.type == AssetType.image) {
+                        u8List = bytes;
+                      }
+
                       selectedPhoto = entityList[i].entity;
                     });
 
@@ -387,7 +448,7 @@ class _ContentSelectionScreenState extends State<ContentSelectionScreen> {
                       ),
                     ),
                     SizedBox(height: 10.0),
-                    Text(albums[i].album!.assetCount.toString(),
+                    Text(albums[i].photos!.length.toString(),
                       style: TextStyle(
                           fontWeight: FontWeight.bold
                       )

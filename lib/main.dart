@@ -171,55 +171,55 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "Venture",
-      theme: Themes.lightTheme,
-      darkTheme: Themes.darkTheme,
-      themeMode: getThemeMode(themeController.theme),
-      navigatorKey: navigatorKey,
-      // initialRoute: '/',
-      navigatorObservers: [routeObserver],
-      getPages: Routes.routes,
-      initialRoute: getInitialRoute(),
-      // routes: <String, WidgetBuilder>{
-      //   '/': (context) => getFirstScreen()
-      // },
-    );
-    // return FutureBuilder<bool>(
-    //   future: future,
-    //   builder: (context, snapshot) {
-    //     if (snapshot.connectionState == ConnectionState.done) {
-    //       return GetMaterialApp(
-    //         debugShowCheckedModeBanner: false,
-    //         title: "Venture",
-    //         theme: Themes.lightTheme,
-    //         darkTheme: Themes.darkTheme,
-    //         themeMode: getThemeMode(themeController.theme),
-    //         navigatorKey: navigatorKey,
-    //         // initialRoute: '/',
-    //         navigatorObservers: [routeObserver],
-    //         getPages: Routes.routes,
-    //         initialRoute: getInitialRoute(),
-    //         // routes: <String, WidgetBuilder>{
-    //         //   '/': (context) => getFirstScreen()
-    //         // },
-    //       );
-    //     }
-    //     else {
-    //       return Container(
-    //         color: primaryBlue,
-    //         child: Center(
-    //           child: Container()
-    //           // child: Image.asset('assets/images/ATS_HW_Vertical_FullColor_02.png',
-    //           //   alignment: Alignment.center,
-    //           //   fit: BoxFit.fill,
-    //           // ),
-    //         ),
-    //       );
-    //     }
-    //   }
+    // return GetMaterialApp(
+    //   debugShowCheckedModeBanner: false,
+    //   title: "Venture",
+    //   theme: Themes.lightTheme,
+    //   darkTheme: Themes.darkTheme,
+    //   themeMode: getThemeMode(themeController.theme),
+    //   navigatorKey: navigatorKey,
+    //   // initialRoute: '/',
+    //   navigatorObservers: [routeObserver],
+    //   getPages: Routes.routes,
+    //   initialRoute: getInitialRoute(),
+    //   // routes: <String, WidgetBuilder>{
+    //   //   '/': (context) => getFirstScreen()
+    //   // },
     // );
+    return FutureBuilder<bool>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return GetMaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: "Venture",
+            theme: Themes.lightTheme,
+            darkTheme: Themes.darkTheme,
+            themeMode: getThemeMode(themeController.theme),
+            navigatorKey: navigatorKey,
+            // initialRoute: '/',
+            navigatorObservers: [routeObserver],
+            getPages: Routes.routes,
+            initialRoute: getInitialRoute(),
+            // routes: <String, WidgetBuilder>{
+            //   '/': (context) => getFirstScreen()
+            // },
+          );
+        }
+        else {
+          return Container(
+            // color: primaryBlue,
+            child: Center(
+              child: Container()
+              // child: Image.asset('assets/images/ATS_HW_Vertical_FullColor_02.png',
+              //   alignment: Alignment.center,
+              //   fit: BoxFit.fill,
+              // ),
+            ),
+          );
+        }
+      }
+    );
   }
 }
 
