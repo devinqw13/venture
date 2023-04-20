@@ -11,7 +11,7 @@ import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Models/UserModel.dart';
-import 'package:venture/Screens/ContentSelectionScreen.dart/ContentSelectionScreen.dart';
+import 'package:venture/Screens/ContentSelectionScreen/ContentSelectionScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';

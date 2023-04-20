@@ -19,7 +19,7 @@ import 'package:venture/Helpers/MapPreview.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Controllers/ThemeController.dart';
-import 'package:venture/Screens/ContentSelectionScreen.dart/ContentSelectionScreen.dart';
+import 'package:venture/Screens/ContentSelectionScreen/ContentSelectionScreen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 

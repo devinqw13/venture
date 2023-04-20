@@ -9,6 +9,7 @@ class VideoContentPlayer extends StatefulWidget {
   final String? path;
   final AssetEntity? video;
   final bool showPauseIndicator;
+  // final bool autoPlay;
   VideoContentPlayer({Key? key, this.path, this.video, this.showPauseIndicator = true}) : super(key: key);
 
   @override
@@ -108,7 +109,7 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
           setState(() {
             ratio = _controller!.value.aspectRatio;
           });
-          _controller!.play();
+          // _controller!.play();
         });
       }else {
         _controller = VideoPlayerController.network(
@@ -121,7 +122,7 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
           setState(() {
             ratio = _controller!.value.aspectRatio;
           });
-          _controller!.play();
+          // _controller!.play();
         });
       }
     }else if(widget.video != null) {
@@ -137,7 +138,7 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
         setState(() {
           ratio = _controller!.value.aspectRatio;
         });
-        _controller!.play();
+        // _controller!.play();
       });
     } else {
       _controller = VideoPlayerController.network(
@@ -150,7 +151,7 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
         setState(() {
           ratio = _controller!.value.aspectRatio;
         });
-        _controller!.play();
+        // _controller!.play();
       });
     }
   }
@@ -164,7 +165,7 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
     VisibilityDetector(
       key: UniqueKey(),
       onVisibilityChanged: (d) {
-        if(d.visibleFraction > 0.0) {
+        if(d.visibleFraction > 0.5) {
           if(!manuallyPaused) _controller!.play();
         }else {
           _controller!.pause();

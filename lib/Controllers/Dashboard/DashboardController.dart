@@ -20,6 +20,7 @@ class HomeController extends GetxController {
   var currentBanner = 0.obs;
 
   RxMap<dynamic, dynamic> messageTracker = {}.obs;
+  RxList notificationTracker = [].obs;
 
   List<Widget> pages = [
    HomeTab(),

@@ -259,6 +259,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
                 edgeOffset: topPadding,
                 onAction: _refreshFollowing,
                 child: PageView.builder(
+                  allowImplicitScrolling: true, // Preload next items
                   controller: followingController,
                   physics: AlwaysScrollableScrollPhysics(),
                   scrollDirection: Axis.vertical,
@@ -288,13 +289,14 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
                   }
                 ),
               ),
-              
+
               CustomRefresh(
                 indicatorKey: exploreRefreshKey,
                 controller: exploreRefreshController,
                 edgeOffset: topPadding,
                 onAction: _refreshExplore,
                 child: PageView.builder(
+                  allowImplicitScrolling: true, // Preload next items
                   controller: exploreController,
                   physics: AlwaysScrollableScrollPhysics(),
                   scrollDirection: Axis.vertical,

@@ -6,8 +6,9 @@ import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Helpers/Toast.dart';
-import 'package:venture/Screens/CreateUserScreen.dart/CreateUserScreen.dart';
+import 'package:venture/Screens/CreateUserScreen/CreateUserScreen.dart';
 import 'package:venture/FirebaseAPI.dart';
+import 'package:venture/Screens/ForgotPasswordScreen/ForgotPasswordScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:iconly/iconly.dart';
 import 'package:get/get.dart';
@@ -167,7 +168,7 @@ class _LoginPopup extends State<LoginPopup> {
     // bool? _ = await postLogin(context, userTextController.text, pwdTextController.text);
     var userCreds = await FirebaseAPI().login(
       context,
-      userTextController.text,
+      userTextController.text.trim(),
       pwdTextController.text
     );
 
@@ -204,6 +205,7 @@ class _LoginPopup extends State<LoginPopup> {
                   child: Padding(
                     padding: EdgeInsets.all(10.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Center(
@@ -260,6 +262,21 @@ class _LoginPopup extends State<LoginPopup> {
                               )
                             ),
                           ),
+                        ),
+                        SizedBox(height: 6),
+                        Padding(
+                          padding: EdgeInsets.only(left: 10),
+                          child: ZoomTapAnimation(
+                            onTap: () async {
+                              final ForgetPasswordScreen screen = ForgetPasswordScreen();
+                              await Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 300));
+                            },
+                            child: Text("Forgot password?",
+                              style: TextStyle(
+                                color: primaryOrange
+                              )
+                            )
+                          )
                         ),
                         SizedBox(height: 6),
                         ElevatedButton(

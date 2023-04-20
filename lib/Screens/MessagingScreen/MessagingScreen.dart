@@ -14,6 +14,7 @@ import 'package:venture/Models/Message.dart';
 import 'package:venture/Models/FirebaseUser.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Controllers/ThemeController.dart';
+import 'package:venture/FirebaseAPI.dart';
 
 class MessagingScreen extends StatefulWidget {
   final MessageUser? newSendToUser;
@@ -200,6 +201,14 @@ class MessagingScreenState extends State<MessagingScreen> {
           'last_updated': DateTime.now().toString()
         }).then((value) {
           // sendPushNotification(VIPUser().name, message);
+          FirebaseAPI().messageNotification(
+            context, 
+            {
+              "user_key": widget.newSendToUser!.key!,
+              "message": message,
+              "conversationUID": widget.conversation.conversationUID
+            }
+          );
         }).catchError((error) {print("Failed updating last_updated: $error");});
       }).catchError((error) {print("Failed to create collection and add message: $error");});
     }
@@ -218,6 +227,14 @@ class MessagingScreenState extends State<MessagingScreen> {
           "last_updated": DateTime.now().toString()
         }).then((value) {
           // sendPushNotification(VIPUser().name, message);
+          FirebaseAPI().messageNotification(
+            context, 
+            {
+              "user_key": widget.owners!.where((e) => e != VenUser().userKey.value.toString()).first.toString(),
+              "message": message,
+              "conversationUID": widget.conversation.conversationUID
+            }
+          );
         }).catchError((error) {print("Failed updating last_updated: $error");});
       }).catchError((error) {print("Failed to add message: $error");});
     }

@@ -69,7 +69,7 @@ class _CommentScreen extends State<CommentScreen> {
       textController.text,
       data: {
         "comment": textController.text,
-        "contentKey": widget.content.contentKey,
+        "content_key": widget.content.contentKey,
         "user_key": widget.content.user!.userKey.toString(),
         "documentId": documentId,
         "content_image_url": widget.content.contentUrls.first
@@ -192,13 +192,34 @@ class _CommentScreen extends State<CommentScreen> {
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: <Widget>[
-                                              Text(
-                                                userData['username'],
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14
-                                                ),
+                                              RichText(
+                                                text: TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: "${userData['username']} ",
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 14
+                                                      )
+                                                    ),
+                                                    if(userData['verified'])
+                                                      WidgetSpan(
+                                                        child: CustomIcon(
+                                                          icon: 'assets/icons/verified-account.svg',
+                                                          size: 17,
+                                                          color: primaryOrange,
+                                                        )
+                                                      ),
+                                                  ]
+                                                )
                                               ),
+                                              // Text(
+                                              //   userData['username'],
+                                              //   style: TextStyle(
+                                              //     fontWeight: FontWeight.bold,
+                                              //     fontSize: 14
+                                              //   ),
+                                              // ),
                                               SizedBox(height: 7),
                                               Text(
                                                 commentData['comment'],

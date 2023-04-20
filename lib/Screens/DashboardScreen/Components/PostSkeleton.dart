@@ -22,9 +22,9 @@ import 'package:venture/Helpers/PhotoHero.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/CommentScreen/CommentScreen.dart';
 import 'package:venture/Screens/DashboardScreen/Components/LoginOverlay.dart';
-import 'package:venture/Screens/LikedByScreen.dart/LikedByScreen.dart';
+import 'package:venture/Screens/LikedByScreen/LikedByScreen.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
-import 'package:venture/Screens/ProfileScreen.dart/ProfileScreen.dart';
+import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:venture/Components/Avatar.dart';
@@ -169,21 +169,32 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // content.user!.displayName != null ?
-                // Text(content.user!.displayName!,
-                //   style: theme.textTheme.bodyText2!.copyWith(fontWeight: FontWeight.bold),
-                // ) :
-                // Text('@'+content.user!.userName!,
-                //   style: TextStyle(
-                //     fontWeight: FontWeight.bold
-                //   ),
-                // ),
                 GestureDetector(
                   onTap: () => goToProfile(content),
-                  child: Text(
-                    content.user!.userName!,
-                    style: theme.textTheme.bodyText2!.copyWith(fontWeight: FontWeight.bold),
+                  // child: Text(
+                  //   content.user!.userName!,
+                  //   style: theme.textTheme.bodyText2!.copyWith(fontWeight: FontWeight.bold),
+                  // )
+                  child: RichText(
+                    // textAlign: TextAlign.center,
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "${content.user!.userName!} ",
+                          style: theme.textTheme.bodyText2!.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        // if(content.user!.isVerified!)
+                        //   WidgetSpan(
+                        //     child: user.isVerified! ? CustomIcon(
+                        //       icon: 'assets/icons/verified-account.svg',
+                        //       size: 17,
+                        //       color: primaryOrange,
+                        //     ) : Container()
+                        //   )
+                      ]
+                    )
                   )
+
                 ),
                 SizedBox(height: 5),
                 Row(

@@ -2,16 +2,21 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
 import 'package:get/get.dart';
+import 'package:venture/Calls.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Screens/DashboardScreen/Components/PostSkeleton.dart';
 import 'package:swipeable_page_route/swipeable_page_route.dart';
 
 class DisplayContentListScreen extends StatefulWidget {
-  final Content content;
+  final Content? content;
+  final int? contentKey;
   final List<Content> contents;
   final UserModel? user;
-  DisplayContentListScreen({Key? key, required this.content, this.user, this.contents = const []}) : super(key: key);
+  DisplayContentListScreen({Key? key, this.content, this.contentKey, this.user, this.contents = const []}) 
+    :
+      // assert(false, 'Must use content or contentKey.'),
+      super(key: key);
 
   @override
   _DisplayContentListScreenState createState() => _DisplayContentListScreenState();
@@ -28,6 +33,20 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
   }
 
   _initializeAsyncDependencies() async {
+    await setInitPageIndex();
+    // await setContent();
+  }
+
+  // Future<void> setContent() async {
+  //   if(widget.content != null) {
+  //     content = widget.content!;
+  //   }else {
+  //     var result = await getContent(context, [0], 0, contentKey: widget.contentKey);
+  //     print(result);
+  //   }
+  // }
+
+  Future<void> setInitPageIndex() async {
     int index = 0;
     if(widget.contents.length > 1) {
       index = widget.contents.lastIndexWhere((e) => e == widget.content);
@@ -56,6 +75,7 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
             ),
           ),
         ),
+        centerTitle: true,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -69,6 +89,7 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
             ) : Container(),
             Text(
               'Content',
+              textAlign: TextAlign.center,
               style: theme.textTheme.headline6,
             )
           ],
@@ -92,6 +113,7 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
         children: [
           Expanded(
             child: PageView.builder(
+              allowImplicitScrolling: true, // Preload next items
               controller: scrollController,
               itemCount: widget.contents.length,
               physics: AlwaysScrollableScrollPhysics(),
@@ -105,9 +127,18 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
               }
             )
           )
-         ]
-       ) :
-      PostSkeleton(content: widget.content, heroTag: widget.content.contentUrls.first)
+        ]
+      ) : widget.content != null ?
+      PostSkeleton(content: widget.content!, heroTag: widget.content!.contentUrls.first) : widget.contentKey != null ?
+      FutureBuilder(
+        future: getContent(context, [0], 0, contentKey: widget.contentKey),
+        builder: (context, content) {
+          if(content.hasData) {
+            return PostSkeleton(content: content.data!.first);
+          }
+          return PostSkeletonShimmer();
+        }
+      ) : PostSkeletonShimmer()
     );
   }
 }

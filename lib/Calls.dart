@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
+import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/Content.dart';
 import 'package:venture/Models/VentureItem.dart';
@@ -62,7 +63,7 @@ Future<bool> createUser(BuildContext context, String name, String email, {String
   try {
     response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
   } on TimeoutException {
-    showToast(context: context, color: Colors.red, msg: "Connection timeout. Please try again.");
+    showToastV2(context: context, msg: "Connection timeout. Please try again.");
     return false;
   }
 
@@ -76,12 +77,12 @@ Future<bool> createUser(BuildContext context, String name, String email, {String
   if (jsonResponse['user_key'] != 0) {
     final storage = GetStorage();
     VenUser().userKey.value = jsonResponse['user_key'];
-
+    VenUser().onChange();
     storage.write('user_key', VenUser().userKey.value);
     return true;
   }
   else {
-    showToast(context: context, msg: jsonResponse['message']);
+    showToastV2(context: context, msg: jsonResponse['message']);
     return false;
   }
 }
@@ -105,7 +106,7 @@ Future<bool?> postLogin(BuildContext context, String identity, String password) 
   try {
     response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
   } on TimeoutException {
-    showToast(context: context, color: Colors.red, msg: "Connection timeout. Please try again.");
+    showToastV2(context: context, msg: "Connection timeout. Please try again.");
     return false;
   }
 
@@ -143,7 +144,7 @@ Future<UserModel?> getUser(BuildContext context, int userKey) async {
   try {
     response = await http.get(Uri.parse(url), headers: headers).timeout(Duration(seconds: 60));
   } on TimeoutException {
-    showToast(context: context, color: Colors.red, msg: "Connection timeout. Please try again.");
+    showToastV2(context: context, msg: "Connection timeout. Please try again.");
     return null;
   }
 
@@ -159,7 +160,7 @@ Future<UserModel?> getUser(BuildContext context, int userKey) async {
     return user;
   }
   else {
-    showToast(context: context, color: Colors.red, msg: "User not found");
+    showToastV2(context: context, msg: "User not found");
     return null;
   }
 }
@@ -187,12 +188,12 @@ Future<Content?> uploadContent(BuildContext context, String path, int userKey, S
     response = await request.send();
     jsonResponse = await json.decode(await response.stream.bytesToString());
   } on TimeoutException {
-    showToast(context: context, color: Colors.red, msg: "Connection timeout. Please try again.");
+    showToastV2(context: context, msg: "Connection timeout. Please try again.");
     return null;
   }
   
   if (response.statusCode != 200) {
-    showToast(context: context, color: Colors.red, msg: "An error has occured. Please try again.");
+    showToastV2(context: context, msg: "An error has occured. Please try again.");
     return null;
   }
   
@@ -201,7 +202,7 @@ Future<Content?> uploadContent(BuildContext context, String path, int userKey, S
     return content;
   }
   else {
-    showToast(context: context, color: Colors.red, msg: jsonResponse['results']);
+    showToastV2(context: context, msg: jsonResponse['results']);
     return null;
   }
 }
@@ -225,7 +226,7 @@ Future<bool> uploadContentV2(BuildContext context, File file, Map<String, dynami
     response = await request.send();
     // jsonResponse = await json.decode(await response.stream.bytesToString());
   } on TimeoutException {
-    showToast(context: context, color: Colors.red, msg: "Connection timeout. Please try again.");
+    showToastV2(context: context, msg: "Connection timeout. Please try again.");
     return false;
   }
 
@@ -384,13 +385,15 @@ Future<dynamic> createContentDetails(BuildContext context, Map<String, dynamic> 
   }
 }
 
-Future<List<Content>> getContent(BuildContext context, List<int> userKey, int dataFormat) async {
+Future<List<Content>> getContent(BuildContext context, List<int> userKey, int dataFormat, {int? contentKey}) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
   };
 
   String url = "${globals.apiBaseUrl}/getContent?user_key=$userKey&type=$dataFormat";
+
+  if(contentKey != null) url += '&content_key=$contentKey';
 
   Map jsonResponse = {};
   http.Response response;
@@ -661,7 +664,7 @@ Future<List<String>> getPlaces(String text, {String lang = "EN"}) async {
     }
 }
 
-Future<void> pushNotification(BuildContext context, String type, List<String> tokens, Map<String, dynamic> data) async {
+Future<void> pushNotification(BuildContext context, String type, Map<String, List<String>> tokens, Map<String, dynamic> data) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
@@ -669,7 +672,7 @@ Future<void> pushNotification(BuildContext context, String type, List<String> to
 
   Map jsonMap = {
     "type": type,
-    "tokens": tokens,
+    "tokens": tokens.values.first,
     "data": data
   };
 
@@ -684,7 +687,7 @@ Future<void> pushNotification(BuildContext context, String type, List<String> to
     showToast(context: context, color: Colors.red, msg: "Connection timeout.");
     return;
   }
-  print(response);
+  
   if (json.decode(response.body) is List) {
     var responseBody = response.body.substring(1, response.body.length - 1);
     jsonResponse = json.decode(responseBody);
@@ -693,4 +696,7 @@ Future<void> pushNotification(BuildContext context, String type, List<String> to
   }
 
   print(jsonResponse);
+  // if(jsonResponse['sent_count'] > 0) {
+  //   FirebaseAPI().storeNotification(context, tokens.keys.first, type, data);
+  // }
 }

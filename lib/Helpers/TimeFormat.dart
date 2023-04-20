@@ -28,7 +28,7 @@ class TimeFormat {
         Text('Last month', style: style);
     } else if ((difference.inDays / 7).floor() >= 2) {
       return Text(
-        '${(difference.inDays / 7).floor()} w',
+        '${(difference.inDays / 7).floor()}w',
         style: style
       );
     } else if ((difference.inDays / 7).floor() >= 1) {

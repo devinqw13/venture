@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:venture/Models/UserModel.dart';
 
 enum ContentFormat {
@@ -40,7 +41,8 @@ class Content {
     contentUrls = input['content_urls'] ?? [];
     active = input['content_active'] == "N" ? false : true;
     contentType = input['content_type'];
-    timestamp = input['created_ts'];
+    // timestamp = input['created_ts'];
+    timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
     contentCaption = input['content_caption'];
     user = input['user'][0] != null ? UserModel(input['user'][0]) : null;
     // contentLocation = input['content_location'];
@@ -48,6 +50,29 @@ class Content {
     totalReviews = input['total_reviews'];
     pinLocation = input['pin_location'];
   }
+
+  Map<String, dynamic> toJson() => 
+  {
+    'content_format': contentFormat,
+    'content_key': contentKey,
+    'relationship_key': relationshipKey,
+    // int? userKey;
+    'pin_key': pinKey,
+    'circle_key': circleKey,
+    'title': pinName,
+    'content_urls': contentUrls,
+    'content_url': contentUrl,
+    'content_active': active,
+    'content_type': contentType,
+    'created_ts': timestamp,
+    'content_caption': contentCaption,
+    'description': pinDesc,
+    // UserModel? user
+    // String? contentLocation;
+    'avg_rating': rating,
+    'total_reviews': totalReviews,
+    'pin_location': pinLocation
+  };
 
   Content.fromMap(Map<String, dynamic> input, Map<String, dynamic> userData, ContentFormat format) {
     if(format == ContentFormat.pinContent) {
@@ -57,7 +82,8 @@ class Content {
       pinKey = input['pin_key'];
       circleKey = input['circle_key'];
       pinName = input['title'];
-      timestamp = input['created_ts'];
+      // timestamp = input['created_ts'];
+      timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
       pinName = input['title'];
       contentUrls = input['content_urls'];
       active = input['content_active'] == "N" ? false : true;
@@ -74,7 +100,8 @@ class Content {
       pinName = input['title'];
       pinKey = input['pin_key'];
       pinLocation = input['location'];
-      timestamp = input['created_ts'];
+      // timestamp = input['created_ts'];
+      timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
       pinDesc = input['description'];
     }
 
@@ -91,7 +118,8 @@ class Content {
       contentUrls = input['content_urls'];
       active = input['content_active'] == "N" ? false : true;
       contentType = input['content_type'];
-      timestamp = input['created_ts'];
+      // timestamp = input['created_ts'];
+      timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
       contentCaption = input['description']; //input['content_caption'];
       user = input['user'] != null ? UserModel(input['user']) : null;
       // contentLocation = input['content_location'];

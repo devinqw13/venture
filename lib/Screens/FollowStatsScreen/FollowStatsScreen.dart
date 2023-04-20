@@ -7,8 +7,9 @@ import 'package:get/get.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/FirebaseAPI.dart';
+import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Models/UserModel.dart';
-import 'package:venture/Screens/ProfileScreen.dart/ProfileScreen.dart';
+import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 
 class FollowStatsScreen extends StatefulWidget {
   final UserModel user;
@@ -173,8 +174,11 @@ class UserCard extends StatefulWidget {
   _UserCard createState() => _UserCard();
 }
 
-class _UserCard extends State<UserCard> {
+class _UserCard extends State<UserCard> with AutomaticKeepAliveClientMixin<UserCard> {
   late Map<String, dynamic> user;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -229,7 +233,7 @@ class _UserCard extends State<UserCard> {
         minimumSize: Size.zero,
         padding: EdgeInsets.symmetric( vertical: 5, horizontal: 16),
         backgroundColor: user['isFollowing'] ? 
-        ColorConstants.gray600 : primaryOrange,
+        ColorConstants.gray900 : primaryOrange,
         foregroundColor: Colors.transparent
       )
     ) : Container();
@@ -237,6 +241,7 @@ class _UserCard extends State<UserCard> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return InkWell(
       onTap: () {
         ProfileScreen screen = ProfileScreen(userKey: int.parse(user['user_key']));
@@ -267,14 +272,22 @@ class _UserCard extends State<UserCard> {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: user['username'] + "\n",
+                            text: "${user['username']} ",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14
                             ),
                           ),
+                          if(user['verified'])
+                            WidgetSpan(
+                              child: CustomIcon(
+                                icon: 'assets/icons/verified-account.svg',
+                                size: 16,
+                                color: primaryOrange,
+                              )
+                            ),
                           TextSpan(
-                            text: user['display_name'],
+                            text: "\n${user['display_name']}",
                             style: TextStyle(
                               color: Colors.grey,
                               fontSize: 12
@@ -283,12 +296,26 @@ class _UserCard extends State<UserCard> {
                         ],
                       ),
                     ) :
-                    Text(
-                      user['username'],
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14
-                      ),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "${user['username']} ",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14
+                            ),
+                          ),
+                          if(user['verified'])
+                            WidgetSpan(
+                              child: CustomIcon(
+                                icon: 'assets/icons/verified-account.svg',
+                                size: 16,
+                                color: primaryOrange,
+                              )
+                            ),
+                        ]
+                      )
                     ),
                     buildFollowButton()
                   ],

@@ -1,12 +1,14 @@
 import 'dart:ui' as ui;
 import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/FirebaseAPI.dart';
-import 'package:venture/Screens/ProfileScreen.dart/ProfileScreen.dart';
+import 'package:venture/Helpers/CustomIcon.dart';
+import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class LikedByScreen extends StatefulWidget {
@@ -78,6 +80,7 @@ class _LikedByScreen extends State<LikedByScreen> {
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             pageSize: 20,
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
             query: FirebaseAPI().likedByQuery(widget.documentId),
             emptyBuilder: (context) {
               return Container(
@@ -135,7 +138,7 @@ class _UserLikeCard extends State<UserLikeCard> {
 
   goToProfile() {
     ProfileScreen screen = ProfileScreen(userKey: int.parse(user['user_key']));
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 
   _handleFollowStatus(bool isFollowing) {
@@ -154,43 +157,139 @@ class _UserLikeCard extends State<UserLikeCard> {
     }
   }
 
-  buildFollowButton() {
+  Widget buildFollowButton() {
     // bool isFollowing = user['followers'].contains(FirebaseAPI().firebaseId());
 
     return FirebaseAPI().firebaseId() != user['firebase_id'] ? ElevatedButton(
       onPressed: () => _handleFollowStatus(user['isFollowing']),
       child: Text(
-        user['isFollowing'] ? "Following" : "Follow"
+        user['isFollowing'] ? "Following" : "Follow",
+        style: TextStyle(
+          color: Colors.white
+        ),
       ),
       style: ElevatedButton.styleFrom(
-        minimumSize: Size(100, 30),
         elevation: 0,
-        primary: user['isFollowing'] ? 
-        ColorConstants.gray600 : primaryOrange,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-        )
-      ),
-    ) : null;
+          side: BorderSide(
+            color: user['isFollowing'] ? Get.isDarkMode ? Colors.white : Colors.black : Colors.transparent
+          )
+        ),
+        minimumSize: Size.zero,
+        padding: EdgeInsets.symmetric( vertical: 5, horizontal: 16),
+        backgroundColor: user['isFollowing'] ? 
+        ColorConstants.gray900 : primaryOrange,
+        foregroundColor: Colors.transparent
+      )
+    ) : Container();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    // return ListTile(
+    //   onTap: () => goToProfile(),
+    //   leading: ZoomTapAnimation(
+    //     child: MyAvatar(photo: user['photo_url'])
+    //   ),
+    //   trailing: buildFollowButton(),
+    //   title: Text(
+    //     user['username'],
+    //     style: TextStyle(
+    //       fontWeight: FontWeight.bold
+    //     ),
+    //   ),
+    //   subtitle: user['display_name'] != null ? Text(
+    //     user['display_name']
+    //   ) : null,
+    // );
+    return InkWell(
       onTap: () => goToProfile(),
-      leading: ZoomTapAnimation(
-        child: MyAvatar(photo: user['photo_url'])
-      ),
-      trailing: buildFollowButton(),
-      title: Text(
-        user['username'],
-        style: TextStyle(
-          fontWeight: FontWeight.bold
-        ),
-      ),
-      subtitle: user['display_name'] != null ? Text(
-        user['display_name']
-      ) : null,
-    );
+      child: Card(
+      margin: EdgeInsets.only(bottom: 10, top: 10),
+      elevation: 0,
+      color: Colors.transparent,
+      child: Row(
+        crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        children: [
+          MyAvatar(
+            photo: user['photo_url']
+          ),
+          SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              // mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    user['display_name'] != null && user['display_name'] != '' ?
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "${user['username']} ",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14
+                            ),
+                          ),
+                          if(user['verified'])
+                            WidgetSpan(
+                              child: CustomIcon(
+                                icon: 'assets/icons/verified-account.svg',
+                                size: 16,
+                                color: primaryOrange,
+                              )
+                            ),
+                          TextSpan(
+                            text: "\n${user['display_name']}",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12
+                            )
+                          ),
+                        ],
+                      ),
+                    ) :
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "${user['username']} ",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14
+                            ),
+                          ),
+                          if(user['verified'])
+                            WidgetSpan(
+                              child: CustomIcon(
+                                icon: 'assets/icons/verified-account.svg',
+                                size: 16,
+                                color: primaryOrange,
+                              )
+                            ),
+                        ]
+                      )
+                    ),
+                    buildFollowButton()
+                  ],
+                ),
+                user['biography'] != null && user['biography'] != '' ? Text(
+                  user['biography'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )
+                : Container()
+              ],
+            )
+          )
+        ],
+      )
+    ));
   }
 }

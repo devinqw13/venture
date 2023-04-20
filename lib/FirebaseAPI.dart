@@ -6,13 +6,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:venture/Calls.dart';
-import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Helpers/Toast.dart';
+import 'package:venture/Models/Notification.dart';
 import 'package:venture/Models/VenUser.dart';
 
 class FirebaseAPI extends ChangeNotifier {
@@ -102,6 +101,20 @@ class FirebaseAPI extends ChangeNotifier {
     return res;
   }
 
+  Stream<List<dynamic>> unreadNotificationsStream(String firebaseId) {
+    var result = _firestore.collection('notifications').doc(firebaseId).snapshots().map((event) => event.data() ?? {}).map((event) => event.values.map((e) => e.where((e) => e['read'] == false).toList()).toList()).map((event) {
+      List list = [];
+      for(var i in event) {
+        for(var k in i) {
+          list.add(k);
+        }
+      }
+      return list;
+    });
+
+    return result;
+  }
+
   Future<QuerySnapshot<Map<String, dynamic>>?> getUserDetails({String? username, String? userKey}) async {
     if(username != null) {
       return await _firestore.collection('users')
@@ -154,7 +167,7 @@ class FirebaseAPI extends ChangeNotifier {
 
     var user = await checkUsername(username);
     if(user.docs.isNotEmpty) {
-      showToast(context: context, msg: "The username already exists.");
+      showToastV2(context: context, msg: "The username already exists.");
       return null;
     }
 
@@ -178,8 +191,6 @@ class FirebaseAPI extends ChangeNotifier {
           'email': userCredential.user!.email,
           'firebase_id': FirebaseAuth.instance.currentUser!.uid,
           'photo_url': 'https://venture-content.s3.amazonaws.com/images/default-avatar.jpg',
-          // 'followers': [],
-          // 'following': [],
           'biography': null,
           'verified': false
         }, SetOptions(merge: true)).then((value) {
@@ -189,7 +200,7 @@ class FirebaseAPI extends ChangeNotifier {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        showToast(context: context, msg: "The email is already in use.");
+        showToastV2(context: context, msg: "The email is already in use.");
         return null;
       }
     } catch (e) {
@@ -206,7 +217,7 @@ class FirebaseAPI extends ChangeNotifier {
     if(!user.contains("@")) {
       var result = await getUserDetails(username: user.toLowerCase());
       if(result == null || result.docs.isEmpty) {
-        showToast(context: context, msg: "User was not found.");
+        showToastV2(context: context, msg: "User was not found", forcedBrightness: Brightness.light);
         return null;
       }
       user = result.docs.first.data()['email'];
@@ -234,7 +245,7 @@ class FirebaseAPI extends ChangeNotifier {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        showToast(context: context, msg: "User was not found.");
+        showToastV2(context: context, msg: "User was not found", forcedBrightness: Brightness.dark);
         return null;
       } else if (e.code == 'wrong-password') {
         showToast(context: context, msg: "Username/email or password did not match");
@@ -331,11 +342,11 @@ class FirebaseAPI extends ChangeNotifier {
   Future<void> updatePassword(BuildContext context, String password) async {
     final user = FirebaseAuth.instance.currentUser;
     if(user == null) {
-      showToast(context: context, msg: "Unable to update password");
+      showToastV2(context: context, msg: "Unable to update password");
       return;
     }
     await user.updatePassword(password);
-    showToast(context: context, gravity: ToastGravity.BOTTOM, msg: "Password was updated successfully!", type: ToastType.INFO);
+    showToastV2(context: context, msg: "Password was updated successfully!");
   }
 
   Future<void> addReaction(String? documentId, int contentKey) async {
@@ -686,37 +697,57 @@ class FirebaseAPI extends ChangeNotifier {
     }).then((value) {}).catchError((error) {print("Failed to remove firebase token: $error");});
   }
 
-  Future<List<String>> getFirebaseTokens({String? firebaseId, String? userKey}) async {
+  Future<Map<String, List<String>>> getFirebaseTokens({String? firebaseId, String? userKey}) async {
     if(firebaseId != null) {
       var result = await _firestore.collection('users').doc(firebaseId).get();
 
       Map<String, dynamic>? tokens = result.data()?['firebase_tokens'];
       List<String>? fbTokens = (tokens?.values.toList())?.map((e) => e as String).toList();
-      return fbTokens ?? [];
+      return {firebaseId: fbTokens ?? []};
     }else if(userKey != null) {
       var result = await _firestore.collection('users').where('user_key', isEqualTo: userKey).get();
 
       if(result.docs.isNotEmpty) {
-        Map<String, dynamic>? tokens = result.docs.first.data()['firebase_tokens'];
+        var data = result.docs.first.data();
+        String firebaseId = data['firebase_id'];
+        Map<String, dynamic>? tokens = data['firebase_tokens'];
         List<String>? fbTokens = (tokens?.values.toList())?.map((e) => e as String).toList();
-        return fbTokens ?? [];
+        return {firebaseId: fbTokens ?? []};
       }
     }
 
-    return [];
+    return {};
+  }
+
+  Future<void> messageNotification(BuildContext context, Map<String, dynamic>? data) async {
+    Map<String, dynamic> notiData = {};
+    var results = await getUserFromFirebaseId(FirebaseAuth.instance.currentUser!.uid);
+    notiData['message_by'] = json.encode(results);
+
+    if(data != null) notiData['message_data'] = json.encode(data);
+
+    if(results['user_key'] != data!['user_key'].toString()) {
+      sendNotification(
+        context,
+        "convo_message",
+        notiData,
+        userKey: data['user_key'].toString()
+      );
+    }
   }
 
   Future<void> sendNotification(BuildContext context, String type, Map<String, dynamic> data, {String? firebaseId, String? userKey}) async {
 
-    List<String> tokens = [];
+    Map<String, List<String>> tokens = {};
     if(firebaseId != null) {
       tokens = await FirebaseAPI().getFirebaseTokens(firebaseId: firebaseId);
     }else if(userKey != null) {
-      print(userKey);
       tokens = await FirebaseAPI().getFirebaseTokens(userKey: userKey);
     }
 
-    if(tokens.isNotEmpty) {
+    bool result = await storeNotification(context, tokens.keys.first, type, data);
+
+    if(result && tokens.isNotEmpty && tokens.values.isNotEmpty && tokens.values.first.isNotEmpty) {
       pushNotification(
         context,
         type,
@@ -726,7 +757,67 @@ class FirebaseAPI extends ChangeNotifier {
     }
   }
 
+  Future<bool> storeNotification(BuildContext context, String firebaseId, String type, Map<String, dynamic> data) async {
+    // bool success = false; 
+    Map<String, dynamic> jsonMap = {};
+    jsonMap['timestamp'] = DateTime.now().toUtc();
+    jsonMap['read'] = false;
+
+    if(type == 'convo_message') {
+      type = 'messages';
+      jsonMap['firebase_id'] = json.decode(data['message_by'])['firebase_id'];
+    }else if(type == 'content_comment') {
+      type = 'content_comments';
+      jsonMap['firebase_id'] = json.decode(data['comment_by'])['firebase_id'];
+      jsonMap['comment'] = json.decode(data['comment_data'])['comment'];
+      jsonMap['content_photo'] = json.decode(data['comment_data'])['content_image_url'];
+      jsonMap['content_key'] = json.decode(data['comment_data'])['content_key'];
+    }else if(type == 'reactions') {
+      jsonMap['firebase_id'] = json.decode(data['reaction_by'])['firebase_id'];
+      jsonMap['content_photo'] = json.decode(data['content_data'])['content_image_url'];
+      jsonMap['content_key'] = json.decode(data['content_data'])['content_key'];
+    }
+
+    var notiRef = _firestore.collection('notifications').doc(firebaseId);
+    var result = await notiRef.update({
+      type: FieldValue.arrayUnion([jsonMap])
+    }).then((_) {
+      return true;
+    })
+    .catchError((error) {
+      print("Failed to add notification: $error");
+      return false;
+    });
+    
+    return result;
+  }
+
   Future<DocumentSnapshot<Map<String, dynamic>>> getNotifications() async {
     return await FirebaseFirestore.instance.collection('notifications').doc(FirebaseAuth.instance.currentUser!.uid).get();
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getNotificationsStream() {
+    return FirebaseFirestore.instance.collection('notifications').doc(FirebaseAuth.instance.currentUser!.uid).snapshots();
+  }
+
+  Future<void> updateNotificationsRead(List<Map<String, dynamic>> data, NotificationType notificationType) async {
+    var notiRef = FirebaseFirestore.instance.collection('notifications').doc(FirebaseAuth.instance.currentUser!.uid);
+
+    String key = '';
+    if(notificationType == NotificationType.comment) {
+      key = 'content_comments';
+    }else if(notificationType == NotificationType.reaction) {
+      key = 'reactions';
+    }else if(notificationType == NotificationType.followed) {
+      key = 'followed_you';
+    }else if(notificationType == NotificationType.message) {
+      key = 'messages';
+    }
+
+    if(key.isNotEmpty) {
+      await notiRef.update({
+        key: data
+      }).then((value) {}).catchError((error) {print("Failed to remove firebase token: $error");});
+    }
   }
 }

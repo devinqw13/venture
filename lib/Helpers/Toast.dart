@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:venture/Constants.dart';
@@ -43,6 +44,49 @@ void showToast({
     ),
   );
 
+  fToast.showToast(
+    child: toast,
+    gravity: gravity,
+    toastDuration: duration,
+  );
+}
+
+void showToastV2({
+  required BuildContext? context, 
+  Duration duration = const Duration(seconds: 4),
+  Widget? icon,
+  Brightness? forcedBrightness,
+  required String msg,
+  ToastGravity gravity = ToastGravity.BOTTOM
+}) async {
+  Widget toast = ClipRRect(
+    borderRadius: BorderRadius.circular(50.0),
+    child: BackdropFilter(
+      filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      child: Container(
+        // alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: forcedBrightness != null ? forcedBrightness == Brightness.dark ? ColorConstants.gray25.withOpacity(0.5) : ColorConstants.gray600.withOpacity(0.8) : Get.isDarkMode ? ColorConstants.gray25.withOpacity(0.5) : ColorConstants.gray600.withOpacity(0.8),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: icon != null ? MainAxisAlignment.start : MainAxisAlignment.center,
+            children: [
+              icon != null ? Padding(
+                padding: EdgeInsets.only(right: 16.0),
+                child: icon
+              ) : Container(),
+              Flexible(child: Text(msg)),
+            ],
+          )
+        )
+      )
+    )
+  );
+  
+  FToast fToast = FToast().init(context!);
   fToast.showToast(
     child: toast,
     gravity: gravity,

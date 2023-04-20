@@ -36,9 +36,9 @@ class _PhotoHero extends State<PhotoHero> with AutomaticKeepAliveClientMixin<Pho
           FutureBuilder(
             future: VideoThumbnail.thumbnailData(
               video: widget.photoUrl,
-              imageFormat: ImageFormat.JPEG,
+              imageFormat: ImageFormat.PNG,
               maxWidth: widget.size?.height.toInt() ?? 130, // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
-              quality: 100,
+              // quality: 1000,
             ),
             builder: (context, i) {
               if(i.hasData) {

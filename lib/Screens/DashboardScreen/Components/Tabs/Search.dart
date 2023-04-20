@@ -8,7 +8,7 @@ import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
-import 'package:venture/Screens/ProfileScreen.dart/ProfileScreen.dart';
+import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';

@@ -35,6 +35,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   _initializeAsyncDependencies() async {
     initConvoIndicator();
+    initNotiIndicator();
   }
 
   initConvoIndicator() {
@@ -45,12 +46,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _homeController.messageTracker.clear();
         for(var item in event) {
           item.listen((e) {
-            print(e);
             _homeController.messageTracker.update(e.keys.first, (value) => e.values.first, ifAbsent: () => e.values.first);
           });
         }
       });
     }
+  }
+
+  initNotiIndicator() {
+    var result = FirebaseAPI().unreadNotificationsStream(FirebaseAPI().firebaseId()!);
+    result.listen((event) {
+      _homeController.notificationTracker.value = event;
+    });
   }
 
   checkUserStatus() {
@@ -92,8 +99,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             padding: EdgeInsets.symmetric(horizontal: 10),
             child: icon
           ),
-          page == 0 && hasUnread() ?  Container(
-            margin: EdgeInsets.only(top: 1),
+          page == 0 && hasUnreadMessages() ||
+          page == 3 && hasUnreadNoti() ?  Container(
+            margin: EdgeInsets.only(top: 4),
             height: 5,
             width: 5,
             decoration: BoxDecoration(
@@ -101,7 +109,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               color: Colors.blue
             ),
           ) : Container(
-            margin: EdgeInsets.only(top: 1),
+            margin: EdgeInsets.only(top: 4),
             height: 5,
             width: 5
           ),
@@ -110,9 +118,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  bool hasUnread() {
+  bool hasUnreadMessages() {
     List values = _homeController.messageTracker.values.where((element) => element.length > 0).toList();
     return values.isNotEmpty;
+  }
+
+  bool hasUnreadNoti() {
+    return _homeController.notificationTracker.isNotEmpty;
   }
 
   @override
@@ -150,7 +162,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 elevation: 1.0,
                 child: Container(
                   color: Colors.transparent,
-                  padding: const EdgeInsets.only(left: 23, right: 23, top: 9),
+                  padding: const EdgeInsets.only(left: 23, right: 23, top: 6),
                   child: Obx(() => Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -166,9 +178,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox.shrink(),
                       _bottomAppBarItem(
-                        icon: 'assets/icons/notification2.svg',
+                        icon: 'assets/icons/notification3.svg',
                         page: 3,
-                        iconSize: 30
+                        iconSize: 23
                       ),
                       _bottomAppBarItem(
                         icon: 'assets/icons/avatar.svg',

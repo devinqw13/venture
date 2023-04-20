@@ -24,7 +24,7 @@ import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Helpers/PhotoHero.dart';
 import 'package:venture/Screens/DisplayContentListScreen/DisplayContentListScreen.dart';
 import 'package:venture/Screens/EditProfileScreen/EditProfileScreen.dart';
-import 'package:venture/Screens/FollowStatsScreen.dart/FollowStatsScreen.dart';
+import 'package:venture/Screens/FollowStatsScreen/FollowStatsScreen.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:venture/Screens/SettingsScreen/SettingsScreen.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
@@ -306,11 +306,19 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                           text: TextSpan(
                             children: [
                               TextSpan(
-                                text: userData.displayName! + "\n",
+                                text: "${userData.displayName!} ",
                                 style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
                               ),
+                              if(user.isVerified!)
+                                WidgetSpan(
+                                  child: CustomIcon(
+                                    icon: 'assets/icons/verified-account.svg',
+                                    size: 17,
+                                    color: primaryOrange,
+                                  )
+                                ),
                               TextSpan(
-                                text: userData.userName,
+                                text: "\n${userData.userName}",
                                 style: TextStyle(
                                   color: Colors.grey,
                                   fontSize: 14
@@ -319,9 +327,24 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                             ],
                           ),
                         ) :
-                        Text(
-                          user.userName!,
-                          style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: "${user.userName!} ",
+                                style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              if(user.isVerified!)
+                                WidgetSpan(
+                                  child: CustomIcon(
+                                    icon: 'assets/icons/verified-account.svg',
+                                    size: 17,
+                                    color: primaryOrange,
+                                  )
+                                ),
+                            ]
+                          )
                         )
                       ],
                     )

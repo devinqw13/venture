@@ -38,22 +38,22 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     KeyboardUtil.hideKeyboard(context);
 
     if(pwdTextController.text.isEmpty || pwdRepeatTextController.text.isEmpty || currentPwdTextController.text.isEmpty) {
-      showToast(context: context, gravity: ToastGravity.BOTTOM, msg: "Password fields must not be empty.");
+      showToastV2(context: context, msg: "Password fields must not be empty.");
       return;
     }
 
     if(pwdTextController.text.length < 6) {
-      showToast(context: context, gravity: ToastGravity.BOTTOM, msg: "Password must be atleast 6 characters long.");
+      showToastV2(context: context, msg: "Password must be atleast 6 characters long.");
       return;
     }
 
     if(!RegExp(r'[0-9]').hasMatch(pwdTextController.text)) {
-      showToast(context: context, gravity: ToastGravity.BOTTOM, msg: "Password must contain atleast one number character.");
+      showToastV2(context: context, msg: "Password must contain atleast one number character.");
       return;
     }
 
     if(pwdTextController.text != pwdRepeatTextController.text) {
-      showToast(context: context, gravity: ToastGravity.BOTTOM, msg: "Password fields does not match.");
+      showToastV2(context: context, gravity: ToastGravity.BOTTOM, msg: "Password fields does not match.");
       return;
     }
 

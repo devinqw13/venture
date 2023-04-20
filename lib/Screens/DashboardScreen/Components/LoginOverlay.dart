@@ -7,7 +7,7 @@ import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Constants.dart';
 import 'package:get/get.dart';
 import 'package:venture/Helpers/Toast.dart';
-import 'package:venture/Screens/CreateUserScreen.dart/CreateUserScreen.dart';
+import 'package:venture/Screens/CreateUserScreen/CreateUserScreen.dart';
 import 'package:venture/Screens/SettingsScreen/SettingsScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Components/PointedLine.dart';
@@ -39,7 +39,7 @@ class _LoginOverlay extends State<LoginOverlay>  {
     // bool? _ = await postLogin(context, userTextController.text, pwdTextController.text);
     var _ = await FirebaseAPI().login(
       context,
-      userTextController.text,
+      userTextController.text.trim(),
       pwdTextController.text
     );
 
