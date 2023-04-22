@@ -139,7 +139,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                 ],
               ),
               Text(
-                "${content.totalReviews ?? 0} reviews",
+                "${content.totalReviews ?? 0} ratings",
                 style: TextStyle(
                   fontSize: 15,
                   // fontWeight: FontWeight.bold

@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:venture/Globals.dart' as globals;
 import 'package:venture/Calls.dart';
 import 'package:venture/Helpers/CustomPin.dart';
 import 'package:venture/Helpers/Dialog.dart';
@@ -17,8 +15,6 @@ import 'package:venture/Screens/CreatePinScreen/CreatePinScreen.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Constants.dart';
-import 'package:venture/Components/CreatePin.dart';
-import 'package:venture/Components/CustomMapPopupMenu.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/VenUser.dart';
@@ -34,7 +30,6 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   final TextEditingController textController = TextEditingController();
   final ThemesController _themesController = Get.find();
   // ValueNotifier<bool> displayCreatePin = ValueNotifier<bool>(false);
-  ValueNotifier<bool> canRemovePin = ValueNotifier<bool>(false);
   // late AnimationController controller;
   // late Animation<Offset> offset;
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
@@ -74,8 +69,11 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   performAction(MapOverlayAction action, dynamic value) {
     print(action);
     switch(action) {
-      case MapOverlayAction.createPin:
+      case MapOverlayAction.initializeCreatePin:
         setState(() => isCreatingPin = true);
+        if(createdMarkerPos != null) {
+          generateInitMarker(createdMarkerPos!);
+        }
         break;
       case MapOverlayAction.cancelCreatePin:
         setState(() => isCreatingPin = false);
@@ -196,8 +194,17 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       final MarkerId markerKey = MarkerId(result.pinKey.toString());
       List loc = result.latLng.split(',');
       
-      // BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
-      BitmapDescriptor mkr = await getMarkerIconV2(context, null, pinColor: ColorConstants.gray25);
+      BitmapDescriptor mkr = await getMarkerIconV2(
+        context,
+        null,
+        pinColor: ColorConstants.gray25,
+        text: result.title,
+        textStyle: TextStyle(
+          fontSize: 30,
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+        )
+      );
 
       final Marker marker = Marker(
         markerId: markerKey,
@@ -232,14 +239,17 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     final String key = '0';
     final MarkerId markerKey = MarkerId(key);
     
-    // BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: primaryOrange, size: Size(45, 45));
-
-    BitmapDescriptor mkr = await getMarkerIconV2(context, 'assets/icons/bold-plus.svg', imageColor: Colors.white, pinColor: primaryOrange);
+    BitmapDescriptor mkr;
+    if(isCreatingPin) {
+      mkr = await getMarkerIconV2(context, 'assets/icons/bold-plus.svg', imageColor: Colors.white, pinColor: primaryOrange);
+    }else {
+      mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/map-pin.svg');
+    }
 
     final Marker marker = Marker(
       markerId: markerKey,
       position: coords,
-      draggable: true,
+      draggable: isCreatingPin ? true : false,
       icon: mkr,
       // onTap: () => _onMarkerTapped(markerKey),
       // onDragEnd: (LatLng position) => _onMarkerDragEnd(markerKey, position),
@@ -250,7 +260,6 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       markers[markerKey] = marker;
       createdMarker = markerKey;
       createdMarkerPos = coords;
-      canRemovePin.value = true;
     });
   }
 
@@ -265,9 +274,17 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       final MarkerId markerKey = MarkerId(item.pinKey.toString());
       List loc = item.latLng.split(',');
 
-      // BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
-
-      BitmapDescriptor mkr = await getMarkerIconV2(context, null, pinColor: ColorConstants.gray25);
+      BitmapDescriptor mkr = await getMarkerIconV2(
+        context,
+        null,
+        pinColor: ColorConstants.gray25,
+        text: item.title,
+        textStyle: TextStyle(
+          fontSize: 30,
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+        )
+      );
 
       final Marker marker = Marker(
         markerId: markerKey,
@@ -334,7 +351,6 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
         markers.remove(key);
 
         if(key.value == '0') {
-          canRemovePin.value = false;
           createdMarker = null;
           createdMarkerPos = null;
         }
@@ -731,7 +747,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
 }
 
 enum MapOverlayAction {
-  createPin,
+  initializeCreatePin,
   cancelCreatePin,
   positionPin,
   continueCreation
@@ -748,13 +764,16 @@ class MapOverlay extends StatefulWidget {
   _MapOverlay createState() => _MapOverlay();
 }
 
-class _MapOverlay extends State<MapOverlay> with TickerProviderStateMixin{
+class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<MapOverlay>, TickerProviderStateMixin {
   final ThemesController _themesController = Get.find();
   final TextEditingController textController = TextEditingController();
   bool isCreating = false;
   late AnimationController controller, controller2;
   late Animation<Offset> offset, offset2;
   RxBool isPlaced = false.obs;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -825,12 +844,13 @@ class _MapOverlay extends State<MapOverlay> with TickerProviderStateMixin{
     );
 
     controller.forward();
-    widget.onAction!(MapOverlayAction.createPin, null);
+    widget.onAction!(MapOverlayAction.initializeCreatePin, null);
     setState(() => isCreating = true);
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     isPlaced.value = widget.isPlaced;
     return Padding(
       padding: EdgeInsets.only(
@@ -862,18 +882,22 @@ class _MapOverlay extends State<MapOverlay> with TickerProviderStateMixin{
                         ),
                         child: TextField(
                           // onChanged: (v) => autocomplete(v),
+                          autocorrect: false,
+                          enableSuggestions: false,
                           controller: textController,
                           keyboardType: TextInputType.streetAddress,
                           textInputAction: TextInputAction.go,
                           onSubmitted: (text) async {
                             KeyboardUtil.hideKeyboard(context);
                             if (textController.text.isNotEmpty) {
-                              if(isCreating) {
-                                var result = await mapNavigate(textController.text);
-                                widget.onAction!(MapOverlayAction.positionPin, result);
-                              }else {
-                                mapNavigate(textController.text);
-                              }
+                              // if(isCreating) {
+                              //   var result = await mapNavigate(textController.text);
+                              //   widget.onAction!(MapOverlayAction.positionPin, result);
+                              // }else {
+                              //   mapNavigate(textController.text);
+                              // }
+                              var result = await mapNavigate(textController.text);
+                              widget.onAction!(MapOverlayAction.positionPin, result);
                               textController.clear();
                             }
                           },
@@ -886,12 +910,14 @@ class _MapOverlay extends State<MapOverlay> with TickerProviderStateMixin{
                                 onTap: () async {
                                   KeyboardUtil.hideKeyboard(context);
                                   if (textController.text.isNotEmpty) {
-                                    if(isCreating) {
-                                      var result = await mapNavigate(textController.text);
-                                      widget.onAction!(MapOverlayAction.positionPin, result);
-                                    }else {
-                                      mapNavigate(textController.text);
-                                    }
+                                    // if(isCreating) {
+                                    //   var result = await mapNavigate(textController.text);
+                                    //   widget.onAction!(MapOverlayAction.positionPin, result);
+                                    // }else {
+                                    //   mapNavigate(textController.text);
+                                    // }
+                                    var result = await mapNavigate(textController.text);
+                                    widget.onAction!(MapOverlayAction.positionPin, result);
                                     textController.clear();
                                   }
                                 },

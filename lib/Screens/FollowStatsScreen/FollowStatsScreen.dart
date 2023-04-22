@@ -275,7 +275,8 @@ class _UserCard extends State<UserCard> with AutomaticKeepAliveClientMixin<UserC
                             text: "${user['username']} ",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 14
+                              fontSize: 14,
+                              color: Get.isDarkMode ? Colors.white : Colors.black
                             ),
                           ),
                           if(user['verified'])
@@ -303,7 +304,8 @@ class _UserCard extends State<UserCard> with AutomaticKeepAliveClientMixin<UserC
                             text: "${user['username']} ",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 14
+                              fontSize: 14,
+                              color: Get.isDarkMode ? Colors.white : Colors.black
                             ),
                           ),
                           if(user['verified'])

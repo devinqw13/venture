@@ -8,7 +8,6 @@ import 'package:venture/Components/Skeleton.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
-import 'package:venture/Helpers/PhotoHero.dart';
 import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:venture/Models/Notification.dart';
 import 'package:collection/collection.dart';
@@ -167,12 +166,15 @@ class GroupedNotificationsWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          group.title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20
-          ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            group.title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20
+            ),
+          )
         ),
         SizedBox(height: 10),
         for(var item in group.items)
@@ -191,9 +193,12 @@ class SpecificNotificationWidget extends StatefulWidget {
   _SpecificNotificationWidget createState() => _SpecificNotificationWidget();
 }
 
-class _SpecificNotificationWidget extends State<SpecificNotificationWidget> {
+class _SpecificNotificationWidget extends State<SpecificNotificationWidget> with AutomaticKeepAliveClientMixin<SpecificNotificationWidget> {
   String? contentPhoto;
   bool? _isFollowing;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -335,6 +340,7 @@ class _SpecificNotificationWidget extends State<SpecificNotificationWidget> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     String bodyText = '';
     
     if(widget.noti.notificationType == NotificationType.comment) {
