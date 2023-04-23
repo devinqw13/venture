@@ -1,14 +1,18 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:mime/mime.dart';
 import 'package:venture/Components/Avatar.dart';
+import 'package:venture/Components/VideoPlayer.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Components/ExpandableText.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/MapPreview.dart';
+import 'package:venture/Helpers/PhotoHero.dart';
 import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/VenUser.dart';
@@ -303,6 +307,332 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
     // );
   }
 
+  Widget _buildUpperDetailts(ThemeData theme) {
+    if(widget.pin.featuredPhoto != null && !lookupMimeType(widget.pin.featuredPhoto!)!.contains('video')) {
+      return Container(
+        // padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.05),
+        height: _detailsHeight ?? MediaQuery.of(context).size.height * 0.65,
+        decoration: BoxDecoration(
+          color: Colors.grey,
+          image: DecorationImage(
+            image: CachedNetworkImageProvider(
+              widget.pin.featuredPhoto!,
+            ),
+            fit: BoxFit.cover
+          ),
+        ),
+        child: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment(0, -(MediaQuery.of(context).size.height / 1200)),
+                  end: Alignment(0, MediaQuery.of(context).size.height / 1100),
+                  colors: [
+                    Colors.black.withOpacity(0.3),
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.6)
+                  ]
+                )
+              ),
+            ),
+            Padding(
+              // padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+              padding: EdgeInsets.only(
+                left: 15,
+                right: 15,
+                bottom: MediaQuery.of(context).size.height * 0.075
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          widget.pin.title!,
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: true,
+                          maxLines: 2,
+                          style: theme.textTheme.headline3!.copyWith(color: Colors.white),
+                        )
+                      ),
+                      Column(
+                        children: [
+                          Row(
+                            children: [
+                              CustomIcon(
+                                icon: 'assets/icons/star.svg',
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              Text(
+                                "${widget.pin.rating ?? 0.0}",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold
+                                ),
+                              )
+                            ],
+                          ),
+                          Text(
+                            "${widget.pin.totalReviews ?? 0} reviews",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  ZoomTapAnimation(
+                    onTap: () => print("GO TO MAP"),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                      child: Text(
+                        "Directions",
+                        style: theme.textTheme.bodyText2!.copyWith(color: Colors.white)
+                      ),
+                      decoration: BoxDecoration(
+                        color: primaryOrange,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    )
+                  )
+                ]
+              )
+            ),
+          ],
+        )
+      );
+    } else if(widget.pin.featuredPhoto != null && lookupMimeType(widget.pin.featuredPhoto!)!.contains('video')) {
+      return Container(
+        // padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.05),
+        height: _detailsHeight ?? MediaQuery.of(context).size.height * 0.65,
+        decoration: BoxDecoration(
+          color: Colors.grey,
+        ),
+        child: Stack(
+          children: [
+            SizedBox(
+              width: double.maxFinite,
+              height: double.maxFinite,
+              // child: Container(color: Colors.red),
+              child: VideoContentPlayer(
+                path: widget.pin.featuredPhoto!,
+                muteAudio: true,
+                setVideoAspectRatio: false,
+              ),
+            ),
+            IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment(0, -(MediaQuery.of(context).size.height / 1200)),
+                    end: Alignment(0, MediaQuery.of(context).size.height / 1100),
+                    colors: [
+                      Colors.black.withOpacity(0.3),
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.6)
+                    ]
+                  )
+                ),
+              )
+            ),
+            Padding(
+              // padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+              padding: EdgeInsets.only(
+                left: 15,
+                right: 15,
+                bottom: MediaQuery.of(context).size.height * 0.075
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          widget.pin.title!,
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: true,
+                          maxLines: 2,
+                          style: theme.textTheme.headline3!.copyWith(color: Colors.white),
+                        )
+                      ),
+                      Column(
+                        children: [
+                          Row(
+                            children: [
+                              CustomIcon(
+                                icon: 'assets/icons/star.svg',
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              Text(
+                                "${widget.pin.rating ?? 0.0}",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold
+                                ),
+                              )
+                            ],
+                          ),
+                          Text(
+                            "${widget.pin.totalReviews ?? 0} reviews",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  ZoomTapAnimation(
+                    onTap: () => print("GO TO MAP"),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                      child: Text(
+                        "Directions",
+                        style: theme.textTheme.bodyText2!.copyWith(color: Colors.white)
+                      ),
+                      decoration: BoxDecoration(
+                        color: primaryOrange,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    )
+                  )
+                ]
+              )
+            ),
+          ],
+        )
+      );
+    }else {
+      return Container(
+        // padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.05),
+        height: _detailsHeight ?? MediaQuery.of(context).size.height * 0.65,
+        decoration: BoxDecoration(
+          color: Colors.grey,
+        ),
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                "Photo not available",
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: Colors.white
+                ),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment(0, -(MediaQuery.of(context).size.height / 1200)),
+                  end: Alignment(0, MediaQuery.of(context).size.height / 1100),
+                  colors: [
+                    Colors.black.withOpacity(0.3),
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.6)
+                  ]
+                )
+              ),
+            ),
+            Padding(
+              // padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+              padding: EdgeInsets.only(
+                left: 15,
+                right: 15,
+                bottom: MediaQuery.of(context).size.height * 0.075
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          widget.pin.title!,
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: true,
+                          maxLines: 2,
+                          style: theme.textTheme.headline3!.copyWith(color: Colors.white),
+                        )
+                      ),
+                      Column(
+                        children: [
+                          Row(
+                            children: [
+                              CustomIcon(
+                                icon: 'assets/icons/star.svg',
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              Text(
+                                "${widget.pin.rating ?? 0.0}",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold
+                                ),
+                              )
+                            ],
+                          ),
+                          Text(
+                            "${widget.pin.totalReviews ?? 0} reviews",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  ZoomTapAnimation(
+                    onTap: () => print("GO TO MAP"),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                      child: Text(
+                        "Directions",
+                        style: theme.textTheme.bodyText2!.copyWith(color: Colors.white)
+                      ),
+                      decoration: BoxDecoration(
+                        color: primaryOrange,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    )
+                  )
+                ]
+              )
+            ),
+          ],
+        )
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -352,109 +682,110 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
         ),
         body: Stack(
           children: <Widget>[
-            Container(
-              // padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.05),
-              height: _detailsHeight ?? MediaQuery.of(context).size.height * 0.65,
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                image: widget.pin.featuredPhoto != null ? DecorationImage(
-                  image: NetworkImage(
-                    widget.pin.featuredPhoto!,
-                  ),
-                  fit: BoxFit.cover
-                ): null,
-              ),
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment(0, -(MediaQuery.of(context).size.height / 1200)),
-                        end: Alignment(0, MediaQuery.of(context).size.height / 1100),
-                        colors: [
-                          Colors.black.withOpacity(0.3),
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.6)
-                        ]
-                      )
-                    ),
-                  ),
-                  Padding(
-                    // padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-                    padding: EdgeInsets.only(
-                      left: 15,
-                      right: 15,
-                      bottom: MediaQuery.of(context).size.height * 0.075
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                widget.pin.title!,
-                                overflow: TextOverflow.ellipsis,
-                                softWrap: true,
-                                maxLines: 2,
-                                style: theme.textTheme.headline3!.copyWith(color: Colors.white),
-                              )
-                            ),
-                            Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    CustomIcon(
-                                      icon: 'assets/icons/star.svg',
-                                      size: 30,
-                                      color: Colors.white,
-                                    ),
-                                    Text(
-                                      "${widget.pin.rating ?? 0.0}",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                Text(
-                                  "${widget.pin.totalReviews ?? 0} reviews",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold
-                                  ),
-                                )
-                              ],
-                            )
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                        ZoomTapAnimation(
-                          onTap: () => print("GO TO MAP"),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                            child: Text(
-                              "Directions",
-                              style: theme.textTheme.bodyText2!.copyWith(color: Colors.white)
-                            ),
-                            decoration: BoxDecoration(
-                              color: primaryOrange,
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                          )
-                        )
-                      ]
-                    )
-                  ),
-                ],
-              )
-            ),
+            // Container(
+            //   // padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.05),
+            //   height: _detailsHeight ?? MediaQuery.of(context).size.height * 0.65,
+            //   decoration: BoxDecoration(
+            //     color: Colors.grey,
+            //     image: widget.pin.featuredPhoto != null ? DecorationImage(
+            //       image: CachedNetworkImageProvider(
+            //         widget.pin.featuredPhoto!,
+            //       ),
+            //       fit: BoxFit.cover
+            //     ): null,
+            //   ),
+            //   child: Stack(
+            //     children: [
+            //       Container(
+            //         decoration: BoxDecoration(
+            //           gradient: LinearGradient(
+            //             begin: Alignment(0, -(MediaQuery.of(context).size.height / 1200)),
+            //             end: Alignment(0, MediaQuery.of(context).size.height / 1100),
+            //             colors: [
+            //               Colors.black.withOpacity(0.3),
+            //               Colors.transparent,
+            //               Colors.black.withOpacity(0.6)
+            //             ]
+            //           )
+            //         ),
+            //       ),
+            //       Padding(
+            //         // padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+            //         padding: EdgeInsets.only(
+            //           left: 15,
+            //           right: 15,
+            //           bottom: MediaQuery.of(context).size.height * 0.075
+            //         ),
+            //         child: Column(
+            //           crossAxisAlignment: CrossAxisAlignment.start,
+            //           mainAxisAlignment: MainAxisAlignment.end,
+            //           children: [
+            //             Row(
+            //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //               crossAxisAlignment: CrossAxisAlignment.end,
+            //               children: [
+            //                 Flexible(
+            //                   child: Text(
+            //                     widget.pin.title!,
+            //                     overflow: TextOverflow.ellipsis,
+            //                     softWrap: true,
+            //                     maxLines: 2,
+            //                     style: theme.textTheme.headline3!.copyWith(color: Colors.white),
+            //                   )
+            //                 ),
+            //                 Column(
+            //                   children: [
+            //                     Row(
+            //                       children: [
+            //                         CustomIcon(
+            //                           icon: 'assets/icons/star.svg',
+            //                           size: 30,
+            //                           color: Colors.white,
+            //                         ),
+            //                         Text(
+            //                           "${widget.pin.rating ?? 0.0}",
+            //                           style: TextStyle(
+            //                             color: Colors.white,
+            //                             fontSize: 20,
+            //                             fontWeight: FontWeight.bold
+            //                           ),
+            //                         )
+            //                       ],
+            //                     ),
+            //                     Text(
+            //                       "${widget.pin.totalReviews ?? 0} reviews",
+            //                       style: TextStyle(
+            //                         color: Colors.white,
+            //                         fontSize: 18,
+            //                         fontWeight: FontWeight.bold
+            //                       ),
+            //                     )
+            //                   ],
+            //                 )
+            //               ],
+            //             ),
+            //             SizedBox(height: 10),
+            //             ZoomTapAnimation(
+            //               onTap: () => print("GO TO MAP"),
+            //               child: Container(
+            //                 padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+            //                 child: Text(
+            //                   "Directions",
+            //                   style: theme.textTheme.bodyText2!.copyWith(color: Colors.white)
+            //                 ),
+            //                 decoration: BoxDecoration(
+            //                   color: primaryOrange,
+            //                   borderRadius: BorderRadius.circular(50),
+            //                 ),
+            //               )
+            //             )
+            //           ]
+            //         )
+            //       ),
+            //     ],
+            //   )
+            // ),
+            _buildUpperDetailts(theme),
             NotificationListener<DraggableScrollableNotification>(
               onNotification: (d) {
                 setState(() {

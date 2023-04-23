@@ -700,3 +700,43 @@ Future<void> pushNotification(BuildContext context, String type, Map<String, Lis
   //   FirebaseAPI().storeNotification(context, tokens.keys.first, type, data);
   // }
 }
+
+Future<List<Pin>> getSuggestions(BuildContext context, String latLng, double radius) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  String url = "${globals.apiBaseUrl}/suggestions?latlng=$latLng&radius=$radius";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.get(Uri.parse(url), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToastV2(context: context, msg: "Connection timeout. Please try again.");
+    return [];
+  }
+
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  if (jsonResponse['result'] == 'true') {
+    List<Pin> pins = [];
+    for(var item in jsonResponse['results']) {
+      Pin pin = Pin.fromMap(item);
+      pins.add(pin);
+    }
+
+    return pins;
+  }
+  else {
+    showToastV2(context: context, msg: "An error has occured.");
+    return [];
+  }
+}

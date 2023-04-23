@@ -5,8 +5,9 @@ import 'package:venture/Models/Pin.dart';
 import 'package:venture/Screens/PinScreen/Components/PinSkeleton.dart';
 
 class PinScreen extends StatefulWidget {
-  final int pinKey;
-  PinScreen({Key? key, required this.pinKey}) : super(key: key);
+  final int? pinKey;
+  final Pin? pin;
+  PinScreen({Key? key, this.pinKey, this.pin}) : super(key: key);
 
   @override
   _PinScreenState createState() => _PinScreenState();
@@ -20,7 +21,7 @@ class _PinScreenState extends State<PinScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          FutureBuilder<List<Pin>>(
+          widget.pin == null ? FutureBuilder<List<Pin>>(
             future: getMapPins(context, pinKey: widget.pinKey.toString()),
             builder: (context, snapshot) {
               if(!snapshot.hasData) {
@@ -29,7 +30,7 @@ class _PinScreenState extends State<PinScreen> {
                 return PinSkeleton(pin: snapshot.data![0], enableBackButton: true);
               }
             }
-          )
+          ) : PinSkeleton(pin: widget.pin!, enableBackButton: true)
         ]
       )
     );

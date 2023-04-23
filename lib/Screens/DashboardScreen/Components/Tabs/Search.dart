@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 // import 'package:swipeable_page_route/swipeable_page_route.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Components/Avatar.dart';
+import 'package:venture/Components/Skeleton.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
+import 'package:venture/Helpers/LocationHandler.dart';
+import 'package:venture/Helpers/PhotoHero.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Constants.dart';
@@ -40,6 +44,7 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
   bool isSearching = false;
   bool showSearchResults = false;
   List<VentureItem> searchResults = [];
+  List<Pin> suggestedPins = [];
   StreamController<String> streamController = StreamController();
   
   @override
@@ -48,7 +53,24 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
   @override
   void initState() {
     super.initState();
+    // streamController.stream.listen((s) => performSearch(s));
+    _initializeAsyncDependencies();
+  }
+
+  _initializeAsyncDependencies() async {
+    await fetchSuggestions();
     streamController.stream.listen((s) => performSearch(s));
+  }
+
+  Future<void> fetchSuggestions() async {
+    var position = await LocationHandler.determineDeviceLocation();
+    String latLng = "";
+    if(position != null) {
+      latLng = "${position.latitude},${position.longitude}";
+    }
+
+    var result = await getSuggestions(context, latLng, 50);
+    setState(() => suggestedPins = result);
   }
 
   performSearch(String text) async {
@@ -107,6 +129,202 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
     }else {
       return null;
     }
+  }
+
+  goToPin(Pin pin) {
+    PinScreen screen = PinScreen(pin: pin);
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+  }
+
+  _buildSuggested() {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.only(top: 15),
+        child: ListView(
+          // physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          padding: EdgeInsets.all(0),
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              child: Text(
+                "Suggested Pins",
+                style: TextStyle(
+                  fontFamily: "CoolveticaCondensed",
+                  // fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                  fontSize: 23
+                ),
+              )
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            GridView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 5.0,
+                crossAxisSpacing: 10.0,
+                childAspectRatio: 0.9
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              itemCount: suggestedPins.length,
+              itemBuilder: (context, i) {
+                return ZoomTapAnimation(
+                  onTap: () => goToPin(suggestedPins[i]),
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey[200],
+                      borderRadius: BorderRadius.circular(5)
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          // child: Container(color: Colors.red)
+                          child: suggestedPins[i].featuredPhoto != null ?
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(5),
+                              // child: CachedNetworkImage(
+                              //   fit: BoxFit.cover,
+                              //   width: double.infinity,
+                              //   imageUrl: suggestedPins[i].featuredPhoto!,
+                              // )
+                              child: PhotoHero(
+                                tag: "searchTab-" + suggestedPins[i].featuredPhoto!,
+                                photoUrl: suggestedPins[i].featuredPhoto!,
+                                size: Size(double.maxFinite, double.maxFinite),
+                              )
+                            ) : Container(
+                              child: Center(
+                                child: Text(
+                                  "Photo not available",
+                                  style: TextStyle(
+                                    fontStyle: FontStyle.italic
+                                  ),
+                                ),
+                              ),
+                              decoration: BoxDecoration(
+                                color: Get.isDarkMode ? ColorConstants.gray700 : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(5)
+                              ),
+                            )
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            // mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      suggestedPins[i].title!,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 5
+                                    ),
+                                    RichText(
+                                      maxLines: 2,
+                                      text: TextSpan(
+                                        children: [
+                                          WidgetSpan(
+                                            alignment: PlaceholderAlignment.middle,
+                                            child: CustomIcon(
+                                              icon: 'assets/icons/navigation.svg',
+                                              size: 11,
+                                              color: Colors.grey,
+                                            )
+                                          ),
+                                          suggestedPins[i].distance != null ?
+                                          TextSpan(
+                                            text: " ${suggestedPins[i].distance} miles",
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.grey
+                                            )
+                                          ) : TextSpan(
+                                            text: " Distance not available",
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.grey
+                                            )
+                                          ),
+                                        ]
+                                      )
+                                    )
+                                  ],
+                                )
+                              ),
+                              RichText(
+                                  // overflow: TextOverflow.ellipsis,
+                                  // maxLines: 1,
+                                  textAlign: TextAlign.end,
+                                  text: TextSpan(
+                                    children: [
+                                      WidgetSpan(
+                                        alignment: PlaceholderAlignment.middle,
+                                        child: CustomIcon(
+                                          icon: 'assets/icons/star.svg',
+                                          size: 18,
+                                          color: primaryOrange,
+                                        )
+                                      ),
+                                      TextSpan(
+                                        text: " ${suggestedPins[i].rating ?? 0.toInt()}",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Get.isDarkMode ? Colors.white : Colors.black,
+                                        )
+                                      )
+                                    ]
+                                  )
+                                )
+                              
+                            ],
+                          )
+                        )
+                        // suggestedPins[i].featuredPhoto != null ?
+                        // ClipRRect(
+                        //   borderRadius: BorderRadius.circular(5),
+                        //   child: AspectRatio(
+                        //     aspectRatio: 4 / 5,
+                        //     child:  CachedNetworkImage(
+                        //       fit: BoxFit.cover,
+                        //       // width: 40,
+                        //       // height: 50,
+                        //       imageUrl: suggestedPins[i].featuredPhoto!,
+                        //       progressIndicatorBuilder: (context, url, downloadProgress) {
+                        //         return Skeleton.rectangular(
+                        //           width: 40,
+                        //           height: 50,
+                        //           // borderRadius: 20.0
+                        //         );
+                        //       }
+                        //     )
+                        //   )
+                        // ) : Container()
+                      ]
+                    ),
+                  )
+                );
+              }
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   Widget buildSearch() {
@@ -242,69 +460,45 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                         )
                       )
                     ),
-                    !searchFocused ? Padding(
-                      padding: EdgeInsets.only(top: 15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // SingleChildScrollView(
-                          //   padding: EdgeInsets.symmetric(horizontal: 10),
-                          //   scrollDirection: Axis.horizontal,
-                          //   child: Row(
-                          //     children: [
-                          //       for(var item in filters)
-                          //         ZoomTapAnimation(
-                          //           onTap: () {
-                          //             for (var e in filters) {
-                          //               setState(() => e.isSelected = false);
-                          //             }
-                          //             setState(() => item.isSelected = true);
-                          //           },
-                          //           child: Container(
-                          //             padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                          //             margin: EdgeInsets.symmetric(horizontal: 4),
-                          //             child: Text(
-                          //               item.name,
-                          //               style: theme.textTheme.bodyText2!.copyWith(color: item.isSelected ? Colors.white : Colors.black)
-                          //             ),
-                          //             decoration: BoxDecoration(
-                          //               color: item.isSelected ? primaryOrange : Colors.grey.shade200,
-                          //               borderRadius: BorderRadius.circular(50),
-                          //             ),
-                          //           )
-                          //         ),
-                          //     ]
-                          //   ),
-                          // ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 15),
-                            child: Text(
-                              "Suggested",
-                              style: TextStyle(
-                                fontFamily: "CoolveticaCondensed",
-                                // fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                                fontSize: 23
-                              ),
-                            )
-                          )
-                        ],
-                      )
-                    ) :
-                    // Expanded(
-                    //   child: Padding(
-                    //     padding: EdgeInsets.only(top: 8),
-                    //     child: Column(
-                    //       children: [
-                    //         Divider(color: Colors.grey),
-                    //         showSearchResults ? buildSearch() : Container() //TODO: show recent searches or GOTOs
-                    //       ],
-                    //     )
+                    !searchFocused ? 
+                    // Padding(
+                    //   padding: EdgeInsets.only(top: 15),
+                    //   child: Column(
+                    //     crossAxisAlignment: CrossAxisAlignment.start,
+                    //     children: [
+                    //       SizedBox(
+                    //         height: 20,
+                    //       ),
+                    //       Padding(
+                    //         padding: EdgeInsets.symmetric(horizontal: 15),
+                    //         child: Text(
+                    //           "Suggested",
+                    //           style: TextStyle(
+                    //             fontFamily: "CoolveticaCondensed",
+                    //             // fontWeight: FontWeight.bold,
+                    //             letterSpacing: 0.5,
+                    //             fontSize: 23
+                    //           ),
+                    //         )
+                    //       ),
+                    //       GridView.builder(
+                    //         shrinkWrap: true,
+                    //         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    //           crossAxisCount: 2,
+                    //           mainAxisSpacing: 5.0,
+                    //           crossAxisSpacing: 5.0,
+                    //           childAspectRatio: 0.9
+                    //         ),
+                    //         itemCount: suggestedPins.length,
+                    //         itemBuilder: (context, i) {
+                    //           return Text(suggestedPins[i].title!);
+                    //         }
+                    //       )
+                    //     ],
                     //   )
-                    // )
+                    // ) 
+                    _buildSuggested()
+                    :
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.only(top: 8),

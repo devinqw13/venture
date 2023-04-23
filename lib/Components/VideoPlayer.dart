@@ -9,8 +9,10 @@ class VideoContentPlayer extends StatefulWidget {
   final String? path;
   final AssetEntity? video;
   final bool showPauseIndicator;
+  final bool muteAudio;
+  final bool setVideoAspectRatio;
   // final bool autoPlay;
-  VideoContentPlayer({Key? key, this.path, this.video, this.showPauseIndicator = true}) : super(key: key);
+  VideoContentPlayer({Key? key, this.path, this.video, this.showPauseIndicator = true, this.muteAudio = false, this.setVideoAspectRatio = true}) : super(key: key);
 
   @override
   _VideoContentPlayer createState() => _VideoContentPlayer();
@@ -105,6 +107,7 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
         ..initialize().then((_) {
           // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
           // setState(() {});
+          if(widget.muteAudio) toggleVolume(level: 0.0);
           _controller!.seekTo(const Duration(seconds: 1));
           setState(() {
             ratio = _controller!.value.aspectRatio;
@@ -118,6 +121,7 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
         ..initialize().then((_) {
           // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
           // setState(() {});
+          if(widget.muteAudio) toggleVolume(level: 0.0);
           _controller!.seekTo(const Duration(seconds: 1));
           setState(() {
             ratio = _controller!.value.aspectRatio;
@@ -134,6 +138,7 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
       ..initialize().then((_) {
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
         // setState(() {});
+        if(widget.muteAudio) toggleVolume(level: 0.0);
         _controller!.seekTo(const Duration(seconds: 1));
         setState(() {
           ratio = _controller!.value.aspectRatio;
@@ -147,6 +152,7 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
       ..initialize().then((_) {
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
         // setState(() {});
+        if(widget.muteAudio) toggleVolume(level: 0.0);
         _controller!.seekTo(const Duration(seconds: 1));
         setState(() {
           ratio = _controller!.value.aspectRatio;
@@ -154,6 +160,49 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
         // _controller!.play();
       });
     }
+  }
+
+  toggleVolume({double? level}) {
+    if(level != null) {
+      _controller!.setVolume(level);
+    }
+  }
+
+  _buildVideoPlayer() {
+    return Stack(
+      children: [
+        VideoPlayer(_controller!),
+        widget.showPauseIndicator ? Align(
+          alignment: Alignment.center,
+          child: FadeTransition(
+            opacity: _animation,
+            child: DropShadow(
+              offset: Offset(1, 1),
+              child: Icon(
+                Icons.play_arrow,
+                size: 70,
+                color: Colors.grey[50]!.withOpacity(0.8),
+              )
+            ),
+          )
+        ) : Container(),
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: () {
+              if(_controller!.value.isPlaying) {
+                _controller!.pause();
+                _animationController.forward();
+                setState(() => manuallyPaused = true);
+              }else {
+                _controller!.play();
+                _animationController.reverse();
+                setState(() => manuallyPaused = false);
+              }
+            },
+          )
+        )
+      ]
+    );
   }
 
   @override
@@ -172,43 +221,10 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
         }
       },
       child: Center(
-        child: AspectRatio(
+        child: widget.setVideoAspectRatio ? AspectRatio(
           aspectRatio: ratio,
-          child: Stack(
-            children: [
-              VideoPlayer(_controller!),
-              widget.showPauseIndicator ? Align(
-                alignment: Alignment.center,
-                child: FadeTransition(
-                  opacity: _animation,
-                  child: DropShadow(
-                    offset: Offset(1, 1),
-                    child: Icon(
-                      Icons.play_arrow,
-                      size: 70,
-                      color: Colors.grey[50]!.withOpacity(0.8),
-                    )
-                  ),
-                )
-              ) : Container(),
-              Positioned.fill(
-                child: GestureDetector(
-                  onTap: () {
-                    if(_controller!.value.isPlaying) {
-                      _controller!.pause();
-                      _animationController.forward();
-                      setState(() => manuallyPaused = true);
-                    }else {
-                      _controller!.play();
-                      _animationController.reverse();
-                      setState(() => manuallyPaused = false);
-                    }
-                  },
-                )
-              )
-            ]
-          )
-        )
+          child: _buildVideoPlayer()
+        ) : _buildVideoPlayer()
       ),
     )
     : Container();
