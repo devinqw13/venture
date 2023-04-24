@@ -172,9 +172,9 @@ class FirebaseAPI extends ChangeNotifier {
     }
 
     try {
-      bool? result = await createUser(context, username, email);
+      Map<dynamic, dynamic>? result = await createUser(context, username, email);
 
-      if(!result) return null;
+      if(result == null) return null;
 
       userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
@@ -185,7 +185,7 @@ class FirebaseAPI extends ChangeNotifier {
 
         var userRef = _firestore.collection('users').doc(FirebaseAuth.instance.currentUser!.uid);
         userRef.set({
-          'user_key': VenUser().userKey.value.toString(),
+          'user_key': result['user_key'].toString(),
           'username': username,
           'display_name': null,
           'email': userCredential.user!.email,
@@ -195,6 +195,13 @@ class FirebaseAPI extends ChangeNotifier {
           'verified': false
         }, SetOptions(merge: true)).then((value) {
         }).catchError((error) {print("Failed to add message: $error");});
+
+        final storage = GetStorage();
+        print(result['user_key']);
+        VenUser().userKey.value = result['user_key'];
+        VenUser().onChange();
+        storage.write('user_key', VenUser().userKey.value);
+        storage.write('user_email', userCredential.user!.email);
 
         // setFirebaseToken();
       }

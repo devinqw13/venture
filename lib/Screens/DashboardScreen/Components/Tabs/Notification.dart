@@ -89,7 +89,7 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
 
     return Scaffold(
       extendBody: true,
-      extendBodyBehindAppBar: true,
+      // extendBodyBehindAppBar: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
@@ -117,7 +117,7 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
         builder: (context, notifications) {
           if(notifications.hasData) {
             var data = notifications.data!.data();
-            var results = formatNotifications(data!);
+            var results = data != null ? formatNotifications(data) : [];
             if(results.isNotEmpty) {
               return ListView.builder(
                 itemCount: results.length,
@@ -126,18 +126,21 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
                 }
               );
             }else {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomIcon(
-                      icon: 'assets/icons/notification3.svg',
-                      color: Colors.grey,
-                      size: 70,
-                    ),
-                    SizedBox(height: 20),
-                    Text("No notifications yet...")
-                  ],
+              return Padding(
+                padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomIcon(
+                        icon: 'assets/icons/notification3.svg',
+                        color: Colors.grey,
+                        size: 70,
+                      ),
+                      SizedBox(height: 20),
+                      Text("No notifications yet...")
+                    ],
+                  )
                 )
               );
             }

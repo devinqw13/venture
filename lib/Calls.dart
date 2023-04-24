@@ -42,7 +42,7 @@ Future<List<String>> getDeviceDetails() async {
   return [deviceName, deviceVersion, deviceIdentifier, deviceType];
 }
 
-Future<bool> createUser(BuildContext context, String name, String email, {String? password}) async {
+Future<Map<dynamic, dynamic>?> createUser(BuildContext context, String name, String email, {String? password}) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
@@ -64,7 +64,7 @@ Future<bool> createUser(BuildContext context, String name, String email, {String
     response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
   } on TimeoutException {
     showToastV2(context: context, msg: "Connection timeout. Please try again.");
-    return false;
+    return null;
   }
 
   if (json.decode(response.body) is List) {
@@ -75,15 +75,16 @@ Future<bool> createUser(BuildContext context, String name, String email, {String
   } 
 
   if (jsonResponse['user_key'] != 0) {
-    final storage = GetStorage();
-    VenUser().userKey.value = jsonResponse['user_key'];
-    VenUser().onChange();
-    storage.write('user_key', VenUser().userKey.value);
-    return true;
+    // final storage = GetStorage();
+    // VenUser().userKey.value = jsonResponse['user_key'];
+    // VenUser().onChange();
+    // storage.write('user_key', VenUser().userKey.value);
+
+    return jsonResponse;
   }
   else {
     showToastV2(context: context, msg: jsonResponse['message']);
-    return false;
+    return null;
   }
 }
 
@@ -380,7 +381,7 @@ Future<dynamic> createContentDetails(BuildContext context, Map<String, dynamic> 
     }
   }
   else {
-    showToast(context: context, color: Colors.red, msg: jsonResponse['results']);
+    showToastV2(context: context, msg: jsonResponse['results']);
     return null;
   }
 }
@@ -441,7 +442,7 @@ Future<List<Content>> getContent(BuildContext context, List<int> userKey, int da
     return contents;
   }
   else {
-    showToast(context: context, color: Colors.red, msg: "An error has occured.");
+    showToastV2(context: context, msg: "An error has occured.");
     return [];
   }
 }

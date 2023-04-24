@@ -106,7 +106,6 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     );
     
     if(result != null) {
-      VenUser().onChange();
       Navigator.pop(context, true);
     }
 
