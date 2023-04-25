@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:venture/Models/UserModel.dart';
 
@@ -42,7 +41,8 @@ class Content {
     active = input['content_active'] == "N" ? false : true;
     contentType = input['content_type'];
     // timestamp = input['created_ts'];
-    timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
+    // timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
+    timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toLocal());
     contentCaption = input['content_caption'];
     user = input['user'][0] != null ? UserModel(input['user'][0]) : null;
     // contentLocation = input['content_location'];
@@ -83,7 +83,8 @@ class Content {
       circleKey = input['circle_key'];
       pinName = input['title'];
       // timestamp = input['created_ts'];
-      timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
+      // timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
+      timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toLocal());
       pinName = input['title'];
       contentUrls = input['content_urls'];
       active = input['content_active'] == "N" ? false : true;
@@ -101,7 +102,8 @@ class Content {
       pinKey = input['pin_key'];
       pinLocation = input['location'];
       // timestamp = input['created_ts'];
-      timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
+      // timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
+      timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toLocal());
       pinDesc = input['description'];
     }
 
@@ -119,7 +121,8 @@ class Content {
       active = input['content_active'] == "N" ? false : true;
       contentType = input['content_type'];
       // timestamp = input['created_ts'];
-      timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
+      // timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
+      timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toLocal());
       contentCaption = input['description']; //input['content_caption'];
       user = input['user'] != null ? UserModel(input['user']) : null;
       // contentLocation = input['content_location'];

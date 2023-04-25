@@ -20,7 +20,7 @@ Future<List<String>> getDeviceDetails() async {
   String deviceVersion = '';
   String deviceIdentifier = '';
   String deviceType = '';
-  final DeviceInfoPlugin deviceInfoPlugin = new DeviceInfoPlugin();
+  final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   try {
     if (Platform.isAndroid) {
       var build = await deviceInfoPlugin.androidInfo;
