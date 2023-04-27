@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -60,7 +61,11 @@ class LocationHandler {
 
     Position? position;
 
-    position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+    try {
+      position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best, timeLimit: const Duration(seconds: 1));
+    } catch (e) {
+      position = await Geolocator.getLastKnownPosition();
+    }
 
     return position;
   }
@@ -76,9 +81,9 @@ class LocationHandler {
     return position;
   }
 
-  Future<dynamic> getDistanceFromCoords(String latlng) async {
+  Future<num?> getDistanceFromCoords(String latlng) async {
     bool results = await requestPermissions();
-    if(!results) return;
+    if(!results) return null;
 
     Position? position = await determineDeviceLocation(checkPermissions: false);
     List locList = latlng.split(',');

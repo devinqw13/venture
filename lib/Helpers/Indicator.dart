@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:async';
 
+import 'package:visibility_detector/visibility_detector.dart';
+
 // class Indicator extends StatelessWidget {
 //   final int length;
 //   final int index;
@@ -61,7 +63,8 @@ class Indicator extends StatefulWidget {
 
 class _Indicator extends State<Indicator> {
   var id = 0.obs;
-  bool _visible = true;
+  // bool _visible = true;
+  RxBool _visible = true.obs;
   Timer? timer;
 
   @override
@@ -71,12 +74,14 @@ class _Indicator extends State<Indicator> {
 
     id.listen((p0) {
       timer!.cancel();
-      setState(() => _visible = true);
+      // setState(() => _visible = true);
+      _visible.value = true;
       timer = Timer(Duration(seconds: 3), () {
         if (mounted) { 
-          setState(() {
-            _visible=false; 
-          });
+          _visible.value = false;
+          // setState(() {
+          //   _visible=false; 
+          // });
         }
       });
     });
@@ -86,9 +91,10 @@ class _Indicator extends State<Indicator> {
     timer = Timer(Duration(seconds: 3), () {
       print("TIMER CALLED");
       if (mounted) { 
-        setState(() {
-          _visible=false; 
-        });
+        _visible.value = false;
+        // setState(() {
+        //   _visible=false; 
+        // });
       }
     });
   }
@@ -96,7 +102,7 @@ class _Indicator extends State<Indicator> {
   _indicator(bool isActive) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
-      height: 6,
+      height: 5,
       width: isActive ? 50 : 10,
       margin: EdgeInsets.only(right: 5),
       decoration: BoxDecoration(
@@ -122,20 +128,36 @@ class _Indicator extends State<Indicator> {
   @override
   Widget build(BuildContext context) {
     id.value = widget.index;
-    return  AnimatedOpacity(
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.fastOutSlowIn,
-      opacity: _visible ? 1 : 0,
+    // VisibilityDetectorController.instance.updateInterval = Duration.zero;
+    return VisibilityDetector(
+      key: UniqueKey(), 
+      onVisibilityChanged: (d) {
+        if(d.visibleFraction > 0.0) {
+          timer!.cancel();
+          _visible.value = true;
+          timer = Timer(Duration(seconds: 3), () {
+            if (mounted) { 
+              _visible.value = false;
+            }
+          });
+        }
+      },
       child: Container(
-        padding: EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
-          borderRadius: BorderRadius.circular(20)
-        ),
-        child: Row(
-          children: buildIndicator(),
-        ),
-      )
+        child: Obx(() => AnimatedOpacity(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.fastOutSlowIn,
+        opacity: _visible.value ? 1 : 0,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.6),
+            borderRadius: BorderRadius.circular(20)
+          ),
+          child: Row(
+            children: buildIndicator(),
+          ),
+        )
+      ))),
     );
   }
 }

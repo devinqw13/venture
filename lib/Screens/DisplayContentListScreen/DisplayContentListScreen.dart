@@ -76,24 +76,46 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
           ),
         ),
         centerTitle: true,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            widget.user != null ? Text(
-              widget.user!.userName!,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey
-              ),
-            ) : Container(),
-            Text(
-              'Content',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.headline6,
-            )
-          ],
+        title: RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            children: [
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: widget.user != null ? "${widget.user!.userName!}\n" : '',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey
+                    )
+                  ),
+                  TextSpan(
+                    text: 'Content',
+                    style: theme.textTheme.headline6!
+                  )
+                ]
+              )
+            ]
+          )
         )
+        // title: Column(
+        //   crossAxisAlignment: CrossAxisAlignment.center,
+        //   mainAxisAlignment: MainAxisAlignment.center,
+        //   children: [
+        //     widget.user != null ? Text(
+        //       widget.user!.userName!,
+        //       style: TextStyle(
+        //         fontWeight: FontWeight.bold,
+        //         color: Colors.grey
+        //       ),
+        //     ) : Container(),
+        //     Text(
+        //       'Content',
+        //       textAlign: TextAlign.center,
+        //       style: theme.textTheme.headline6,
+        //     )
+        //   ],
+        // )
       ),
       // body: widget.contents.isNotEmpty && widget.contents.length > 1 ? PageView.builder(
       //   controller: scrollController,
@@ -134,7 +156,14 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
         future: getContent(context, [0], 0, contentKey: widget.contentKey),
         builder: (context, content) {
           if(content.hasData) {
-            return PostSkeleton(content: content.data!.first);
+            if(content.data!.isNotEmpty) {
+              return PostSkeleton(content: content.data!.first);
+            }else {
+              Future.delayed(Duration(milliseconds: 100), () {
+                Navigator.pop(context);
+              });
+              return PostSkeletonShimmer();
+            }
           }
           return PostSkeletonShimmer();
         }

@@ -7,9 +7,11 @@ Future<dynamic> showCustomDialog({
   @required String? description, 
   @required TextAlign? descAlignment, 
   Axis buttonDirection = Axis.horizontal,
+  bool barrierDismissible = true,
   @required Map<String, dynamic>? buttons
 }) async {
   var response = await showDialog(
+    barrierDismissible: barrierDismissible,
     context: context!,
     builder: (BuildContext context) {
       return CustomDialogBox(

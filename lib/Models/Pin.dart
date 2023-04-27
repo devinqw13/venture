@@ -20,7 +20,8 @@ class Pin {
     user = input['user'][0] != null ? UserModel(input['user'][0]) : null;
     title = input['title'];
     description = input['description'];
-    created = DateTime.parse(input['created_ts2']);
+    // created = DateTime.parse(input['created_ts2']);
+    created =  DateTime.parse(input['created_ts2']).toLocal();
     featuredPhoto = input['featured_photo'];
     rating = input['avg_rating'];
     totalReviews = input['total_reviews'];
@@ -38,7 +39,8 @@ class Pin {
     user =  input.containsKey('user') && input['user'] != null ? UserModel(input['user']) : null;
     title = input['title'];
     description = input['description'];
-    created = DateTime.parse(input['created_ts2']);
+    // created = DateTime.parse(input['created_ts2']);
+    created =  DateTime.parse(input['created_ts2']).toLocal();
     // featuredPhoto = input['featured_photo'];
     featuredPhoto = selectedPhoto;
     rating = input['avg_rating'];

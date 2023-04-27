@@ -402,6 +402,7 @@ class FirebaseAPI extends ChangeNotifier {
       var rxRef = _firestore.collection('content').doc();
       rxRef.set({
         'content_key': contentKey.toString(),
+        'pin_key': data!['pin_key'].toString()
         // 'reactions': [FirebaseAuth.instance.currentUser!.uid]
       }, SetOptions(merge: true)).then((value) {
       }).then((value) {
@@ -565,6 +566,7 @@ class FirebaseAPI extends ChangeNotifier {
       documentId = rxRef.id;
       rxRef.set({
         'content_key': contentKey.toString(),
+        'pin_key': data!['pin_key'].toString()
       }, SetOptions(merge: true)).then((value) {
       }).then((value) {
         rxRef.collection("comments").doc().set({
@@ -573,7 +575,7 @@ class FirebaseAPI extends ChangeNotifier {
           'firebase_id': FirebaseAuth.instance.currentUser!.uid
         }).then((v) {
           // SEND NOTIFICATION
-          data?['documentId'] = documentId;
+          data['documentId'] = documentId;
           commentNotification(context, data);
         });
       });
@@ -779,10 +781,12 @@ class FirebaseAPI extends ChangeNotifier {
       jsonMap['comment'] = json.decode(data['comment_data'])['comment'];
       jsonMap['content_photo'] = json.decode(data['comment_data'])['content_image_url'];
       jsonMap['content_key'] = json.decode(data['comment_data'])['content_key'];
+      jsonMap['pin_key'] = json.decode(data['comment_data'])['pin_key'];
     }else if(type == 'reactions') {
       jsonMap['firebase_id'] = json.decode(data['reaction_by'])['firebase_id'];
       jsonMap['content_photo'] = json.decode(data['content_data'])['content_image_url'];
       jsonMap['content_key'] = json.decode(data['content_data'])['content_key'];
+      jsonMap['pin_key'] = json.decode(data['content_data'])['pin_key'];
     }
 
     var notiRef = _firestore.collection('notifications').doc(firebaseId);

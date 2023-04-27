@@ -6,7 +6,8 @@ class Themes {
   static ThemeData lightTheme = ThemeData(
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
-    fontFamily: 'SegoeUI',
+    // fontFamily: 'SegoeUI',
+    fontFamily: 'ProximaNova',
     primarySwatch: Colors.blue,
     brightness: Brightness.light,
     platform: TargetPlatform.iOS,
@@ -117,7 +118,8 @@ class Themes {
   static ThemeData darkTheme = ThemeData(
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
-    fontFamily: 'SegoeUI',
+    // fontFamily: 'SegoeUI',
+    fontFamily: 'ProximaNova',
     primaryColor: Colors.blue,
     brightness: Brightness.dark,
     // scaffoldBackgroundColor: ColorConstants.gray900,

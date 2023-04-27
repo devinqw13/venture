@@ -132,6 +132,10 @@ flutter:
     - family: Montserrat
       fonts:
         - asset: assets/fonts/Montserrat-Regular.ttf
+    
+    - family: ProximaNova
+      fonts:
+        - asset: assets/fonts/Proxima-Nova.otf
 
     - family: SegoeUI
       fonts:

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Components/VideoPlayer.dart';
@@ -17,6 +18,7 @@ import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Controllers/ThemeController.dart';
+import 'package:venture/Screens/PinSettingsScreen/PinSettingsScreen.dart';
 import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
@@ -48,11 +50,18 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 
+  goToSettings() {
+    PinSettingsScreen screen = PinSettingsScreen(pin: widget.pin);
+    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+  }
+
   overviewBody() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
+        physics: NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        padding: EdgeInsets.all(0),
         children: [
           widget.pin.description != null && widget.pin.description!.isNotEmpty ? 
           ExpandableText(
@@ -85,11 +94,18 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
               )
             ],
           ),
+          SizedBox(height: 5),
+          Text(
+            "at " + DateFormat.yMMMd().add_jm().format(widget.pin.created!.toLocal()),
+            style: TextStyle(
+              color: Colors.grey
+            ),
+          ),
           SizedBox(height: 15),
           MapPreview(
             latitude: double.parse(widget.pin.latLng.split(',')[0]), longitude: double.parse(widget.pin.latLng.split(',')[1]),
             height: 150,
-          )
+          ),
         ],
       )
     );
@@ -665,7 +681,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
               ): Container(),
               VenUser().userKey.value == widget.pin.user!.userKey ?
               ElevatedButton(
-                onPressed: () => print("CREATOR SETTINGS"),
+                onPressed: () => goToSettings(),
                 child: Icon(
                   IconlyLight.setting,
                   color: primaryOrange,

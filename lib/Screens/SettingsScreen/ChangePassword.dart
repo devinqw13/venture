@@ -53,7 +53,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
 
     if(pwdTextController.text != pwdRepeatTextController.text) {
-      showToastV2(context: context, gravity: ToastGravity.BOTTOM, msg: "Password fields does not match.");
+      showToastV2(context: context, msg: "Password fields does not match.");
       return;
     }
 

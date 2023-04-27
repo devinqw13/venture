@@ -57,7 +57,7 @@ void showToastV2({
   Widget? icon,
   Brightness? forcedBrightness,
   required String msg,
-  ToastGravity gravity = ToastGravity.BOTTOM
+  // ToastGravity gravity = ToastGravity.BOTTOM
 }) async {
   Widget toast = ClipRRect(
     borderRadius: BorderRadius.circular(50.0),
@@ -66,7 +66,7 @@ void showToastV2({
       child: Container(
         // alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: forcedBrightness != null ? forcedBrightness == Brightness.dark ? ColorConstants.gray25.withOpacity(0.5) : ColorConstants.gray600.withOpacity(0.8) : Get.isDarkMode ? ColorConstants.gray25.withOpacity(0.5) : ColorConstants.gray600.withOpacity(0.8),
+          color: forcedBrightness != null ? forcedBrightness == Brightness.dark ? Colors.grey[350]!.withOpacity(0.5) : ColorConstants.gray600.withOpacity(0.8) : Get.isDarkMode ? Colors.grey[350]!.withOpacity(0.5) : ColorConstants.gray600.withOpacity(0.8),
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
@@ -89,7 +89,15 @@ void showToastV2({
   FToast fToast = FToast().init(context!);
   fToast.showToast(
     child: toast,
-    gravity: gravity,
+    // gravity: gravity,
     toastDuration: duration,
+    positionedToastBuilder: (ctx, child) {
+      return Positioned(
+        left: 10,
+        right: 10,
+        child: child,
+        bottom: MediaQuery.of(ctx).padding.bottom + kBottomNavigationBarHeight,
+      );
+    }
   );
 }

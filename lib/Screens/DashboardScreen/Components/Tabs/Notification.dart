@@ -225,24 +225,38 @@ class _SpecificNotificationWidget extends State<SpecificNotificationWidget> with
           quality: 100,
         ),
         builder: (context, i) {
-          if(i.hasData) {
-            return Container(
-              width: 40,
-              height: 50,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                image: DecorationImage(
-                  image: MemoryImage(i.data!),
-                  fit: BoxFit.cover
-                )
-              ),
-            );
-            // return Image.memory(
-            //   i.data!,
-            //   width: 40,
-            //   height: 50,
-            //   fit: BoxFit.cover,
-            // );
+          if(i.connectionState == ConnectionState.done) {
+            if(i.hasData) {
+              return Container(
+                width: 40,
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  image: DecorationImage(
+                    image: MemoryImage(i.data!),
+                    fit: BoxFit.cover
+                  )
+                ),
+              );
+            }else {
+              return Container(
+                width: 40,
+                height: 50,
+                child: Center(
+                  child: Text(
+                    "N/A",
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontStyle: FontStyle.italic
+                    ),
+                  )
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(5)
+                ),
+              );
+            }
           }else {
             return Skeleton.rectangular(
               width: 40,

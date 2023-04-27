@@ -217,6 +217,9 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       setState(() {
         markers[markerKey] = marker;
       });
+    }else {
+      setState(() => isCreatingPin = false);
+      _remove(createdMarker!);
     }
   }
 
@@ -1020,7 +1023,10 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
                       child: isPlaced.value ? Padding(
                         padding: EdgeInsets.only(left: 10),
                         child: ElevatedButton(
-                          onPressed: () => widget.onAction!(MapOverlayAction.continueCreation, null),
+                          onPressed: () {
+                            controller.reverse();
+                            widget.onAction!(MapOverlayAction.continueCreation, null);
+                          },
                           child: Icon(Icons.arrow_forward_ios_rounded, color: Get.isDarkMode ? Colors.white : Colors.black),
                           style: ElevatedButton.styleFrom(
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,

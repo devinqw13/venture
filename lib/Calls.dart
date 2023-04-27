@@ -194,7 +194,7 @@ Future<Content?> uploadContent(BuildContext context, String path, int userKey, S
   }
   
   if (response.statusCode != 200) {
-    showToastV2(context: context, msg: "An error has occured. Please try again.");
+    showToastV2(context: context, msg: "An error has occurred. Please try again.");
     return null;
   }
   
@@ -737,7 +737,82 @@ Future<List<Pin>> getSuggestions(BuildContext context, String latLng, double rad
     return pins;
   }
   else {
-    showToastV2(context: context, msg: "An error has occured.");
+    showToastV2(context: context, msg: "An error has occurred.");
     return [];
+  }
+}
+
+Future<void> deletePins(BuildContext context, List<int> pinKeys, String firebaseId) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "pin_keys": pinKeys,
+    "firebase_id" : firebaseId
+  };
+
+  String url = "${globals.apiBaseUrl}/delete/pins";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToastV2(context: context, msg: "Connection timeout.");
+    return;
+  }
+  
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  print(jsonResponse);
+  if(jsonResponse['pins_deleted'] == 0) {
+    showToastV2(context: context, msg: "An error has occurred");
+  }
+}
+
+Future<void> deleteContent(BuildContext context, List<int> contentKeys, String firebaseId) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "content_keys": contentKeys,
+    "firebase_id" : firebaseId
+  };
+
+  String url = "${globals.apiBaseUrl}/delete/content";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToastV2(context: context, msg: "Connection timeout.");
+    return;
+  } catch(e) {
+    showToastV2(context: context, msg: "An error has occurred.");
+    return;
+  }
+  
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  print(jsonResponse);
+  if(jsonResponse['content_deleted'] == 0) {
+    showToastV2(context: context, msg: "An error has occurred.");
   }
 }

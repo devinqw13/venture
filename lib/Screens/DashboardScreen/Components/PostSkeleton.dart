@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mime/mime.dart';
+import 'package:venture/Calls.dart';
 import 'package:venture/Components/CustomOptionsPopupMenu.dart';
 import 'package:venture/Components/DropShadow.dart';
 import 'package:venture/Components/FadeOverlay.dart';
@@ -16,6 +17,7 @@ import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
+import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Helpers/Indicator.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/PhotoHero.dart';
@@ -290,7 +292,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
   }
 
   _buildCaption(ThemeData theme, Content content) {
-    if (content.contentCaption != null) {
+    if (content.contentCaption != null && content.contentCaption != '') {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 18),
         child: ExpandableText(
@@ -381,6 +383,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
               content.contentKey,
               data: {
                 "content_key": content.contentKey,
+                "pin_key": content.pinKey,
                 "user_key": content.user!.userKey,
                 "content_image_url": content.contentUrls.first
               }
@@ -471,7 +474,34 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
               if(content.user!.userKey == VenUser().userKey.value)
                 CustomOptionPopupMenuItem(
                   text: Text("Delete", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                  icon: CustomIcon(icon: "assets/icons/delete.svg", color: Colors.red, size: 25)
+                  icon: CustomIcon(icon: "assets/icons/delete.svg", color: Colors.red, size: 25),
+                  onTap: () async {
+                    var result = await showCustomDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      title: 'Delete post?', 
+                      description: "Are you sure you want to delete this post? It will be permanently deleted.",
+                      descAlignment: TextAlign.center,
+                      buttonDirection: Axis.vertical,
+                      buttons: {
+                        "Delete": {
+                          "action": () => Navigator.of(context).pop(true),
+                          "fontWeight": FontWeight.bold,
+                          "textColor": Colors.red,
+                          "alignment": TextAlign.center
+                        },
+                        "Cancel": {
+                          "action": () => Navigator.of(context).pop(false),
+                          "textColor": Get.isDarkMode ? Colors.white : Colors.black,
+                          "alignment": TextAlign.center
+                        },
+                      }
+                    );
+
+                    if(result != null && result) {
+                      deleteContent(context, [content.contentKey], FirebaseAPI().firebaseId()!);
+                    }
+                  }
                 ),
               CustomOptionPopupMenuItem(
                 text: Text("Add to bookmarks"),
@@ -503,6 +533,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                 content.contentKey,
                 data: {
                   "content_key": content.contentKey,
+                  "pin_key": content.pinKey,
                   "user_key": content.user!.userKey,
                   "content_image_url": content.contentUrls.first
                 }

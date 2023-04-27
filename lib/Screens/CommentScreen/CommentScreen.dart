@@ -70,6 +70,7 @@ class _CommentScreen extends State<CommentScreen> {
       data: {
         "comment": textController.text,
         "content_key": widget.content.contentKey,
+        "pin_key": widget.content.pinKey,
         "user_key": widget.content.user!.userKey.toString(),
         "documentId": documentId,
         "content_image_url": widget.content.contentUrls.first
