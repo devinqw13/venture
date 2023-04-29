@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -448,3 +449,31 @@ class _SpecificNotificationWidget extends State<SpecificNotificationWidget> with
     );
   }
 }
+
+// class PinPainter extends CustomPainter {
+//   final double angle = 280.0;
+//   double toAngle(double angle) => angle * math.pi / 180.0;
+
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     final Offset center = Offset(size.width / 2.0, size.height / 2.0);
+//     final double radius = size.width / 3.0;
+
+//     var paint1 = Paint()
+//       ..color = Color(0xff63aa65)
+//       ..style = PaintingStyle.fill
+//       ..strokeWidth = 5;
+
+//     canvas.drawArc(
+//       Rect.fromCircle(center: center, radius: radius),
+//       toAngle(110.0),
+//       toAngle(angle),
+//       true,
+//       paint1,
+//     );
+    
+//   }
+
+//   @override
+//   bool shouldRepaint(CustomPainter oldDelegate) => true;
+// }

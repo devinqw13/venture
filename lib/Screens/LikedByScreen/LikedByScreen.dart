@@ -178,7 +178,7 @@ class _UserLikeCard extends State<UserLikeCard> {
           )
         ),
         minimumSize: Size.zero,
-        padding: EdgeInsets.symmetric( vertical: 5, horizontal: 16),
+        padding: EdgeInsets.symmetric( vertical: 8, horizontal: 16),
         backgroundColor: user['isFollowing'] ? 
         ColorConstants.gray900 : primaryOrange,
         foregroundColor: Colors.transparent

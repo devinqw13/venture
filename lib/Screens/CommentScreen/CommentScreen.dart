@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
@@ -8,6 +9,7 @@ import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
+import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:venture/Models/Content.dart';
@@ -87,9 +89,33 @@ class _CommentScreen extends State<CommentScreen> {
     );
   }
 
-  void deleteComment(String commentId) {
-    FirebaseAPI().deleteComment(documentId!, commentId);
-    print("comment deleted...");
+  void deleteComment(String commentId) async {
+    var result = await showCustomDialog(
+      context: context,
+      barrierDismissible: false,
+      title: 'Delete comment?', 
+      description: "Are you sure you want to delete your comment?",
+      descAlignment: TextAlign.center,
+      buttonDirection: Axis.vertical,
+      buttons: {
+        "Delete": {
+          "action": () => Navigator.of(context).pop(true),
+          "fontWeight": FontWeight.bold,
+          "textColor": Colors.red,
+          "alignment": TextAlign.center
+        },
+        "Cancel": {
+          "action": () => Navigator.of(context).pop(false),
+          "textColor": Get.isDarkMode ? Colors.white : Colors.black,
+          "alignment": TextAlign.center
+        },
+      }
+    );
+
+    if(result) {
+      FirebaseAPI().deleteComment(documentId!, commentId);
+      print("comment deleted...");
+    }
   }
 
   @override
@@ -151,101 +177,107 @@ class _CommentScreen extends State<CommentScreen> {
                         // String documentId = documentSnapshot.id;
                         var commentData = documentSnapshot.data() as Map<String, dynamic>;
 
-                        return Slidable(
-                          enabled: commentData['firebase_id'] == FirebaseAPI().firebaseId() ? true : false,
-                          key: ValueKey(documentSnapshot.id),
-                          endActionPane: ActionPane(
-                            extentRatio: 0.15,
-                            motion: const BehindMotion(),
-                            dismissible: commentData['firebase_id'] == FirebaseAPI().firebaseId() ? DismissiblePane(
-                              onDismissed: () => deleteComment(documentSnapshot.id)
-                            ) : null,
-                            children: [
-                              CustomSlidableAction(
-                                backgroundColor: Colors.red,
-                                onPressed: (context) => deleteComment(documentSnapshot.id),
-                                child: CustomIcon(
-                                  icon: 'assets/icons/trash.svg',
-                                  color: Colors.white,
-                                  size: 35,
-                                )
-                              ),
-                            ],
-                          ),
-                          child: FutureBuilder(
-                            future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
-                            builder: (context, snapshot) {
-                              var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
+                        return GestureDetector(
+                          onLongPress: () {
+                            HapticFeedback.mediumImpact();
+                            deleteComment(documentSnapshot.id);
+                          },
+                          child: Slidable(
+                            enabled: commentData['firebase_id'] == FirebaseAPI().firebaseId() ? true : false,
+                            key: ValueKey(documentSnapshot.id),
+                            endActionPane: ActionPane(
+                              extentRatio: 0.15,
+                              motion: const BehindMotion(),
+                              // dismissible: commentData['firebase_id'] == FirebaseAPI().firebaseId() ? DismissiblePane(
+                              //   onDismissed: () => deleteComment(documentSnapshot.id)
+                              // ) : null,
+                              children: [
+                                CustomSlidableAction(
+                                  backgroundColor: Colors.red,
+                                  onPressed: (context) => deleteComment(documentSnapshot.id),
+                                  child: CustomIcon(
+                                    icon: 'assets/icons/trash.svg',
+                                    color: Colors.white,
+                                    size: 35,
+                                  )
+                                ),
+                              ],
+                            ),
+                            child: FutureBuilder(
+                              future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
+                              builder: (context, snapshot) {
+                                var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
 
-                              if(snapshot.hasData) {
-                                var docSnapshot = snapshot.data as Map<String, dynamic>;
-                                var userData = docSnapshot;
+                                if(snapshot.hasData) {
+                                  var docSnapshot = snapshot.data as Map<String, dynamic>;
+                                  var userData = docSnapshot;
 
-                                return Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 10),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      MyAvatar(photo: userData['photo_url']),
-                                      Expanded(
-                                        child: Container(
-                                          padding: EdgeInsets.only(left: 10),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: <Widget>[
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: "${userData['username']} ",
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight.bold,
-                                                        fontSize: 14
-                                                      )
-                                                    ),
-                                                    if(userData['verified'])
-                                                      WidgetSpan(
-                                                        child: CustomIcon(
-                                                          icon: 'assets/icons/verified-account.svg',
-                                                          size: 17,
-                                                          color: primaryOrange,
+                                  return Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 10),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        MyAvatar(photo: userData['photo_url']),
+                                        Expanded(
+                                          child: Container(
+                                            padding: EdgeInsets.only(left: 10),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                Text.rich(
+                                                  TextSpan(
+                                                    children: [
+                                                      TextSpan(
+                                                        text: "${userData['username']} ",
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 14
                                                         )
                                                       ),
-                                                  ]
-                                                )
-                                              ),
-                                              // Text(
-                                              //   userData['username'],
-                                              //   style: TextStyle(
-                                              //     fontWeight: FontWeight.bold,
-                                              //     fontSize: 14
-                                              //   ),
-                                              // ),
-                                              SizedBox(height: 7),
-                                              Text(
-                                                commentData['comment'],
-                                                style: TextStyle(
-                                                  fontSize: 16
-                                                ),
-                                              ),
-                                              SizedBox(height: 5),
-                                              TimeFormat()
-                                                .withoutDate(
-                                                  date,
-                                                  style: TextStyle(
-                                                    color: Colors.grey
+                                                      if(userData['verified'])
+                                                        WidgetSpan(
+                                                          child: CustomIcon(
+                                                            icon: 'assets/icons/verified-account.svg',
+                                                            size: 17,
+                                                            color: primaryOrange,
+                                                          )
+                                                        ),
+                                                    ]
                                                   )
-                                                )
-                                            ],
+                                                ),
+                                                // Text(
+                                                //   userData['username'],
+                                                //   style: TextStyle(
+                                                //     fontWeight: FontWeight.bold,
+                                                //     fontSize: 14
+                                                //   ),
+                                                // ),
+                                                SizedBox(height: 7),
+                                                Text(
+                                                  commentData['comment'],
+                                                  style: TextStyle(
+                                                    fontSize: 16
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5),
+                                                TimeFormat()
+                                                  .withoutDate(
+                                                    date,
+                                                    style: TextStyle(
+                                                      color: Colors.grey
+                                                    )
+                                                  )
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  )
-                                );
+                                      ],
+                                    )
+                                  );
+                                }
+                                return Container();
                               }
-                              return Container();
-                            }
+                            )
                           )
                         );
                       }

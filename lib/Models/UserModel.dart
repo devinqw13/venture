@@ -39,6 +39,23 @@ class UserModel {
     pinCount = input['pin_count'] ?? 0;
   }
 
+  Map<dynamic, dynamic> toJson() => 
+  {
+    'firebase_id': fid,
+    'user_key': userKey.toString(),
+    'email': userEmail,
+    'user_is_private': isPrivate == null ? 'N' : isPrivate! ? 'Y' : 'N',
+    'verified': isVerified,
+    'isFollowing': isFollowing,
+    'username': userName,
+    'display_name': displayName,
+    'biography': userBio,
+    'photo_url': userAvatar,
+    'following_count': followingCount,
+    'follower_count': followerCount,
+    'pin_count': pinCount
+  };
+
   UserModel(Map<String, dynamic> input) {
     userKey = input['user_key'];
     userEmail = input['user_email'];

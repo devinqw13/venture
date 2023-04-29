@@ -80,10 +80,10 @@ class ThemesController extends GetxController {
     update();
   }
 
-  Future<LatLng> navigateMap(List<String> coords) async {
+  Future<LatLng> navigateMap(List<String> coords, {double? zoom}) async {
     final _kLoc = CameraPosition(
       target: LatLng(double.parse(coords[0]), double.parse(coords[1])),
-      zoom: 15,
+      zoom: zoom ?? 15,
     );
 
     await googleMapController!.animateCamera(CameraUpdate.newCameraPosition(_kLoc));

@@ -772,25 +772,27 @@ class FirebaseAPI extends ChangeNotifier {
     jsonMap['timestamp'] = DateTime.now().toUtc();
     jsonMap['read'] = false;
 
-    if(type == 'convo_message') {
-      type = 'messages';
-      jsonMap['firebase_id'] = json.decode(data['message_by'])['firebase_id'];
-    }else if(type == 'content_comment') {
+    if(type == 'content_comment') {
       type = 'content_comments';
       jsonMap['firebase_id'] = json.decode(data['comment_by'])['firebase_id'];
       jsonMap['comment'] = json.decode(data['comment_data'])['comment'];
       jsonMap['content_photo'] = json.decode(data['comment_data'])['content_image_url'];
       jsonMap['content_key'] = json.decode(data['comment_data'])['content_key'];
       jsonMap['pin_key'] = json.decode(data['comment_data'])['pin_key'];
-    }else if(type == 'reactions') {
+    }
+    else if(type == 'reactions') {
       jsonMap['firebase_id'] = json.decode(data['reaction_by'])['firebase_id'];
       jsonMap['content_photo'] = json.decode(data['content_data'])['content_image_url'];
       jsonMap['content_key'] = json.decode(data['content_data'])['content_key'];
       jsonMap['pin_key'] = json.decode(data['content_data'])['pin_key'];
     }
+    // else if(type == 'convo_message') {
+    //   type = 'messages';
+    //   jsonMap['firebase_id'] = json.decode(data['message_by'])['firebase_id'];
+    // }
 
     var notiRef = _firestore.collection('notifications').doc(firebaseId);
-    var result = await notiRef.update({
+    var result = await notiRef.set({
       type: FieldValue.arrayUnion([jsonMap])
     }).then((_) {
       return true;
@@ -859,5 +861,22 @@ class FirebaseAPI extends ChangeNotifier {
       var spRef = await _firestore.collection('users').doc(firebaseId).collection('saved_pins').where('pin_key', isEqualTo: pinKey).get();
       spRef.docs.first.reference.delete().onError((error, stackTrace) => showToastV2(context: context, msg: "An error has occurred."));
     }
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> getConvoDoc(List<String> owners) async { 
+    owners.sort((a,b) => a.compareTo(b));
+    String conversationUIDString = owners.join(":");
+    var result = await _firestore.collection('conversations').doc(conversationUIDString).get();
+
+    return result;
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> getConvoMessagesStream(List<String> owners) async {
+    owners.sort((a,b) => a.compareTo(b));
+    String conversationUIDString = owners.join(":");
+
+    var conversation = await _firestore.collection('conversations').doc(conversationUIDString).collection('messages').orderBy('timestamp', descending: true).get();
+
+    return conversation;
   }
 }

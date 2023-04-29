@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +19,9 @@ import 'package:venture/Helpers/MapPreview.dart';
 import 'package:venture/Helpers/NumberFormat.dart';
 import 'package:venture/Helpers/CustomRefresh.dart';
 import 'package:venture/Models/Content.dart';
+import 'package:venture/Models/Conversation.dart';
+import 'package:venture/Models/FirebaseUser.dart';
+import 'package:venture/Models/Message.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
@@ -27,6 +31,7 @@ import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/DisplayContentListScreen/DisplayContentListScreen.dart';
 import 'package:venture/Screens/EditProfileScreen/EditProfileScreen.dart';
 import 'package:venture/Screens/FollowStatsScreen/FollowStatsScreen.dart';
+import 'package:venture/Screens/MessagingScreen/MessagingScreen.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:venture/Screens/SettingsScreen/SettingsScreen.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
@@ -95,6 +100,86 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
     if(result != null) {
       setState(() => userData = result);
     }
+  }
+
+  Conversation getConversationFromSnapshot(DocumentSnapshot convo, QuerySnapshot snapshot) {
+    List<String> ownersList = [];
+    List<String> typersList = [];
+    Map<String, dynamic> ownersMap = {};
+    String? fromName;
+    var owners = convo.get('owners');
+    if (owners is List) {
+      ownersList = List<String>.from(owners);
+    }
+    else if (owners is Map) {
+      ownersMap = Map<String, dynamic>.from(owners);
+      ownersList = List<String>.from(ownersMap.keys);
+      var fromOwner = ownersList.firstWhere((owner) => owner.toLowerCase().trim() != VenUser().userKey.value.toString().toLowerCase().trim(), orElse: () => ""); 
+      if (fromOwner.isNotEmpty) {
+        if (ownersMap[fromOwner].containsKey('name')) {
+          fromName = ownersMap[fromOwner]['name'];
+        }
+      }
+    }
+    ownersList.sort((a,b) => a.compareTo(b));
+    List<Message> messagesList = [];
+    for (var message in snapshot.docs) {
+      messagesList.add(Message(message));
+    }
+    Map convoMap = convo.data() as Map;
+    if(convoMap.containsKey('typers')) {
+      var typers = convo.get('typers');
+      if (typers is List) {
+        typersList = List<String>.from(typers);
+      }
+    }
+    messagesList.sort((a,b) => a.timestamp.compareTo(b.timestamp));
+    bool showUnread = false;
+    
+    if (messagesList.firstWhereOrNull((message) => message.userKey != VenUser().userKey.value.toString() && !message.isMessageRead!) != null) {
+      showUnread = true;
+    } else {
+      showUnread = false;
+    }
+    Conversation conversation = Conversation(owners: ownersList, typers: typersList, messages: messagesList, showUnread: showUnread, conversationUID: convo.id, fromName: fromName);
+    var otherUser = ownersList.firstWhere((owner) => owner.trim().toLowerCase() != VenUser().userKey.value.toString().trim().toLowerCase(), orElse: () => "");
+    if (otherUser != "") {
+      if (ownersMap.containsKey(otherUser)) {
+        conversation.photoUrl = ownersMap[otherUser]['photo_url'];
+      }
+    }
+    return conversation;
+  }
+
+  void openMessages() async {
+    List<String> owners = [VenUser().userKey.value.toString(), userData.userKey.toString()];
+    owners.sort((a,b) => a.compareTo(b));
+
+    MessageUser? messageUser = MessageUser(userData.toJson());
+    
+    var convo = await FirebaseAPI().getConvoDoc(owners);
+    if(convo.exists) {
+      var messageQuerySnapshot = await FirebaseAPI().getConvoMessagesStream(owners);
+      Conversation conversation = getConversationFromSnapshot(convo, messageQuerySnapshot);
+
+      MessagingScreen screen = MessagingScreen(conversation: conversation, existingConvoUser: messageUser, owners: owners);
+      Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+
+    }else {
+      String conversationUIDString = owners.join(":");
+
+      Conversation newConversation = Conversation(owners: owners, messages: [], conversationUID: conversationUIDString, showUnread: false, fromName: null);
+
+      MessagingScreen screen = MessagingScreen(conversation: newConversation, newSendToUser: messageUser, owners: owners);
+      Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+    }
+    // var messageQuerySnapshot = await FirebaseAPI().getConvoMessagesStream(owners);
+
+    // Conversation conversation = getConversationFromSnapshot(convo, messageQuerySnapshot);
+
+    // MessagingScreen messagingDetailScreen = MessagingScreen(conversation: conversation, key: widget.detailScreenKey, owners: owners, existingConvoUser: messageUser);
+
+    // Navigator.of(context).push(CupertinoPageRoute(builder: (context) => messagingDetailScreen));
   }
 
   Future<void> _refreshUser() async {
@@ -373,7 +458,11 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
           //     )
           //   )
           // ),
-          user.userBio == null || user.userBio == '' ? Container() : Padding(
+          user.userBio == null || user.userBio == '' ? 
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 10),
+          ) : 
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
             child: Center(
               child: Text(
@@ -516,28 +605,33 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
   SliverToBoxAdapter _buildRowButtons(UserModel user, ThemeData theme) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: EdgeInsets.only(top: 15),
+        padding: EdgeInsets.only(
+          left: MediaQuery.of(context).size.width * .25,
+          right: MediaQuery.of(context).size.width * .25,
+          top: 15
+        ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ElevatedButton(
-            //   child: Icon(IconlyBroken.location, color: Colors.orange, size: 30),
-            //   onPressed: () {},
-            //   style: ElevatedButton.styleFrom(
-            //     shape: CircleBorder(),
-            //     primary: Colors.white 
-            //   ),
-            // ),
+            Expanded(
+              child: Container()
+            ),
+
             ElevatedButton(
               onPressed: () => widget.isUser ? goToEditProfile() : handleFollowStatus(),
-              child: Text(
-                widget.isUser ? "Edit Profile" :
-                userData.isFollowing! ? "Following" : "Follow",
-                style: TextStyle(
-                  color: Get.isDarkMode ? Colors.white : Colors.black,
-                ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                child: Text(
+                  widget.isUser ? "Edit Profile" :
+                  userData.isFollowing! ? "Following" : "Follow",
+                  style: TextStyle(
+                    color: Get.isDarkMode ? Colors.white : Colors.black,
+                  ),
+                )
               ),
               style: ElevatedButton.styleFrom(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.all(0),
+                minimumSize: Size.zero,
                 // minimumSize: Size(150, 35),
                 elevation: 0,
                 // primary: widget.isUser ? primaryOrange : userData.isFollowing! ? _themesController.getContainerBgColor() : primaryOrange,
@@ -553,19 +647,100 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                 )
               ),
             ),
-            // ElevatedButton(
-            //   child: Icon(IconlyBroken.send, color: Colors.orange, size: 30),
-            //   onPressed: () {},
-            //   style: ElevatedButton.styleFrom(
-            //     shape: CircleBorder(),
-            //     primary: Colors.white 
-            //   ),
-            // )
+
+            Expanded(
+              child: !widget.isUser ? ElevatedButton(
+                onPressed: () => openMessages(),
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Icon(
+                    IconlyBroken.send, 
+                    color: Get.isDarkMode ? Colors.white : Colors.black, 
+                    size: 18
+                  )
+                ),
+                style: ElevatedButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  padding: EdgeInsets.all(0),
+                  minimumSize: Size.zero,
+                  shape: CircleBorder(
+                    side: BorderSide(
+                      color :Get.isDarkMode ? Colors.white : Colors.black,
+                      width: 0.5
+                    )
+                  ),
+                  backgroundColor: _themesController.getContainerBgColor()
+                ),
+              ) : Container()
+            )
           ],
         )
       )
     );
   }
+
+  // SliverToBoxAdapter _buildRowButtons(UserModel user, ThemeData theme) {
+  //   return SliverToBoxAdapter(
+  //     child: Padding(
+  //       padding: EdgeInsets.only(top: 15),
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           // ElevatedButton(
+  //           //   child: Icon(IconlyBroken.location, color: Colors.orange, size: 30),
+  //           //   onPressed: () {},
+  //           //   style: ElevatedButton.styleFrom(
+  //           //     shape: CircleBorder(),
+  //           //     primary: Colors.white 
+  //           //   ),
+  //           // ),
+  //           ElevatedButton(
+  //             onPressed: () => widget.isUser ? goToEditProfile() : handleFollowStatus(),
+  //             child: Text(
+  //               widget.isUser ? "Edit Profile" :
+  //               userData.isFollowing! ? "Following" : "Follow",
+  //               style: TextStyle(
+  //                 color: Get.isDarkMode ? Colors.white : Colors.black,
+  //               ),
+  //             ),
+  //             style: ElevatedButton.styleFrom(
+  //               // minimumSize: Size(150, 35),
+  //               elevation: 0,
+  //               // primary: widget.isUser ? primaryOrange : userData.isFollowing! ? _themesController.getContainerBgColor() : primaryOrange,
+  //               backgroundColor: widget.isUser ? _themesController.getContainerBgColor() : userData.isFollowing! ? _themesController.getContainerBgColor() : primaryOrange,
+  //               shadowColor: Colors.transparent,
+  //               splashFactory: NoSplash.splashFactory,
+  //               shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(20),
+  //                 side: BorderSide(
+  //                   color: widget.isUser ? Get.isDarkMode ? Colors.white : Colors.black  :  userData.isFollowing! ? Get.isDarkMode ? Colors.white : Colors.black : Colors.transparent,
+  //                   width: 0.5
+  //                 )
+  //               )
+  //             ),
+  //           ),
+  //           !widget.isUser ? ElevatedButton(
+  //             onPressed: () {},
+  //             child: Icon(
+  //               IconlyBroken.send, 
+  //               color: Get.isDarkMode ? Colors.white : Colors.black, 
+  //               size: 18
+  //             ),
+  //             style: ElevatedButton.styleFrom(
+  //               shape: CircleBorder(
+  //                 side: BorderSide(
+  //                   color:Get.isDarkMode ? Colors.white : Colors.black,
+  //                   width: 0.5
+  //                 )
+  //               ),
+  //               backgroundColor: _themesController.getContainerBgColor()
+  //             ),
+  //           ) : Container()
+  //         ],
+  //       )
+  //     )
+  //   );
+  // }
 
   SliverToBoxAdapter _buildUserSubDetails(UserModel user) {
     return SliverToBoxAdapter(

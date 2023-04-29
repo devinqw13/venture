@@ -184,14 +184,15 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                           text: "${content.user!.userName!} ",
                           style: theme.textTheme.bodyText2!.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        // if(content.user!.isVerified!)
-                        //   WidgetSpan(
-                        //     child: user.isVerified! ? CustomIcon(
-                        //       icon: 'assets/icons/verified-account.svg',
-                        //       size: 17,
-                        //       color: primaryOrange,
-                        //     ) : Container()
-                        //   )
+                        if(content.user!.isVerified!)
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: CustomIcon(
+                              icon: 'assets/icons/verified-account.svg',
+                              size: 17,
+                              color: primaryOrange,
+                            )
+                          )
                       ]
                     ),
                     // textAlign: TextAlign.center,
@@ -209,27 +210,54 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                         } else {
                           return Flexible(
                             fit: FlexFit.loose,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                CustomIcon(
-                                  size: 15,
-                                  icon: 'assets/icons/location.svg',
-                                  color: primaryOrange,
-                                ),
-                                SizedBox(width: 3),
-                                Text(
-                                  "${snapshot.data![0].locality}, ${snapshot.data![0].administrativeArea}",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 13,
-                                    decoration: TextDecoration.underline
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
+                            child: GestureDetector(
+                              onTap: () => goToMaps(content.pinLocation, zoom: 10),
+                              child: Text.rich(
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                TextSpan(
+                                  children: [
+                                    WidgetSpan(
+                                      alignment: PlaceholderAlignment.middle,
+                                      child: CustomIcon(
+                                        size: 14,
+                                        icon: 'assets/icons/location.svg',
+                                        color: Colors.grey,
+                                      )
+                                    ),
+                                    TextSpan(
+                                      text: " ${snapshot.data![0].locality}, ${snapshot.data![0].administrativeArea}",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 13,
+                                        decoration: TextDecoration.underline
+                                      ),
+                                    )
+                                  ]
                                 )
-                              ]
-                            )
+                              )
+                            ),
+                            // child: Row(
+                            //   mainAxisSize: MainAxisSize.min,
+                            //   children: [
+                            //     CustomIcon(
+                            //       size: 14,
+                            //       icon: 'assets/icons/location.svg',
+                            //       color: Colors.grey,
+                            //     ),
+                            //     SizedBox(width: 3),
+                            //     Text(
+                            //       "${snapshot.data![0].locality}, ${snapshot.data![0].administrativeArea}",
+                            //       style: TextStyle(
+                            //         color: Colors.grey,
+                            //         fontSize: 13,
+                            //         decoration: TextDecoration.underline
+                            //       ),
+                            //       overflow: TextOverflow.ellipsis,
+                            //       maxLines: 1,
+                            //     )
+                            //   ]
+                            // )
                           );
                         }
                       }
@@ -306,14 +334,16 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
     }
   }
 
-  goToMaps(String? location) async {
+  goToMaps(String? location, {double? zoom}) async {
     if(location != null) {
       List<String> loc = location.split(',');
-      await _themesController.navigateMap(loc);
+      await _themesController.navigateMap(loc, zoom: zoom);
     }
-    Future.delayed(const Duration(milliseconds: 500), () {
+    await Future.delayed(const Duration(milliseconds: 500), () {
       _homeController.goToTab(2);
     });
+
+    Navigator.of(context).popUntil(ModalRoute.withName("/home"));
   }
 
   showLogin() {

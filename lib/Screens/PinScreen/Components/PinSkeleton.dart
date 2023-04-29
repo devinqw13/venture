@@ -109,24 +109,62 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
             ),
           ),
           SizedBox(height: 15),
-          Row(
-            children: [
-              Text(
-                "Created by ",
-                style: TextStyle(
-                  color: Colors.grey
-                ),
-              ),
-              ZoomTapAnimation(
-                onTap: () => goToUserProfile(),
-                child: Text(
-                  widget.pin.user!.userName!,
+          // Row(
+          //   children: [
+          //     Text(
+          //       "Created by ",
+          //       style: TextStyle(
+          //         color: Colors.grey
+          //       ),
+          //     ),
+          //     ZoomTapAnimation(
+          //       onTap: () => goToUserProfile(),
+          //       child: Text(
+          //         widget.pin.user!.userName!,
+          //         style: TextStyle(
+          //           fontWeight: FontWeight.bold
+          //         ),
+          //       )
+          //     )
+          //   ],
+          // ),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: "Created by ",
                   style: TextStyle(
-                    fontWeight: FontWeight.bold
+                    color: Colors.grey
                   ),
+                ),
+                WidgetSpan(
+                  child: ZoomTapAnimation(
+                    onTap: () => goToUserProfile(),
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "${widget.pin.user!.userName!} ",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold
+                            ),
+                          ),
+                          if(pin.user!.isVerified!)
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: CustomIcon(
+                                icon: 'assets/icons/verified-account.svg',
+                                size: 17,
+                                color: primaryOrange,
+                              )
+                            )
+                        ]
+                      )
+                    ),
+                  )
                 )
-              )
-            ],
+              ]
+            )
           ),
           SizedBox(height: 5),
           Text(
