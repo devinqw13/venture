@@ -177,9 +177,8 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                   //   content.user!.userName!,
                   //   style: theme.textTheme.bodyText2!.copyWith(fontWeight: FontWeight.bold),
                   // )
-                  child: RichText(
-                    // textAlign: TextAlign.center,
-                    text: TextSpan(
+                  child: Text.rich(
+                    TextSpan(
                       children: [
                         TextSpan(
                           text: "${content.user!.userName!} ",
@@ -194,7 +193,8 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                         //     ) : Container()
                         //   )
                       ]
-                    )
+                    ),
+                    // textAlign: TextAlign.center,
                   )
 
                 ),

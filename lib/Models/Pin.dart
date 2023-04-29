@@ -13,8 +13,15 @@ class Pin {
   double? rating;
   int? distance;
   int? totalReviews;
+  bool isSaved = false;
 
   Pin(Map<String, dynamic> input) {
+    var selectedPinContent = input['pin_content'] != null 
+                    && input['pin_content'].length > 0 ? 
+                      input['pin_content'][Random().nextInt(input['pin_content'].length)] : null;
+    var selectedPhoto = selectedPinContent != null ? 
+                        selectedPinContent['content_urls'] != null && selectedPinContent['content_urls'].length > 0 ? selectedPinContent['content_urls'][Random().nextInt(selectedPinContent['content_urls'].length)] : null : null;
+
     pinKey = input['pin_key'];
     latLng = input['pin_location'];
     user = input['user'][0] != null ? UserModel(input['user'][0]) : null;
@@ -22,9 +29,10 @@ class Pin {
     description = input['description'];
     // created = DateTime.parse(input['created_ts2']);
     created =  DateTime.parse(input['created_ts2']).toLocal();
-    featuredPhoto = input['featured_photo'];
+    featuredPhoto = input['featured_photo'] ?? selectedPhoto;
     rating = input['avg_rating'];
     totalReviews = input['total_reviews'];
+    isSaved = input['is_saved'];
   }
 
   Pin.fromMap(Map<String, dynamic> input) {
@@ -46,5 +54,6 @@ class Pin {
     rating = input['avg_rating'];
     totalReviews = input['total_reviews'];
     distance = input['distance'] != null && input['distance'] != -1 ? input['distance'].toInt() : null;
+    isSaved = input['is_saved'];
   }
 }

@@ -18,10 +18,12 @@ import 'package:venture/Helpers/MapPreview.dart';
 import 'package:venture/Helpers/NumberFormat.dart';
 import 'package:venture/Helpers/CustomRefresh.dart';
 import 'package:venture/Models/Content.dart';
+import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Helpers/PhotoHero.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/DisplayContentListScreen/DisplayContentListScreen.dart';
 import 'package:venture/Screens/EditProfileScreen/EditProfileScreen.dart';
 import 'package:venture/Screens/FollowStatsScreen/FollowStatsScreen.dart';
@@ -301,9 +303,8 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                   child: Center(
                     child: Column(
                       children: [
-                        user.displayName != null && user.displayName != '' ? RichText(
-                          textAlign: TextAlign.center,
-                          text: TextSpan(
+                        user.displayName != null && user.displayName != '' ? Text.rich(
+                          TextSpan(
                             children: [
                               TextSpan(
                                 text: "${userData.displayName!} ",
@@ -326,10 +327,10 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                               ),
                             ],
                           ),
-                        ) :
-                        RichText(
                           textAlign: TextAlign.center,
-                          text: TextSpan(
+                        ) :
+                        Text.rich(
+                          TextSpan(
                             children: [
                               TextSpan(
                                 text: "${user.userName!} ",
@@ -344,7 +345,8 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                                   )
                                 ),
                             ]
-                          )
+                          ),
+                          textAlign: TextAlign.center,
                         )
                       ],
                     )
@@ -596,6 +598,31 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
               ),
             )
           ),
+          if(FirebaseAPI().firebaseId() == userData.fid)
+            Tab(
+              child: Text.rich(
+                TextSpan(
+                  style: TextStyle(
+                    fontFamily: 'ProximaNova'
+                  ),
+                  children: [
+                    TextSpan(
+                      text: "Saved Pins ",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold
+                      )
+                    ),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Icon(
+                        IconlyLight.hide,
+                        size: 20,
+                      )
+                    )
+                  ]
+                )
+              )
+            ),
         ],
       ),
     );
@@ -699,6 +726,71 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
             ],
           )
         ),
+        if(FirebaseAPI().firebaseId() == userData.fid)
+          FutureBuilder(
+            future: FirebaseAPI().getSavedPins(FirebaseAPI().firebaseId()!),
+            builder: (context, snapshot) {
+              var data = snapshot.data?.docs;
+              if(data != null && data.isNotEmpty) {
+                return GridView.builder(
+                  physics: NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(0),
+                  itemCount: data.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 1.0,
+                    crossAxisSpacing: 1.0,
+                    childAspectRatio: 1.0
+                  ),
+                  itemBuilder: (context, i) {
+                    Map<String, dynamic> savedPin = data[i].data();
+                    // return Text(pins![i].pinName!);
+                    // return Text(savedPin['pin_key']);
+                    return FutureBuilder(
+                      future: getMapPins(context, pinKey: savedPin['pin_key']),
+                      builder: (context, snapshot) {
+                        if(snapshot.connectionState == ConnectionState.done) {
+                          if(snapshot.hasData) {
+                            Pin vpin = snapshot.data!.first;
+                            return PinBuilderV2(pin: vpin);
+                          }else {
+                            return Text("Error occurred");
+                          }
+                        }else {
+                          return Container(
+                            child: Skeleton.rectangular(height: 40)
+                          );
+                        }
+                      }
+                    );
+                  },
+                );
+              }else {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        child: CustomIcon(
+                          size: MediaQuery.of(context).size.height * 0.1,
+                          color: Get.isDarkMode ? Colors.white : Colors.black,
+                          icon: 'assets/icons/location2.svg'
+                        )
+                      ),
+                      Text(
+                        "No saved pins",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20
+                        ),
+                      )
+                    ],
+                  )
+                );
+              }
+            }
+          )
       ]
     );
   }
@@ -721,36 +813,38 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
     //     ],
     //   ),
     // );
-    return Scaffold(body:DefaultTabController(
-      length: 2,
-      child: CustomRefreshIndicator(
-        child: CustomScrollView(
-          shrinkWrap: true,
-          // physics: BouncingScrollPhysics(),
-          slivers: [
-            _buildHeaderWithAvatar(userData),
-            _buildUserDetails(theme, userData),
-            _buildRowButtons(userData, theme),
-            _buildUserSubDetails(userData),
-            _buildTabs(),
-            _buildUserContents(userData),
-          ],
+    return Scaffold(
+      body: DefaultTabController(
+        length: FirebaseAPI().firebaseId() == userData.fid ? 3 : 2,
+        child: CustomRefreshIndicator(
+          child: CustomScrollView(
+            shrinkWrap: true,
+            // physics: BouncingScrollPhysics(),
+            slivers: [
+              _buildHeaderWithAvatar(userData),
+              _buildUserDetails(theme, userData),
+              _buildRowButtons(userData, theme),
+              _buildUserSubDetails(userData),
+              _buildTabs(),
+              _buildUserContents(userData),
+            ],
+          ),
+          onRefresh: _refreshUser,
+          builder: WidgetIndicatorDelegate(
+            displacement: 0,
+            backgroundColor: Colors.transparent,
+            withRotation: false,
+            // edgeOffset: MediaQuery.of(context).size.height * 0.06,
+            edgeOffset: MediaQuery.of(context).padding.top,
+            builder: (context, controller) {
+              return CupertinoActivityIndicator(
+                radius: 13,
+              );
+            },
+          )
         ),
-        onRefresh: _refreshUser,
-        builder: WidgetIndicatorDelegate(
-          displacement: 0,
-          backgroundColor: Colors.transparent,
-          withRotation: false,
-          // edgeOffset: MediaQuery.of(context).size.height * 0.06,
-          edgeOffset: MediaQuery.of(context).padding.top,
-          builder: (context, controller) {
-            return CupertinoActivityIndicator(
-              radius: 13,
-            );
-          },
-        )
-      ),
-    )); 
+      )
+    ); 
   }
 }
 
@@ -956,6 +1050,75 @@ class PinBuilder extends StatelessWidget {
               ]
             )
           )
+        ]
+      )
+    );
+  }
+}
+
+class PinBuilderV2 extends StatelessWidget {
+  final Pin pin;
+  PinBuilderV2({Key? key, required this.pin}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ZoomTapAnimation(
+      onTap: () {
+        PinScreen screen = PinScreen(pinKey: pin.pinKey);
+        Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+      },
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: PhotoHero(
+              tag: pin.featuredPhoto!,
+              photoUrl: pin.featuredPhoto!
+            )
+          ),
+          Positioned.fill(
+            child: ClipRect(
+              child: BackdropFilter(
+                filter: Get.isDarkMode ? ui.ImageFilter.blur(sigmaX: 4, sigmaY: 4) : ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  color: Colors.black.withOpacity(0.4),
+                  child: Center(
+                    child: Text(
+                      pin.title!,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white
+                      ),
+                    )
+                  ),
+                )
+              )
+            )
+          )
+          // Align(
+          //   alignment: Alignment.bottomCenter,
+          //   child: Row(
+          //     children: [
+          //       Expanded(
+          //         child: Container(
+          //           color: Colors.black.withOpacity(0.4),
+          //           child: Text(
+          //             pin.title!,
+          //             textAlign: TextAlign.center,
+          //             maxLines: 1,
+          //             overflow: TextOverflow.ellipsis,
+          //             style: TextStyle(
+          //               fontWeight: FontWeight.bold,
+          //               color: Colors.white
+          //             ),
+          //           ),
+          //         )
+          //       )
+          //     ]
+          //   )
+          // )
         ]
       )
     );

@@ -85,10 +85,10 @@ class ExpandableTextState extends State<ExpandableText> {
             ),
           );
         }
-        return RichText(
+        return Text.rich(
+          textSpan,
           softWrap: true,
           overflow: TextOverflow.clip,
-          text: textSpan,
         );
       },
     );

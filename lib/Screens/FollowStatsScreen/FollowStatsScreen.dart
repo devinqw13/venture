@@ -268,8 +268,8 @@ class _UserCard extends State<UserCard> with AutomaticKeepAliveClientMixin<UserC
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     user['display_name'] != null && user['display_name'] != '' ?
-                    RichText(
-                      text: TextSpan(
+                    Text.rich(
+                      TextSpan(
                         children: [
                           TextSpan(
                             text: "${user['username']} ",
@@ -297,8 +297,8 @@ class _UserCard extends State<UserCard> with AutomaticKeepAliveClientMixin<UserC
                         ],
                       ),
                     ) :
-                    RichText(
-                      text: TextSpan(
+                    Text.rich(
+                      TextSpan(
                         children: [
                           TextSpan(
                             text: "${user['username']} ",

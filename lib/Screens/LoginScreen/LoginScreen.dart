@@ -5,6 +5,7 @@ import 'package:venture/Components/PointedLine.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
+import 'package:venture/Helpers/SizeConfig.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Screens/CreateUserScreen/CreateUserScreen.dart';
 import 'package:venture/FirebaseAPI.dart';
@@ -48,91 +49,103 @@ class _LoginScreen extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return DismissKeyboard(
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage("assets/images/login-background-2.png"),
-              fit: BoxFit.cover,
+              fit: BoxFit.fill,
             ) 
           ),
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 70.0, horizontal: 16.0),
+            // padding: EdgeInsets.symmetric(vertical: 70.0, horizontal: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: Stack(
               children: [
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "Venture",
-                        style: TextStyle(
-                          fontFamily: "Coolvetica",
-                          fontSize: 55,
+                Positioned.fill(
+                  top: getProportionateScreenHeight(70),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "Venture",
+                          style: TextStyle(
+                            fontFamily: "Coolvetica",
+                            // fontSize: 55,
+                            fontSize: getProportionateScreenHeight(47)
+                          ),
                         ),
-                      ),
-                      Text(
-                        "Explore more",
-                        style: TextStyle(
-                          fontSize: 18
-                        ),
-                      )
-                    ],
-                  ),
+                        Text(
+                          "Explore more",
+                          style: TextStyle(
+                            fontSize: 18
+                          ),
+                        )
+                      ],
+                    ),
+                  )
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ZoomTapAnimation(
-                              child: ElevatedButton(
-                                onPressed: () => showLogin(),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 20),
+                Positioned.fill(
+                  bottom: getProportionateScreenHeight(60),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ZoomTapAnimation(
+                                child: ElevatedButton(
+                                  onPressed: () => showLogin(),
                                   child: Text(
                                     "Login",
                                     style: TextStyle(
                                       color: primaryOrange,
                                       fontWeight: FontWeight.bold
                                     ),
-                                  )
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  shadowColor: Colors.transparent,
-                                  primary: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50.0),
-                                  )
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    fixedSize: Size(
+                                      double.infinity,
+                                      getProportionateScreenHeight(45)
+                                    ),
+                                    elevation: 0,
+                                    shadowColor: Colors.transparent,
+                                    primary: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(50.0),
+                                    )
+                                  ),
+                                )
+                              )
+                            )
+                          ],
+                        ),
+                        // SizedBox(height: 20),
+                        SizedBox(height: getProportionateScreenHeight(17)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Don't have an account? "),
+                            ZoomTapAnimation(
+                              onTap: () => showSignup(),
+                              child: Text(
+                                "Sign up!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold
                                 ),
                               )
                             )
-                          )
-                        ],
-                      ),
-                      SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Don't have an account? "),
-                          ZoomTapAnimation(
-                            onTap: () => showSignup(),
-                            child: Text(
-                              "Sign up!",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold
-                              ),
-                            )
-                          )
-                        ],
-                      )
-                    ]
+                          ],
+                        )
+                      ]
+                    )
                   )
                 )
               ],

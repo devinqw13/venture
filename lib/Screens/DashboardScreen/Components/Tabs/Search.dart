@@ -234,9 +234,8 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                                     SizedBox(
                                       height: 5
                                     ),
-                                    RichText(
-                                      maxLines: 2,
-                                      text: TextSpan(
+                                    Text.rich(
+                                      TextSpan(
                                         children: [
                                           WidgetSpan(
                                             alignment: PlaceholderAlignment.middle,
@@ -261,36 +260,37 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
                                             )
                                           ),
                                         ]
-                                      )
+                                      ),
+                                      maxLines: 2,
                                     )
                                   ],
                                 )
                               ),
-                              RichText(
-                                  // overflow: TextOverflow.ellipsis,
-                                  // maxLines: 1,
-                                  textAlign: TextAlign.end,
-                                  text: TextSpan(
-                                    children: [
-                                      WidgetSpan(
-                                        alignment: PlaceholderAlignment.middle,
-                                        child: CustomIcon(
-                                          icon: 'assets/icons/star.svg',
-                                          size: 18,
-                                          color: primaryOrange,
-                                        )
-                                      ),
-                                      TextSpan(
-                                        text: " ${suggestedPins[i].rating ?? 0.toInt()}",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Get.isDarkMode ? Colors.white : Colors.black,
-                                        )
+                              Text.rich(
+                                TextSpan(
+                                  children: [
+                                    WidgetSpan(
+                                      alignment: PlaceholderAlignment.middle,
+                                      child: CustomIcon(
+                                        icon: 'assets/icons/star.svg',
+                                        size: 18,
+                                        color: primaryOrange,
                                       )
-                                    ]
-                                  )
-                                )
+                                    ),
+                                    TextSpan(
+                                      text: " ${suggestedPins[i].rating ?? 0.toInt()}",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Get.isDarkMode ? Colors.white : Colors.black,
+                                      )
+                                    )
+                                  ]
+                                ),
+                                // overflow: TextOverflow.ellipsis,
+                                // maxLines: 1,
+                                textAlign: TextAlign.end,
+                              )
                               
                             ],
                           )

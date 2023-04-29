@@ -6,6 +6,7 @@ import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'package:venture/Components/Avatar.dart';
+import 'package:venture/Components/DropShadow.dart';
 import 'package:venture/Components/VideoPlayer.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Components/ExpandableText.dart';
@@ -33,6 +34,7 @@ class PinSkeleton extends StatefulWidget {
 }
 
 class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
+  late Pin pin;
   final ThemesController _themesController = Get.find();
   DraggableScrollableController dragController = DraggableScrollableController();
   double? _detailsHeight;
@@ -42,7 +44,20 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    // pin = widget.pin;
+    _initializeAsyncDependencies();
+    // tabController = TabController(length: 2, vsync: this);
+  }
+
+  _initializeAsyncDependencies() async {
+    pin = widget.pin;
     tabController = TabController(length: 2, vsync: this);
+    await checkBookmark();
+  }
+
+  Future<void> checkBookmark() async {
+    bool isSaved = await FirebaseAPI().checkSavedPin(FirebaseAPI().firebaseId()!, pin.pinKey.toString());
+    setState(() => pin.isSaved = isSaved);
   }
 
   goToUserProfile() {
@@ -53,6 +68,25 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
   goToSettings() {
     PinSettingsScreen screen = PinSettingsScreen(pin: widget.pin);
     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+  }
+
+  _handleSavePin() {
+    if(pin.isSaved) {
+      FirebaseAPI().setPinSaved(
+        context,
+        FirebaseAPI().firebaseId()!,
+        pin.pinKey.toString(),
+        false
+      );
+    }else {
+      FirebaseAPI().setPinSaved(
+        context,
+        FirebaseAPI().firebaseId()!,
+        pin.pinKey.toString(),
+        true
+      );
+    }
+    setState(() => pin.isSaved = !pin.isSaved);
   }
 
   overviewBody() {
@@ -903,29 +937,33 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                         ],
                       )
                     ),
-                    Align(
+                    VenUser().userKey.value != widget.pin.user!.userKey ? Align(
                       alignment: Alignment.topRight,
                       child: Padding(
                         padding: EdgeInsets.only(right: 30),
                         child: Transform.translate(
                           offset: Offset(0, -30),
                           child: ZoomTapAnimation(
-                            child: Container(
-                              padding: EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: primaryOrange,
-                                shape: BoxShape.circle
-                              ),
-                              child: CustomIcon(
-                                icon: 'assets/icons/bookmark.svg',
-                                size: 25,
-                                color: Colors.white
-                              ),
+                            onTap: () => _handleSavePin(),
+                            child: DropShadow(
+                              offset: Offset(1, 1),
+                              child: Container(
+                                padding: EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: pin.isSaved ? Colors.white : primaryOrange,
+                                  shape: BoxShape.circle
+                                ),
+                                child: CustomIcon(
+                                  icon: 'assets/icons/bookmark.svg',
+                                  size: 25,
+                                  color: pin.isSaved ? Colors.orange : Colors.white
+                                ),
+                              )
                             ),
                           ),
                         )
                       )
-                    ),
+                    ) : Container(),
                   ]
                 )
               )

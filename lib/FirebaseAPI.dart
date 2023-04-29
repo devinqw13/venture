@@ -442,7 +442,7 @@ class FirebaseAPI extends ChangeNotifier {
 
   Future<void> removeReactionV2(String documentId) async {
     // HapticFeedback.lightImpact();
-    var rxRef = _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).delete().onError((error, stackTrace) => print("Failed to remove reaction: $error"));
+    var _ = _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).delete().onError((error, stackTrace) => print("Failed to remove reaction: $error"));
   }
 
   Query<Object?> likedByQuery(String? documentId) {
@@ -829,6 +829,35 @@ class FirebaseAPI extends ChangeNotifier {
       await notiRef.update({
         key: data
       }).then((value) {}).catchError((error) {print("Failed to remove firebase token: $error");});
+    }
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>?> getSavedPins(String firebaseId) async {
+    return await _firestore.collection('users')
+      .doc(firebaseId)
+      .collection('saved_pins')
+      .get();
+  }
+
+  Future<bool> checkSavedPin(String firebaseId, String pinKey) async {
+    var result = await _firestore.collection('users').doc(firebaseId).collection('saved_pins').where('pin_key', isEqualTo: pinKey).count().get();
+    
+    if(result.count > 0) {
+      return true;
+    }else {
+      return false;
+    }
+  }
+
+  Future<void> setPinSaved(BuildContext context, String firebaseId, String pinKey, bool status) async {
+    if(status) {
+      _firestore.collection('users').doc(firebaseId).collection('saved_pins').doc().set({
+        'pin_key': pinKey,
+        'timestamp': DateTime.now().toUtc()
+      }).onError((error, stackTrace) => showToastV2(context: context, msg: "An error has occurred."));
+    }else {
+      var spRef = await _firestore.collection('users').doc(firebaseId).collection('saved_pins').where('pin_key', isEqualTo: pinKey).get();
+      spRef.docs.first.reference.delete().onError((error, stackTrace) => showToastV2(context: context, msg: "An error has occurred."));
     }
   }
 }

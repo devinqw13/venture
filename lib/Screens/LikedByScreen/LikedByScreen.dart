@@ -227,8 +227,8 @@ class _UserLikeCard extends State<UserLikeCard> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     user['display_name'] != null && user['display_name'] != '' ?
-                    RichText(
-                      text: TextSpan(
+                    Text.rich(
+                      TextSpan(
                         children: [
                           TextSpan(
                             text: "${user['username']} ",
@@ -255,8 +255,8 @@ class _UserLikeCard extends State<UserLikeCard> {
                         ],
                       ),
                     ) :
-                    RichText(
-                      text: TextSpan(
+                    Text.rich(
+                      TextSpan(
                         children: [
                           TextSpan(
                             text: "${user['username']} ",

@@ -97,9 +97,8 @@ class _PinSettingsScreen extends State<PinSettingsScreen> {
             ),
           ),
           centerTitle: true,
-          title: RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
+          title: Text.rich(
+            TextSpan(
               children: [
                 TextSpan(
                   text: 'Settings',
@@ -112,7 +111,8 @@ class _PinSettingsScreen extends State<PinSettingsScreen> {
                   style: theme.textTheme.headline6!
                 )
               ]
-            )
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
         body: ListView(

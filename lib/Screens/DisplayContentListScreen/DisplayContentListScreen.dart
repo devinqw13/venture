@@ -76,9 +76,8 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
           ),
         ),
         centerTitle: true,
-        title: RichText(
-          textAlign: TextAlign.center,
-          text: TextSpan(
+        title: Text.rich(
+          TextSpan(
             children: [
               TextSpan(
                 children: [
@@ -96,7 +95,8 @@ class _DisplayContentListScreenState extends State<DisplayContentListScreen> {
                 ]
               )
             ]
-          )
+          ),
+          textAlign: TextAlign.center,
         )
         // title: Column(
         //   crossAxisAlignment: CrossAxisAlignment.center,

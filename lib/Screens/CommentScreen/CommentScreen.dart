@@ -193,8 +193,8 @@ class _CommentScreen extends State<CommentScreen> {
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: <Widget>[
-                                              RichText(
-                                                text: TextSpan(
+                                              Text.rich(
+                                                TextSpan(
                                                   children: [
                                                     TextSpan(
                                                       text: "${userData['username']} ",

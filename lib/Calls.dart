@@ -476,6 +476,8 @@ Future<List<Pin>> getMapPins(BuildContext context, {String? latlng = "", String?
     List<Pin> pins = [];
 
     for (var item in jsonResponse['results']) {
+      bool isSaved = await FirebaseAPI().checkSavedPin(FirebaseAPI().firebaseId()!, item['pin_key'].toString());
+      item['is_saved'] = isSaved;
       Pin pin = Pin(item);
       pins.add(pin);
     }
@@ -730,6 +732,8 @@ Future<List<Pin>> getSuggestions(BuildContext context, String latLng, double rad
   if (jsonResponse['result'] == 'true') {
     List<Pin> pins = [];
     for(var item in jsonResponse['results']) {
+      bool isSaved = await FirebaseAPI().checkSavedPin(FirebaseAPI().firebaseId()!, item['pin_key'].toString());
+      item['is_saved'] = isSaved;
       Pin pin = Pin.fromMap(item);
       pins.add(pin);
     }
