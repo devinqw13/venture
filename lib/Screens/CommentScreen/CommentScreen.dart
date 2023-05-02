@@ -236,6 +236,7 @@ class _CommentScreen extends State<CommentScreen> {
                                                       ),
                                                       if(userData['verified'])
                                                         WidgetSpan(
+                                                          alignment: PlaceholderAlignment.middle,
                                                           child: CustomIcon(
                                                             icon: 'assets/icons/verified-account.svg',
                                                             size: 17,

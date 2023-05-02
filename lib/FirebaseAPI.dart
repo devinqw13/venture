@@ -197,7 +197,6 @@ class FirebaseAPI extends ChangeNotifier {
         }).catchError((error) {print("Failed to add message: $error");});
 
         final storage = GetStorage();
-        print(result['user_key']);
         VenUser().userKey.value = result['user_key'];
         VenUser().onChange();
         storage.write('user_key', VenUser().userKey.value);
@@ -786,6 +785,12 @@ class FirebaseAPI extends ChangeNotifier {
       jsonMap['content_key'] = json.decode(data['content_data'])['content_key'];
       jsonMap['pin_key'] = json.decode(data['content_data'])['pin_key'];
     }
+    else if(type == 'rate_pin') {
+      jsonMap['firebase_id'] = json.decode(data['rating_by'])['firebase_id'];
+      jsonMap['content_photo'] = json.decode(data['rating_data'])['content_image_url'];
+      jsonMap['pin_key'] = json.decode(data['rating_data'])['pin_key'];
+      jsonMap['rating'] = json.decode(data['rating_data'])['rating'];
+    }
     // else if(type == 'convo_message') {
     //   type = 'messages';
     //   jsonMap['firebase_id'] = json.decode(data['message_by'])['firebase_id'];
@@ -794,7 +799,7 @@ class FirebaseAPI extends ChangeNotifier {
     var notiRef = _firestore.collection('notifications').doc(firebaseId);
     var result = await notiRef.set({
       type: FieldValue.arrayUnion([jsonMap])
-    }).then((_) {
+    }, SetOptions(merge: true)).then((_) {
       return true;
     })
     .catchError((error) {
@@ -825,6 +830,8 @@ class FirebaseAPI extends ChangeNotifier {
       key = 'followed_you';
     }else if(notificationType == NotificationType.message) {
       key = 'messages';
+    }else if(notificationType == NotificationType.ratePin) {
+      key = 'rate_pin';
     }
 
     if(key.isNotEmpty) {
@@ -878,5 +885,22 @@ class FirebaseAPI extends ChangeNotifier {
     var conversation = await _firestore.collection('conversations').doc(conversationUIDString).collection('messages').orderBy('timestamp', descending: true).get();
 
     return conversation;
+  }
+
+  Future<void> ratePinNotification(BuildContext context, Map<String, dynamic>? data) async {
+    Map<String, dynamic> notiData = {};
+    var results = await getUserFromFirebaseId(FirebaseAuth.instance.currentUser!.uid);
+    notiData['rating_by'] = json.encode(results);
+
+    if(data != null) notiData['rating_data'] = json.encode(data);
+
+    if(results['user_key'] != data!['user_key'].toString()) {
+      sendNotification(
+        context,
+        "rate_pin",
+        notiData,
+        userKey: data['user_key'].toString()
+      );
+    }
   }
 }

@@ -397,6 +397,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                               ),
                               if(user.isVerified!)
                                 WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
                                   child: CustomIcon(
                                     icon: 'assets/icons/verified-account.svg',
                                     size: 17,
@@ -423,6 +424,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                               ),
                               if(user.isVerified!)
                                 WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
                                   child: CustomIcon(
                                     icon: 'assets/icons/verified-account.svg',
                                     size: 17,
@@ -653,10 +655,10 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                 onPressed: () => openMessages(),
                 child: Padding(
                   padding: EdgeInsets.all(8),
-                  child: Icon(
-                    IconlyBroken.send, 
+                  child: CustomIcon(
+                    icon: 'assets/icons/send.svg',
                     color: Get.isDarkMode ? Colors.white : Colors.black, 
-                    size: 18
+                    size: 18,
                   )
                 ),
                 style: ElevatedButton.styleFrom(

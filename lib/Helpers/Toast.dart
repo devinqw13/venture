@@ -86,7 +86,8 @@ void showToastV2({
     )
   );
   
-  FToast fToast = FToast().init(context!);
+  // FToast fToast = FToast().init(context!);
+  FToast fToast = FToast().init(Get.key.currentContext!);
   fToast.showToast(
     child: toast,
     // gravity: gravity,
@@ -101,3 +102,39 @@ void showToastV2({
     }
   );
 }
+
+// class ToastWidget extends StatefulWidget {
+//   ToastWidget({Key? key}) : super(key: key);
+
+//   _ToastWidget createState() => _ToastWidget();
+// }
+
+// class _ToastWidget extends State<ToastWidget> {
+
+//   FToast fToast;
+
+//   @override
+//   void initState() {
+//       super.initState();
+//       fToast = FToast();
+//       // if you want to use context from globally instead of content we need to pass navigatorKey.currentContext!
+//       fToast.init(navigatorKey.currentContext!);
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     fToast.showToast(
+//     child: toast,
+//     // gravity: gravity,
+//     toastDuration: duration,
+//     positionedToastBuilder: (ctx, child) {
+//       return Positioned(
+//         left: 10,
+//         right: 10,
+//         child: child,
+//         bottom: MediaQuery.of(ctx).padding.bottom + kBottomNavigationBarHeight,
+//       );
+//     }
+//   );
+//   }
+// }

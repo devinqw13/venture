@@ -61,10 +61,7 @@ class _MyAppState extends State<MyApp> {
     await getKeys();
     await checkUserLoginStatus();
     await saveUniqueIDToSecureStorage();
-    // var box = storage.read('user');
-    // User().fromJson(box);
-    // var userKey = storage.read('user_key');
-    // VenUser().userKey.value = userKey ?? 0;
+    //TODO: check deviceID and remove any deviceID-firebase tokens in Firestore users collection if not logged in.
 
     setState(() {
       future = Future.value(true);
@@ -196,7 +193,17 @@ class _MyAppState extends State<MyApp> {
             theme: Themes.lightTheme,
             darkTheme: Themes.darkTheme,
             themeMode: getThemeMode(themeController.theme),
-            navigatorKey: navigatorKey,
+            builder: (context, child) => Overlay(
+              initialEntries: [
+                if (child != null) ...[
+                  OverlayEntry(
+                    builder: (context) => child,
+                  ),
+                ],
+              ],
+            ),
+            // navigatorKey: navigatorKey,
+            navigatorKey: Get.key,
             // initialRoute: '/',
             navigatorObservers: [routeObserver],
             getPages: Routes.routes,

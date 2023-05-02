@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 
 class MyAvatar extends StatelessWidget {
   final double? size;
-  final String? photo;
+  final String photo;
 
-  const MyAvatar({Key? key, this.size, @required this.photo}) : super(key: key);
+  const MyAvatar({Key? key, this.size, required this.photo}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class MyAvatar extends StatelessWidget {
           child: CircleAvatar(
             radius: size,
             // backgroundImage: NetworkImage(photo!),
-            backgroundImage: CachedNetworkImageProvider(photo!),
+            backgroundImage: CachedNetworkImageProvider(photo),
           ),
         ),
       ),

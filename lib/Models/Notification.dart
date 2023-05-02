@@ -3,7 +3,8 @@ enum NotificationType {
   message,
   comment,
   followed,
-  reaction
+  reaction,
+  ratePin
 }
 
 class VentureNotification {
@@ -23,6 +24,10 @@ class VentureNotification {
 
   // comment / reaction
   int? contentKey;
+
+  // rate pin
+  int? pinKey;
+  int? rating;
 
   Map<String, dynamic> toJson() {
     if(notificationType == NotificationType.comment) {
@@ -44,6 +49,15 @@ class VentureNotification {
       };
     }else if(notificationType == NotificationType.followed) {
       return {
+        'firebase_id': firebaseId,
+        'read': read,
+        'timestamp': timestamp.toUtc()
+      };
+    }else if(notificationType == NotificationType.ratePin) {
+      return {
+        'pin_key': pinKey,
+        'rating': rating,
+        'content_photo': contentPhoto,
         'firebase_id': firebaseId,
         'read': read,
         'timestamp': timestamp.toUtc()
@@ -95,6 +109,17 @@ class VentureNotification {
       read = input['read'];
       contentPhoto = input['content_photo'];
       contentKey = input['content_key'];
+    }
+
+    if(type == NotificationType.ratePin) {
+      notificationType = type;
+      index = i;
+      firebaseId = input['firebase_id'];
+      timestamp = input['timestamp'].toDate();
+      read = input['read'];
+      contentPhoto = input['content_photo'];
+      pinKey = input['pin_key'];
+      rating = input['rating'];
     }
   }
 }

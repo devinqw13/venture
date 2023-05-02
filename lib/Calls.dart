@@ -820,3 +820,47 @@ Future<void> deleteContent(BuildContext context, List<int> contentKeys, String f
     showToastV2(context: context, msg: "An error has occurred.");
   }
 }
+
+Future<void> ratePin(BuildContext context, int pinKey, int userKey, int rating, {Map<String, dynamic>? data}) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "pin_key": pinKey,
+    "user_key": userKey,
+    "rating": rating
+  };
+
+  String url = "${globals.apiBaseUrl}/rate";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToastV2(context: context, msg: "Connection timeout.");
+    return;
+  } catch(e) {
+    showToastV2(context: context, msg: "An error has occurred.");
+    return;
+  }
+  
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+  
+  if(jsonResponse['result'] == true) {
+    showToastV2(context: context, msg: "Rating has been submitted.");
+    FirebaseAPI().ratePinNotification(context, data);
+    return;
+  }else {
+    showToastV2(context: context, msg: "An error has occurred.");
+    return;
+  }
+}

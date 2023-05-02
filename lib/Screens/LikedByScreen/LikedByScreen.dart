@@ -239,6 +239,7 @@ class _UserLikeCard extends State<UserLikeCard> {
                           ),
                           if(user['verified'])
                             WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
                               child: CustomIcon(
                                 icon: 'assets/icons/verified-account.svg',
                                 size: 16,
@@ -267,6 +268,7 @@ class _UserLikeCard extends State<UserLikeCard> {
                           ),
                           if(user['verified'])
                             WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
                               child: CustomIcon(
                                 icon: 'assets/icons/verified-account.svg',
                                 size: 16,

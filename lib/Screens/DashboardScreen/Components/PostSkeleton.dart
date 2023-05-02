@@ -21,6 +21,7 @@ import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Helpers/Indicator.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/PhotoHero.dart';
+import 'package:venture/Helpers/RatePinSheet.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/CommentScreen/CommentScreen.dart';
 import 'package:venture/Screens/DashboardScreen/Components/LoginOverlay.dart';
@@ -61,43 +62,71 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
     super.initState();
   }
 
-  _showOptions(ThemeData theme) {
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(16),
-        height: 320,
-        decoration: BoxDecoration(
-          color: Get.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              title: Text("Delete", style: theme.textTheme.bodyText1!.copyWith(color: Colors.red)),
-              onTap: () {
-                // _showDeleteConfirmation();
-                Get.back();
-              },
-            ),
-            SizedBox(height: 16),
-          ],
-        ),
-      )
-    );
-  }
+  // _showOptions(ThemeData theme) {
+  //   Get.bottomSheet(
+  //     Container(
+  //       padding: EdgeInsets.all(16),
+  //       height: 320,
+  //       decoration: BoxDecoration(
+  //         color: Get.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
+  //         borderRadius: BorderRadius.only(
+  //           topLeft: Radius.circular(16),
+  //           topRight: Radius.circular(16),
+  //         )
+  //       ),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           ListTile(
+  //             title: Text("Delete", style: theme.textTheme.bodyText1!.copyWith(color: Colors.red)),
+  //             onTap: () {
+  //               // _showDeleteConfirmation();
+  //               Get.back();
+  //             },
+  //           ),
+  //           SizedBox(height: 16),
+  //         ],
+  //       ),
+  //     )
+  //   );
+  // }
 
-  deletePost() {
-    print("DELETE POST");
+  deletePost(Content content) async {
+    var result = await showCustomDialog(
+      context: context,
+      barrierDismissible: false,
+      title: 'Delete post?', 
+      description: "Are you sure you want to delete this post? It will be permanently deleted.",
+      descAlignment: TextAlign.center,
+      buttonDirection: Axis.vertical,
+      buttons: {
+        "Delete": {
+          "action": () => Navigator.of(context).pop(true),
+          "fontWeight": FontWeight.bold,
+          "textColor": Colors.red,
+          "alignment": TextAlign.center
+        },
+        "Cancel": {
+          "action": () => Navigator.of(context).pop(false),
+          "textColor": Get.isDarkMode ? Colors.white : Colors.black,
+          "alignment": TextAlign.center
+        },
+      }
+    );
+
+    if(result != null && result) {
+      deleteContent(context, [content.contentKey], FirebaseAPI().firebaseId()!);
+    }
   }
 
   goToProfile(Content content) {
     ProfileScreen screen  = ProfileScreen(userKey: content.user!.userKey!);
     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+  }
+
+  ratePin(Content content) async  {
+    var _ = await showRatePinSheet(context: context, title: content.pinName!, pinKey: content.pinKey!, content: content, user: content.user!);
   }
 
   Widget _buildTitle(ThemeData theme, Content content) {
@@ -121,33 +150,36 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
               )
             )
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Row(
-                children: [
-                  CustomIcon(
-                    icon: 'assets/icons/star.svg',
-                    size: 27,
-                    color: primaryOrange,
-                  ),
-                  Text(
-                    "${content.rating ?? 0.toInt()}",
-                    style: TextStyle(
-                      fontSize: 17,
-                      // fontWeight: FontWeight.bold
+          GestureDetector(
+            onTap: () => ratePin(content),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(
+                  children: [
+                    CustomIcon(
+                      icon: 'assets/icons/star.svg',
+                      size: 27,
+                      color: primaryOrange,
                     ),
-                  )
-                ],
-              ),
-              Text(
-                "${content.totalReviews ?? 0} ratings",
-                style: TextStyle(
-                  fontSize: 15,
-                  // fontWeight: FontWeight.bold
+                    Text(
+                      "${content.rating ?? 0.toInt()}",
+                      style: TextStyle(
+                        fontSize: 17,
+                        // fontWeight: FontWeight.bold
+                      ),
+                    )
+                  ],
                 ),
-              )
-            ],
+                Text(
+                  "${content.totalReviews ?? 0} ratings",
+                  style: TextStyle(
+                    fontSize: 15,
+                    // fontWeight: FontWeight.bold
+                  ),
+                )
+              ],
+            )
           )
         ],
       )
@@ -197,7 +229,6 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                     ),
                     // textAlign: TextAlign.center,
                   )
-
                 ),
                 SizedBox(height: 5),
                 Row(
@@ -505,33 +536,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                 CustomOptionPopupMenuItem(
                   text: Text("Delete", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                   icon: CustomIcon(icon: "assets/icons/delete.svg", color: Colors.red, size: 25),
-                  onTap: () async {
-                    var result = await showCustomDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      title: 'Delete post?', 
-                      description: "Are you sure you want to delete this post? It will be permanently deleted.",
-                      descAlignment: TextAlign.center,
-                      buttonDirection: Axis.vertical,
-                      buttons: {
-                        "Delete": {
-                          "action": () => Navigator.of(context).pop(true),
-                          "fontWeight": FontWeight.bold,
-                          "textColor": Colors.red,
-                          "alignment": TextAlign.center
-                        },
-                        "Cancel": {
-                          "action": () => Navigator.of(context).pop(false),
-                          "textColor": Get.isDarkMode ? Colors.white : Colors.black,
-                          "alignment": TextAlign.center
-                        },
-                      }
-                    );
-
-                    if(result != null && result) {
-                      deleteContent(context, [content.contentKey], FirebaseAPI().firebaseId()!);
-                    }
-                  }
+                  onTap: () => deletePost(content)
                 ),
               CustomOptionPopupMenuItem(
                 text: Text("Add to bookmarks"),

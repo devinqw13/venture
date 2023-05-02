@@ -15,6 +15,7 @@ import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/MapPreview.dart';
 import 'package:venture/Helpers/PhotoHero.dart';
+import 'package:venture/Helpers/RatePinSheet.dart';
 import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/VenUser.dart';
@@ -395,6 +396,10 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
     // );
   }
 
+  ratePin(Pin pin) async  {
+    var _ = await showRatePinSheet(context: context, title: pin.title!, pinKey: pin.pinKey, user: pin.user!, pin: pin);
+  }
+
   Widget _buildUpperDetailts(ThemeData theme) {
     if(widget.pin.featuredPhoto != null && !lookupMimeType(widget.pin.featuredPhoto!)!.contains('video')) {
       return Container(
@@ -448,34 +453,37 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                           style: theme.textTheme.headline3!.copyWith(color: Colors.white),
                         )
                       ),
-                      Column(
-                        children: [
-                          Row(
-                            children: [
-                              CustomIcon(
-                                icon: 'assets/icons/star.svg',
-                                size: 30,
-                                color: Colors.white,
-                              ),
-                              Text(
-                                "${widget.pin.rating ?? 0.0}",
-                                style: TextStyle(
+                      GestureDetector(
+                        onTap: () => ratePin(pin),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                CustomIcon(
+                                  icon: 'assets/icons/star.svg',
+                                  size: 30,
                                   color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold
                                 ),
-                              )
-                            ],
-                          ),
-                          Text(
-                            "${widget.pin.totalReviews ?? 0} reviews",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold
+                                Text(
+                                  "${widget.pin.rating ?? 0.0}",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold
+                                  ),
+                                )
+                              ],
                             ),
-                          )
-                        ],
+                            Text(
+                              "${widget.pin.totalReviews ?? 0} ratings",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold
+                              ),
+                            )
+                          ],
+                        )
                       )
                     ],
                   ),

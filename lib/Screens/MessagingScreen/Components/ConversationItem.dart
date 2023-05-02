@@ -76,7 +76,7 @@ class ConversationItemState extends State<ConversationItem> {
                       child: Row(
                         children: [
                           MyAvatar(
-                            photo: messageUser.photoUrl != '' ? messageUser.photoUrl : 'https://www.mtsolar.us/wp-content/uploads/2020/04/avatar-placeholder.png',
+                            photo: messageUser.photoUrl != '' ? messageUser.photoUrl! : 'https://www.mtsolar.us/wp-content/uploads/2020/04/avatar-placeholder.png',
                             size: 20,
                           ),
                           SizedBox(width: 16),

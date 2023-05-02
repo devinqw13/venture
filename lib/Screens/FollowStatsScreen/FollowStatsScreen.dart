@@ -281,6 +281,7 @@ class _UserCard extends State<UserCard> with AutomaticKeepAliveClientMixin<UserC
                           ),
                           if(user['verified'])
                             WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
                               child: CustomIcon(
                                 icon: 'assets/icons/verified-account.svg',
                                 size: 16,
@@ -310,6 +311,7 @@ class _UserCard extends State<UserCard> with AutomaticKeepAliveClientMixin<UserC
                           ),
                           if(user['verified'])
                             WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
                               child: CustomIcon(
                                 icon: 'assets/icons/verified-account.svg',
                                 size: 16,

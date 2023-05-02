@@ -625,7 +625,7 @@ class UserSearched extends StatelessWidget {
               child: Row(
                 children: [
                   MyAvatar(
-                    photo: user.userAvatar,
+                    photo: user.userAvatar!,
                     size: 20,
                   ),
                   SizedBox(width: 16),

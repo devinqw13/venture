@@ -13,6 +13,7 @@ import 'package:venture/Helpers/TimeFormat.dart';
 import 'package:venture/Models/Notification.dart';
 import 'package:collection/collection.dart';
 import 'package:venture/Screens/DisplayContentListScreen/DisplayContentListScreen.dart';
+import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -64,6 +65,15 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
       int index = 0;
       for(var item in data['followed_you']) {
         VentureNotification noti = VentureNotification.fromMap(item, NotificationType.followed, index);
+        notifications.add(noti);
+        index++;
+      }
+    }
+
+    if(data.containsKey("rate_pin")) {
+      int index = 0;
+      for(var item in data['rate_pin']) {
+        VentureNotification noti = VentureNotification.fromMap(item, NotificationType.ratePin, index);
         notifications.add(noti);
         index++;
       }
@@ -342,6 +352,9 @@ class _SpecificNotificationWidget extends State<SpecificNotificationWidget> with
     ) {
       DisplayContentListScreen screen = DisplayContentListScreen(contentKey: widget.noti.contentKey);
       Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+    }else if(type == NotificationType.ratePin) {
+      PinScreen screen = PinScreen(pinKey: widget.noti.pinKey);
+      Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
     }
   }
 
@@ -369,6 +382,8 @@ class _SpecificNotificationWidget extends State<SpecificNotificationWidget> with
       bodyText = "Liked your post.";
     }else if(widget.noti.notificationType == NotificationType.followed) {
       bodyText = "Followed you!";
+    }else if(widget.noti.notificationType == NotificationType.ratePin) {
+      bodyText = "Rated your pin a ";
     }
 
     return FutureBuilder(
@@ -423,7 +438,35 @@ class _SpecificNotificationWidget extends State<SpecificNotificationWidget> with
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Flexible(child:Text(bodyText)),
+                                        Flexible(
+                                          // child: Text(bodyText)
+                                          child: Text.rich(
+                                            TextSpan(
+                                              children: [
+                                                TextSpan(text: bodyText),
+                                                if(widget.noti.notificationType == NotificationType.ratePin)
+                                                  TextSpan(
+                                                    children: [
+                                                      TextSpan(
+                                                        text: widget.noti.rating.toString(),
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold
+                                                        )
+                                                      ),
+                                                      WidgetSpan(
+                                                        alignment: PlaceholderAlignment.middle,
+                                                        child: CustomIcon(
+                                                          icon: 'assets/icons/star.svg',
+                                                          size: 17,
+                                                          color: Colors.amber,
+                                                        )
+                                                      )
+                                                    ]
+                                                  )
+                                              ]
+                                            )
+                                          )
+                                        ),
                                       ],
                                     )
                                     // Text(bodyText)

@@ -320,7 +320,7 @@ class MessagingScreenState extends State<MessagingScreen> {
         title: ListTile(
           onTap: () {},
           leading: MyAvatar(
-            photo: widget.newSendToUser != null ? widget.newSendToUser!.photoUrl : widget.existingConvoUser!.photoUrl ,
+            photo: widget.newSendToUser != null ? widget.newSendToUser!.photoUrl! : widget.existingConvoUser!.photoUrl! ,
             size: 16,
           ),
           title: Text(
