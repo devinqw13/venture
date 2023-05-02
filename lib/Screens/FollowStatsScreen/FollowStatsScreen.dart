@@ -284,7 +284,7 @@ class _UserCard extends State<UserCard> with AutomaticKeepAliveClientMixin<UserC
                               alignment: PlaceholderAlignment.middle,
                               child: CustomIcon(
                                 icon: 'assets/icons/verified-account.svg',
-                                size: 16,
+                                size: 14,
                                 color: primaryOrange,
                               )
                             ),
@@ -314,7 +314,7 @@ class _UserCard extends State<UserCard> with AutomaticKeepAliveClientMixin<UserC
                               alignment: PlaceholderAlignment.middle,
                               child: CustomIcon(
                                 icon: 'assets/icons/verified-account.svg',
-                                size: 16,
+                                size: 14,
                                 color: primaryOrange,
                               )
                             ),

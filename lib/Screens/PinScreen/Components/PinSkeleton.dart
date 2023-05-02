@@ -155,7 +155,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                               alignment: PlaceholderAlignment.middle,
                               child: CustomIcon(
                                 icon: 'assets/icons/verified-account.svg',
-                                size: 17,
+                                size: 14,
                                 color: primaryOrange,
                               )
                             )

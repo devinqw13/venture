@@ -221,7 +221,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                             alignment: PlaceholderAlignment.middle,
                             child: CustomIcon(
                               icon: 'assets/icons/verified-account.svg',
-                              size: 17,
+                              size: 14,
                               color: primaryOrange,
                             )
                           )

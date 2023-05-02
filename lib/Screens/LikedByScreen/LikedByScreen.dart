@@ -242,7 +242,7 @@ class _UserLikeCard extends State<UserLikeCard> {
                               alignment: PlaceholderAlignment.middle,
                               child: CustomIcon(
                                 icon: 'assets/icons/verified-account.svg',
-                                size: 16,
+                                size: 14,
                                 color: primaryOrange,
                               )
                             ),
@@ -271,7 +271,7 @@ class _UserLikeCard extends State<UserLikeCard> {
                               alignment: PlaceholderAlignment.middle,
                               child: CustomIcon(
                                 icon: 'assets/icons/verified-account.svg',
-                                size: 16,
+                                size: 14,
                                 color: primaryOrange,
                               )
                             ),

@@ -400,7 +400,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                                   alignment: PlaceholderAlignment.middle,
                                   child: CustomIcon(
                                     icon: 'assets/icons/verified-account.svg',
-                                    size: 17,
+                                    size: 14,
                                     color: primaryOrange,
                                   )
                                 ),
@@ -427,7 +427,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                                   alignment: PlaceholderAlignment.middle,
                                   child: CustomIcon(
                                     icon: 'assets/icons/verified-account.svg',
-                                    size: 17,
+                                    size: 14,
                                     color: primaryOrange,
                                   )
                                 ),
