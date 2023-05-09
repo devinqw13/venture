@@ -192,7 +192,9 @@ class FirebaseAPI extends ChangeNotifier {
           'firebase_id': FirebaseAuth.instance.currentUser!.uid,
           'photo_url': 'https://venture-content.s3.amazonaws.com/images/default-avatar.jpg',
           'biography': null,
-          'verified': false
+          'verified': false,
+          'user_deactivated': false,
+          'user_deleted': false
         }, SetOptions(merge: true)).then((value) {
         }).catchError((error) {print("Failed to add message: $error");});
 
@@ -243,11 +245,25 @@ class FirebaseAPI extends ChangeNotifier {
         .get();
 
         int userKey = int.parse(userDetails.docs.first.data()['user_key']);
+        bool deactivated = userDetails.docs.first.data()['user_deactivated'];
+        
+        if(deactivated) {
+          var result = await reactivateVentureAccount(context, userKey, userCredential.user!.uid, isSelf: true);
 
-        VenUser().userKey.value = userKey;
-        VenUser().onChange();
-        storage.write('user_key', VenUser().userKey.value);
-        storage.write('user_email', user);
+          if(result) {
+            VenUser().userKey.value = userKey;
+            VenUser().onChange();
+            storage.write('user_key', VenUser().userKey.value);
+            storage.write('user_email', user);
+          }else {
+            userCredential = null;
+          }
+        }else {
+          VenUser().userKey.value = userKey;
+          VenUser().onChange();
+          storage.write('user_key', VenUser().userKey.value);
+          storage.write('user_email', user);
+        }
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {

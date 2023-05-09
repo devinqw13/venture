@@ -1,9 +1,12 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Globals.dart' as globals;
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/LoginScreen/LoginScreen.dart';
 import 'package:venture/Screens/SettingsScreen/ChangePassword.dart';
+import 'package:venture/Screens/SettingsScreen/DeactivateAccount.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 import 'package:venture/FirebaseAPI.dart';
@@ -19,26 +22,32 @@ class AccountSettingsScreen extends StatefulWidget {
 class _AccountSettingsScreenState extends State<AccountSettingsScreen>  {
 
   _logout() async {
-    final storage = GetStorage();
-    // storage.erase();
-    storage.remove("user_key");
-    storage.remove("user_email");
-    VenUser().userKey.value = 0;
-    VenUser().onChange();
+    globals.logout(context);
+    // final storage = GetStorage();
+    // // storage.erase();
+    // storage.remove("user_key");
+    // storage.remove("user_email");
+    // VenUser().userKey.value = 0;
+    // VenUser().onChange();
 
-    await FirebaseAPI().removeFirebaseTokens();
-    await FirebaseAPI().logout();
-    // Navigator.pop(context);
+    // await FirebaseAPI().removeFirebaseTokens();
+    // await FirebaseAPI().logout();
+    // // Navigator.pop(context);
 
-    // Implemented force login. This will remove all screens and navigate to login screen
-    // remove statements below if disabling force login.
-    LoginScreen loginController = LoginScreen();
-    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => loginController), (Route<dynamic> route) => false);
+    // // Implemented force login. This will remove all screens and navigate to login screen
+    // // remove statements below if disabling force login.
+    // LoginScreen loginController = LoginScreen();
+    // Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => loginController), (Route<dynamic> route) => false);
   }
 
   _goToChangePassword() {
     ChangePasswordScreen screen = ChangePasswordScreen();
     Navigator.of(context).push(MaterialPageRoute(builder: (context) => screen));
+  }
+
+  _goToDeactiveAccount() {
+    DeactivateAccount screen = DeactivateAccount();
+    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 
   Widget _buildListTile(String title, IconData icon, String trailing, Color color, theme, {onTab}) {
@@ -102,6 +111,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen>  {
         child: ListView(
           children: [
             _buildListTile('Change your password', Icons.key_rounded, "", Colors.grey, theme, onTab: () => _goToChangePassword()),
+
+            _buildListTile('Deactivate account', Icons.lock_outlined, "", Colors.grey, theme, onTab: () => _goToDeactiveAccount()),
 
             Center(
               child: ZoomTapAnimation(

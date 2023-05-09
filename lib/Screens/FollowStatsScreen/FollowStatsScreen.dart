@@ -242,99 +242,104 @@ class _UserCard extends State<UserCard> with AutomaticKeepAliveClientMixin<UserC
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return InkWell(
-      onTap: () {
-        ProfileScreen screen = ProfileScreen(userKey: int.parse(user['user_key']));
-        Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
-      },
-      child: Card(
-      margin: EdgeInsets.only(bottom: 10, top: 10),
-      elevation: 0,
-      color: Colors.transparent,
-      child: Row(
-        crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
-        children: [
-          MyAvatar(
-            photo: user['photo_url']
-          ),
-          SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              // mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    if(!widget.user['user_deactivated']) {
+      return InkWell(
+        onTap: () {
+          ProfileScreen screen = ProfileScreen(userKey: int.parse(user['user_key']));
+          Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+        },
+        child: Card(
+          margin: EdgeInsets.only(bottom: 10, top: 10),
+          elevation: 0,
+          color: Colors.transparent,
+          child: Row(
+            crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+            children: [
+              MyAvatar(
+                photo: user['photo_url']
+              ),
+              SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  // mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    user['display_name'] != null && user['display_name'] != '' ?
-                    Text.rich(
-                      TextSpan(
-                        children: [
+                    Row(
+                      crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        user['display_name'] != null && user['display_name'] != '' ?
+                        Text.rich(
                           TextSpan(
-                            text: "${user['username']} ",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: Get.isDarkMode ? Colors.white : Colors.black
-                            ),
+                            children: [
+                              TextSpan(
+                                text: "${user['username']} ",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: Get.isDarkMode ? Colors.white : Colors.black
+                                ),
+                              ),
+                              if(user['verified'])
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: CustomIcon(
+                                    icon: 'assets/icons/verified-account.svg',
+                                    size: 14,
+                                    color: primaryOrange,
+                                  )
+                                ),
+                              TextSpan(
+                                text: "\n${user['display_name']}",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12
+                                )
+                              ),
+                            ],
                           ),
-                          if(user['verified'])
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: CustomIcon(
-                                icon: 'assets/icons/verified-account.svg',
-                                size: 14,
-                                color: primaryOrange,
-                              )
-                            ),
+                        ) :
+                        Text.rich(
                           TextSpan(
-                            text: "\n${user['display_name']}",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12
-                            )
-                          ),
-                        ],
-                      ),
-                    ) :
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "${user['username']} ",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: Get.isDarkMode ? Colors.white : Colors.black
-                            ),
-                          ),
-                          if(user['verified'])
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: CustomIcon(
-                                icon: 'assets/icons/verified-account.svg',
-                                size: 14,
-                                color: primaryOrange,
-                              )
-                            ),
-                        ]
-                      )
+                            children: [
+                              TextSpan(
+                                text: "${user['username']} ",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: Get.isDarkMode ? Colors.white : Colors.black
+                                ),
+                              ),
+                              if(user['verified'])
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: CustomIcon(
+                                    icon: 'assets/icons/verified-account.svg',
+                                    size: 14,
+                                    color: primaryOrange,
+                                  )
+                                ),
+                            ]
+                          )
+                        ),
+                        buildFollowButton()
+                      ],
                     ),
-                    buildFollowButton()
+                    user['biography'] != null && user['biography'] != '' ? Text(
+                      user['biography'],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                    : Container()
                   ],
-                ),
-                user['biography'] != null && user['biography'] != '' ? Text(
-                  user['biography'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 )
-                : Container()
-              ],
-            )
+              )
+            ],
           )
-        ],
-      )
-    ));
+        )
+      );
+    }else {
+      return Container();
+    }
   }
 }

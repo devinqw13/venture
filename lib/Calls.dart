@@ -864,3 +864,87 @@ Future<void> ratePin(BuildContext context, int pinKey, int userKey, int rating, 
     return;
   }
 }
+
+Future<bool> deactivateVentureAccount(BuildContext context, int userKey, String firebaseId, {bool isSelf = false}) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "user_key": userKey,
+    "firebase_id": firebaseId,
+    "is_self": isSelf,
+  };
+
+  String url = "${globals.apiBaseUrl}/deactivate";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToastV2(context: context, msg: "Connection timeout.");
+    return false;
+  } catch(e) {
+    showToastV2(context: context, msg: "An error has occurred.");
+    return false;
+  }
+  
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+  
+  if(jsonResponse['result'] == true) {
+    return true;
+  }else {
+    showToastV2(context: context, msg: "An error has occurred.");
+    return false;
+  }
+}
+
+Future<bool> reactivateVentureAccount(BuildContext context, int userKey, String firebaseId, {bool isSelf = false}) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "user_key": userKey,
+    "firebase_id": firebaseId,
+    "is_self": isSelf,
+  };
+
+  String url = "${globals.apiBaseUrl}/reactivate";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToastV2(context: context, msg: "Connection timeout.");
+    return false;
+  } catch(e) {
+    showToastV2(context: context, msg: "An error has occurred.");
+    return false;
+  }
+  
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+  
+  if(jsonResponse['result'] == true) {
+    return true;
+  }else {
+    showToastV2(context: context, msg: "An error has occurred.");
+    return false;
+  }
+}

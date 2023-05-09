@@ -1,5 +1,4 @@
 import 'dart:ui' as ui;
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -96,7 +95,7 @@ class _NotificationTabState extends State<NotificationTab> with AutomaticKeepAli
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
+    // final theme = Theme.of(context);
 
     return Scaffold(
       extendBody: true,

@@ -188,110 +188,99 @@ class _UserLikeCard extends State<UserLikeCard> {
 
   @override
   Widget build(BuildContext context) {
-    // return ListTile(
-    //   onTap: () => goToProfile(),
-    //   leading: ZoomTapAnimation(
-    //     child: MyAvatar(photo: user['photo_url'])
-    //   ),
-    //   trailing: buildFollowButton(),
-    //   title: Text(
-    //     user['username'],
-    //     style: TextStyle(
-    //       fontWeight: FontWeight.bold
-    //     ),
-    //   ),
-    //   subtitle: user['display_name'] != null ? Text(
-    //     user['display_name']
-    //   ) : null,
-    // );
-    return InkWell(
-      onTap: () => goToProfile(),
-      child: Card(
-      margin: EdgeInsets.only(bottom: 10, top: 10),
-      elevation: 0,
-      color: Colors.transparent,
-      child: Row(
-        crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
-        children: [
-          MyAvatar(
-            photo: user['photo_url']
-          ),
-          SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              // mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    if(!widget.user['user_deactivated']) {
+      return InkWell(
+        onTap: () => goToProfile(),
+        child: Card(
+          margin: EdgeInsets.only(bottom: 10, top: 10),
+          elevation: 0,
+          color: Colors.transparent,
+          child: Row(
+            crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+            children: [
+              MyAvatar(
+                photo: user['photo_url']
+              ),
+              SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  // mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    user['display_name'] != null && user['display_name'] != '' ?
-                    Text.rich(
-                      TextSpan(
-                        children: [
+                    Row(
+                      crossAxisAlignment: user['biography'] != null && user['biography'] != '' ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        user['display_name'] != null && user['display_name'] != '' ?
+                        Text.rich(
                           TextSpan(
-                            text: "${user['username']} ",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14
-                            ),
+                            children: [
+                              TextSpan(
+                                text: "${user['username']} ",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14
+                                ),
+                              ),
+                              if(user['verified'])
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: CustomIcon(
+                                    icon: 'assets/icons/verified-account.svg',
+                                    size: 14,
+                                    color: primaryOrange,
+                                  )
+                                ),
+                              TextSpan(
+                                text: "\n${user['display_name']}",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12
+                                )
+                              ),
+                            ],
                           ),
-                          if(user['verified'])
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: CustomIcon(
-                                icon: 'assets/icons/verified-account.svg',
-                                size: 14,
-                                color: primaryOrange,
-                              )
-                            ),
+                        ) :
+                        Text.rich(
                           TextSpan(
-                            text: "\n${user['display_name']}",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12
-                            )
-                          ),
-                        ],
-                      ),
-                    ) :
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "${user['username']} ",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14
-                            ),
-                          ),
-                          if(user['verified'])
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: CustomIcon(
-                                icon: 'assets/icons/verified-account.svg',
-                                size: 14,
-                                color: primaryOrange,
-                              )
-                            ),
-                        ]
-                      )
+                            children: [
+                              TextSpan(
+                                text: "${user['username']} ",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14
+                                ),
+                              ),
+                              if(user['verified'])
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: CustomIcon(
+                                    icon: 'assets/icons/verified-account.svg',
+                                    size: 14,
+                                    color: primaryOrange,
+                                  )
+                                ),
+                            ]
+                          )
+                        ),
+                        buildFollowButton()
+                      ],
                     ),
-                    buildFollowButton()
+                    user['biography'] != null && user['biography'] != '' ? Text(
+                      user['biography'],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                    : Container()
                   ],
-                ),
-                user['biography'] != null && user['biography'] != '' ? Text(
-                  user['biography'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 )
-                : Container()
-              ],
-            )
+              )
+            ],
           )
-        ],
-      )
-    ));
+        )
+      );
+    }else {
+      return Container();
+    }
   }
 }

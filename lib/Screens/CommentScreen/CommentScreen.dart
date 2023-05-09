@@ -148,6 +148,7 @@ class _CommentScreen extends State<CommentScreen> {
           children: [
             Expanded(
               child: ListView(
+                physics: AlwaysScrollableScrollPhysics(),
                 controller: scrollController,
                 children: [
                   Padding(
@@ -206,75 +207,11 @@ class _CommentScreen extends State<CommentScreen> {
                             child: FutureBuilder(
                               future: FirebaseAPI().getUserFromFirebaseId(commentData['firebase_id']),
                               builder: (context, snapshot) {
-                                var date = DateTime.parse(commentData['timestamp'].toDate().toString()).toString();
-
                                 if(snapshot.hasData) {
                                   var docSnapshot = snapshot.data as Map<String, dynamic>;
                                   var userData = docSnapshot;
 
-                                  return Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 10),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        MyAvatar(photo: userData['photo_url']),
-                                        Expanded(
-                                          child: Container(
-                                            padding: EdgeInsets.only(left: 10),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: <Widget>[
-                                                Text.rich(
-                                                  TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: "${userData['username']} ",
-                                                        style: TextStyle(
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 14
-                                                        )
-                                                      ),
-                                                      if(userData['verified'])
-                                                        WidgetSpan(
-                                                          alignment: PlaceholderAlignment.middle,
-                                                          child: CustomIcon(
-                                                            icon: 'assets/icons/verified-account.svg',
-                                                            size: 14,
-                                                            color: primaryOrange,
-                                                          )
-                                                        ),
-                                                    ]
-                                                  )
-                                                ),
-                                                // Text(
-                                                //   userData['username'],
-                                                //   style: TextStyle(
-                                                //     fontWeight: FontWeight.bold,
-                                                //     fontSize: 14
-                                                //   ),
-                                                // ),
-                                                SizedBox(height: 7),
-                                                Text(
-                                                  commentData['comment'],
-                                                  style: TextStyle(
-                                                    fontSize: 16
-                                                  ),
-                                                ),
-                                                SizedBox(height: 5),
-                                                TimeFormat()
-                                                  .withoutDate(
-                                                    date,
-                                                    style: TextStyle(
-                                                      color: Colors.grey
-                                                    )
-                                                  )
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  );
+                                  return UserCommentCard(user: userData, comment: commentData);
                                 }
                                 return Container();
                               }
@@ -301,13 +238,13 @@ class _CommentScreen extends State<CommentScreen> {
                         Expanded(
                           child: Row(
                             children: [
-                              ZoomTapAnimation(
-                                child: IconButton(
-                                  splashRadius: 20,
-                                  icon: Icon(Icons.add, color: Colors.grey.shade700, size: 28,),
-                                  onPressed: () {},
-                                )
-                              ),
+                              // ZoomTapAnimation(
+                              //   child: IconButton(
+                              //     splashRadius: 20,
+                              //     icon: Icon(Icons.add, color: Colors.grey.shade700, size: 28,),
+                              //     onPressed: () {},
+                              //   )
+                              // ),
                               Expanded(
                                 child: Container(
                                   margin: EdgeInsets.only(bottom: 5),
@@ -327,7 +264,7 @@ class _CommentScreen extends State<CommentScreen> {
                                         isDense: true,
                                         contentPadding: EdgeInsets.only(right: 16, left: 20, bottom: 10, top: 10),
                                         hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-                                        hintText: 'Type a message',
+                                        hintText: 'Type a comment',
                                         suffixIcon: allowPost.value ? ZoomTapAnimation(
                                           child: ElevatedButton(
                                             onPressed: () => submitComment(),
@@ -363,5 +300,89 @@ class _CommentScreen extends State<CommentScreen> {
         ),
       )
     );
+  }
+}
+
+class UserCommentCard extends StatefulWidget {
+  final Map<String, dynamic> user;
+  final Map<String, dynamic> comment;
+  UserCommentCard({Key? key, required this.user, required this.comment}) : super(key: key);
+
+  @override
+  _UserCommentCard createState() => _UserCommentCard();
+}
+
+class _UserCommentCard extends State<UserCommentCard> {
+
+  @override
+  Widget build(BuildContext context) {
+    if(!widget.user['user_deactivated']) {
+      var date = DateTime.parse(widget.comment['timestamp'].toDate().toString()).toString();
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            MyAvatar(photo: widget.user['photo_url']),
+            Expanded(
+              child: Container(
+                padding: EdgeInsets.only(left: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "${widget.user['username']} ",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14
+                            )
+                          ),
+                          if(widget.user['verified'])
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: CustomIcon(
+                                icon: 'assets/icons/verified-account.svg',
+                                size: 14,
+                                color: primaryOrange,
+                              )
+                            ),
+                        ]
+                      )
+                    ),
+                    // Text(
+                    //   userData['username'],
+                    //   style: TextStyle(
+                    //     fontWeight: FontWeight.bold,
+                    //     fontSize: 14
+                    //   ),
+                    // ),
+                    SizedBox(height: 7),
+                    Text(
+                      widget.comment['comment'],
+                      style: TextStyle(
+                        fontSize: 16
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    TimeFormat()
+                      .withoutDate(
+                        date,
+                        style: TextStyle(
+                          color: Colors.grey
+                        )
+                      )
+                  ],
+                ),
+              ),
+            ),
+          ],
+        )
+      );
+    }else {
+      return Container();
+    }
   }
 }
