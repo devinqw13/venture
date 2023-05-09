@@ -16,7 +16,9 @@ import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/MapPreview.dart';
+import 'package:venture/Helpers/PinCategorySelector.dart';
 import 'package:venture/Models/Pin.dart';
+import 'package:venture/Models/PinCategory.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Screens/ContentSelectionScreen/ContentSelectionScreen.dart';
@@ -25,7 +27,8 @@ import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class CreatePinScreen extends StatefulWidget {
   final LatLng location;
-  CreatePinScreen({Key? key, required this.location}) : super(key: key);
+  final PinCategory? pinCategory;
+  CreatePinScreen({Key? key, required this.location, this.pinCategory}) : super(key: key);
 
   @override
   _CreatePinScreenState createState() => _CreatePinScreenState();
@@ -40,12 +43,18 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
   final TextEditingController locTxtController = TextEditingController();
   List<int> circleKeys = [];
   List<File?> content = [];
+  PinCategory? category;
 
   @override
   void initState() {
     super.initState();
 
+    _initializeAsyncDependencies();
+  }
+
+  _initializeAsyncDependencies() {
     fetchAddress();
+    setState(() => category = widget.pinCategory);
   }
 
   fetchAddress() async {
@@ -72,6 +81,11 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
     if(result != null) {
       setState(() => content = result);
     }
+  }
+
+  openCategorySelector() async {
+    var response = await showPinCategorySelectorSheet(context: context, initCategory: category);
+    setState(() => category = response);
   }
 
   removeContent() {
@@ -229,8 +243,12 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                           ),
                         ),
                       ),
-                      Text("Give the place or location a name. Typically, the name of the place that it is better known as. Ex. Kings Island, Cosmosphere, etc.", 
-                          style: TextStyle(fontSize: 12, height: 1.5, color: Colors.grey.shade600, fontStyle: FontStyle.italic)),
+                      SizedBox(height: 2),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 5),
+                        child: Text("Give the place or location a name. Typically, the name of the place that it is better known as. Ex. Kings Island, Cosmosphere, etc.", 
+                          style: TextStyle(fontSize: 12, height: 1.5, color: Colors.grey.shade600, fontStyle: FontStyle.italic))
+                      ),
                       SizedBox(height: 15),
                       Container(
                         decoration: BoxDecoration(
@@ -246,6 +264,46 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                             hintText: "Tell us about this place",
                           ),
                         ),
+                      ),
+                      SizedBox(height: 15),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: ZoomTapAnimation(
+                          child: ListTile(
+                            contentPadding: EdgeInsets.all(0),
+                            leading: category != null ? Container(
+                              width: 46,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.grey.withAlpha(30)
+                              ),
+                              child: Center(
+                                child: CustomIcon(
+                                  icon: category!.iconPath,
+                                  color: Get.isDarkMode ? Colors.white : Colors.black,
+                                  size: 27
+                                ),
+                              ),
+                            ) : null,
+                            title: Text(category != null ? category!.name : "Select a category", style: theme.textTheme.subtitle1),
+                            trailing: Container(
+                              width: 90,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  // Text(trailing, style: theme.textTheme.bodyText1?.copyWith(color: Colors.grey.shade600)),
+                                  Icon(Icons.arrow_forward_ios, size: 16,),
+                                ],
+                              ),
+                            ),
+                            onTap: () => openCategorySelector()
+                          )
+                        )
                       ),
                       SizedBox(height: 15),
                       // Container(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 // import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,6 +12,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Helpers/Dialog.dart';
+import 'package:venture/Models/PinCategory.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Theme.dart';
 import 'package:venture/Constants.dart';
@@ -94,6 +96,9 @@ class _MyAppState extends State<MyApp> {
      globals.apiBaseUrl = remoteConfig.getString('api_base_url');
      globals.googleMapsApi = remoteConfig.getString('google_maps_api');
      globals.googleApi = remoteConfig.getString('google_api_key');
+
+     List<dynamic> categoryJsonList = json.decode(remoteConfig.getString('venture_default_pin_categories')) as List<dynamic>;
+     globals.defaultPinCategories = [...categoryJsonList.map((e) => PinCategory.fromMap(e))];
      return;
   }
 
@@ -204,7 +209,6 @@ class _MyAppState extends State<MyApp> {
             ),
             // navigatorKey: navigatorKey,
             navigatorKey: Get.key,
-            // initialRoute: '/',
             navigatorObservers: [routeObserver],
             getPages: Routes.routes,
             initialRoute: getInitialRoute(),

@@ -5,19 +5,21 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Calls.dart';
+import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/CustomPin.dart';
 import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Helpers/Keyboard.dart';
+import 'package:venture/Helpers/PinCategorySelector.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
+import 'package:venture/Models/PinCategory.dart';
 import 'package:venture/Screens/CreatePinScreen/CreatePinScreen.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/ThemeController.dart';
 import 'package:venture/Models/Pin.dart';
-import 'package:venture/Models/VenUser.dart';
 
 class MapTab extends StatefulWidget {
   MapTab({Key? key}) : super(key: key);
@@ -38,28 +40,10 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   Timer? mapFetchTimer;
   bool isLoading = false;
   bool isCreatingPin = false;
+  PinCategory? pinCategory;
 
   @override
   bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // controller =
-    //     AnimationController(vsync: this, duration: Duration(milliseconds: 200));
-
-    // offset = Tween<Offset>(begin: Offset(0.0, 0.0), end: Offset(0.0, -1.0))
-    //     .animate(controller);
-
-    // displayCreatePin.addListener(() {
-    //   if (!displayCreatePin.value) {
-    //     controller.reverse();
-    //   } else {
-    //     controller.forward();
-    //   }
-    // });
-  }
 
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
@@ -67,7 +51,6 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   );
 
   performAction(MapOverlayAction action, dynamic value) {
-    print(action);
     switch(action) {
       case MapOverlayAction.initializeCreatePin:
         setState(() => isCreatingPin = true);
@@ -84,6 +67,9 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
         break;
       case MapOverlayAction.continueCreation: 
         handleContinueCreation();
+        break;
+      case MapOverlayAction.updatePinCategory:
+        setState(() => pinCategory = value);
     }
   }
 
@@ -184,7 +170,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       return;
     }
 
-    final CreatePinScreen screen = CreatePinScreen(location: createdMarkerPos!);
+    final CreatePinScreen screen = CreatePinScreen(location: createdMarkerPos!, pinCategory: pinCategory);
     var result = await Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 400));
 
     if(result != null) {
@@ -356,6 +342,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
         if(key.value == '0') {
           createdMarker = null;
           createdMarkerPos = null;
+          pinCategory = null;
         }
       }
     });
@@ -421,8 +408,6 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
-
     return DismissKeyboard(
       child: Stack(
         children: [
@@ -495,238 +480,6 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
               KeyboardUtil.hideKeyboard(context);
             },
           )),
-          // Align(
-          //   alignment: Alignment.topCenter,
-          //   child: Padding(
-          //     padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-          //     child: Row(
-          //       children: [
-          //         Expanded(
-          //           child: Padding(
-          //             padding: EdgeInsets.symmetric(
-          //               horizontal: 16.0,
-          //             ),
-          //             child: Container(
-          //               height: 45,
-          //               decoration: BoxDecoration(
-          //                 color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
-          //                 borderRadius: BorderRadius.circular(10),
-          //                 boxShadow: [
-          //                   BoxShadow(color: Colors.black.withOpacity(0.3), offset: Offset(0,3),
-          //                   blurRadius: 2
-          //                   ),
-          //                 ]
-          //               ),
-          //               child: TextField(
-          //                 onChanged: (v) => autocomplete(v),
-          //                 controller: textController,
-          //                 keyboardType: TextInputType.streetAddress,
-          //                 textInputAction: TextInputAction.go,
-          //                 onSubmitted: (text) {
-          //                   KeyboardUtil.hideKeyboard(context);
-          //                   if (textController.text.isNotEmpty) {
-          //                     mapNavigate(textController.text);
-          //                     textController.clear();
-          //                   }
-          //                 },
-          //                 decoration: InputDecoration(
-          //                   contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-          //                   hintText: "Enter location address",
-          //                   suffixIcon: Padding(
-          //                     padding: const EdgeInsets.all(3.0),
-          //                     child: ZoomTapAnimation(
-          //                       onTap: () {
-          //                         KeyboardUtil.hideKeyboard(context);
-          //                         if (textController.text.isNotEmpty) {
-          //                           mapNavigate(textController.text);
-          //                           textController.clear();
-          //                         }
-          //                       },
-          //                       child: Container(
-          //                         width: 40,
-          //                         decoration: BoxDecoration(
-          //                           color: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey.shade300,
-          //                           borderRadius: BorderRadius.circular(10)
-          //                         ),
-          //                         child: Center(
-          //                           child: Icon(IconlyLight.arrow_right, color: Colors.grey),
-          //                         ),
-          //                       )
-          //                     ),
-          //                   )
-          //                 ),
-          //               )
-          //             )
-          //           ),
-          //         ),
-          //       ]
-          //     )
-          //   )
-          // ),
-          // ValueListenableBuilder(
-          //   valueListenable: VenUser().userKey, 
-          //   builder: (context, value, _) {
-          //     if (value != 0) {
-          //       return Align(
-          //         alignment: Alignment.topCenter,
-          //         child: SlideTransition(
-          //           position: offset,
-          //           child: Padding(
-          //             padding: EdgeInsets.only(top: 60, right: 15, left: 15),
-          //             child: Row(
-          //               children: [
-          //                 Expanded(
-          //                   child: Padding(
-          //                     padding: EdgeInsets.symmetric(
-          //                       horizontal: 10.0,
-          //                     ),
-          //                     child: Container(
-          //                       height: 45,
-          //                       decoration: BoxDecoration(
-          //                         color: Get.isDarkMode ? ColorConstants.gray600 : Colors.grey.shade200,
-          //                         borderRadius: BorderRadius.circular(10),
-          //                         boxShadow: [
-          //                           BoxShadow(color: Colors.black.withOpacity(0.3), offset: Offset(0,3),
-          //                           blurRadius: 1
-          //                           ),
-          //                         ]
-          //                       ),
-          //                       child: TextField(
-          //                         onChanged: (v) => autocomplete(v),
-          //                         controller: textController,
-          //                         keyboardType: TextInputType.streetAddress,
-          //                         textInputAction: TextInputAction.go,
-          //                         onSubmitted: (text) {
-          //                           KeyboardUtil.hideKeyboard(context);
-          //                           if (textController.text.isNotEmpty) {
-          //                             mapNavigate(textController.text);
-          //                             textController.clear();
-          //                           }
-          //                         },
-          //                         decoration: InputDecoration(
-          //                           contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-          //                           hintText: "Enter location address",
-          //                           suffixIcon: Padding(
-          //                             padding: const EdgeInsets.all(3.0),
-          //                             child: ZoomTapAnimation(
-          //                               onTap: () {
-          //                                 KeyboardUtil.hideKeyboard(context);
-          //                                 if (textController.text.isNotEmpty) {
-          //                                   mapNavigate(textController.text);
-          //                                   textController.clear();
-          //                                 }
-          //                               },
-          //                               child: Container(
-          //                                 width: 40,
-          //                                 decoration: BoxDecoration(
-          //                                   color: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey.shade300,
-          //                                   borderRadius: BorderRadius.circular(10)
-          //                                 ),
-          //                                 child: Center(
-          //                                   child: Icon(IconlyLight.arrow_right, color: Colors.grey),
-          //                                 ),
-          //                               )
-          //                             ),
-          //                           )
-          //                         ),
-          //                       )
-          //                     )
-          //                   ),
-          //                 ),
-          //                 CustomMapPopupMenu(
-          //                   popupItems: [
-          //                     CustomMapPopupMenuItem(
-          //                       text: Text(
-          //                         "Create Pin",
-          //                         style: theme.textTheme.subtitle1!,
-          //                       ),
-          //                       icon: Icon(
-          //                         IconlyLight.location,
-          //                         color: Get.isDarkMode ? Colors.white : Colors.black
-          //                       ),
-          //                       onTap: () {
-          //                         if (!displayCreatePin.value) {
-          //                           setState(() => displayCreatePin.value = true);
-          //                         } else {
-          //                           setState(() => displayCreatePin.value = false);
-          //                         }
-          //                       }
-          //                     )
-          //                   ],
-          //                 )
-          //               ]
-          //             )
-          //           )
-          //         )
-          //       );
-          //     } else {
-          //       return Container();
-          //     }
-          //   }
-          // ),
-          // CreatePin(
-          //   display: displayCreatePin,
-          //   onAction: (v) => createPinAction(v),
-          //   canRemovePin: canRemovePin
-          // ),
-          // Positioned(
-          //   top: 120,
-          //   right: MediaQuery.of(context).size.width * .05,
-          //   child: ZoomTapAnimation(
-          //     onTap: () => _showMapThemeModal(theme),
-          //     child: NeumorphContainer.convex(
-          //       borderRadius: 10.0,
-          //       child: Center(
-          //         child: Padding(
-          //           padding: EdgeInsets.all(10),
-          //           child: Icon(IconlyBroken.more_square, size: 25)
-          //         )
-          //       )
-          //     )
-          //   )
-          // ),
-          // Positioned(
-          //   top: 70,
-          //   right: 15,
-          //   child: Container(
-          //     width: 35,
-          //     height: 50,
-          //     decoration: BoxDecoration(
-          //       borderRadius: BorderRadius.circular(10),
-          //       color: Colors.white
-          //     ),
-          //     child: Column(
-          //       mainAxisAlignment: MainAxisAlignment.start,
-          //       children: [
-          //         MaterialButton(
-          //           padding: EdgeInsets.all(0),
-          //           shape: RoundedRectangleBorder(
-          //             borderRadius: BorderRadius.circular(10),
-          //           ),
-          //           child: Icon(IconlyBroken.more_square, size: 25),
-          //           onPressed: () {
-          //             _showMapThemeModal(theme);
-          //           }
-          //         )
-          //       ]
-          //     )
-          //   )
-          // )
-          // Align(
-          //   alignment: Alignment.bottomRight,
-          //   child: Padding(
-          //     padding: EdgeInsets.only(
-          //       bottom: MediaQuery.of(context).padding.bottom + 16,
-          //       right: 16.0
-          //     ),
-          //     child: FloatingActionButton(
-          //       backgroundColor: Get.isDarkMode ? ColorConstants.gray800 : Colors.grey.shade300,
-          //       heroTag: 'createPin',
-          //       onPressed: () {},
-          //       child: Icon(Icons.add, color: Get.isDarkMode ? Colors.white : Colors.black)
-          //     )
-          //   ),
-          // ),
           _themesController.googleMapController != null ?
           MapOverlay(
             controller: _themesController.googleMapController!,
@@ -753,7 +506,8 @@ enum MapOverlayAction {
   initializeCreatePin,
   cancelCreatePin,
   positionPin,
-  continueCreation
+  continueCreation,
+  updatePinCategory
 }
 
 class MapOverlay extends StatefulWidget {
@@ -774,6 +528,7 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
   late AnimationController controller, controller2;
   late Animation<Offset> offset, offset2;
   RxBool isPlaced = false.obs;
+  PinCategory? category;
 
   @override
   bool get wantKeepAlive => true;
@@ -849,6 +604,13 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
     controller.forward();
     widget.onAction!(MapOverlayAction.initializeCreatePin, null);
     setState(() => isCreating = true);
+  }
+
+  openCategorySelector() async {
+    var response = await showPinCategorySelectorSheet(context: context);
+    // print(response);
+    widget.onAction!(MapOverlayAction.updatePinCategory, response);
+    setState(() => category = response);
   }
 
   @override
@@ -943,6 +705,45 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
                   ]
                 ),
                 SizedBox(height: 15),
+                Obx(() => AnimatedSwitcher(
+                  duration: Duration(milliseconds: 200),
+                  child: isPlaced.value ? Padding(
+                    padding: EdgeInsets.only(bottom: 15),
+                    child: ElevatedButton(
+                      onPressed: () => openCategorySelector(),
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: category != null ? category!.name : "Select a category"
+                            ),
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: Get.isDarkMode ? Colors.white : Colors.black,
+                                size: 16,
+                              )
+                            )
+                          ]
+                        ),
+                        style: TextStyle(
+                          color: Get.isDarkMode ? Colors.white : Colors.black
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        minimumSize: Size.zero,
+                        padding: EdgeInsets.all(10),
+                        backgroundColor: Get.isDarkMode ? ColorConstants.gray800 : Colors.white,
+                        foregroundColor: Colors.transparent
+                      ),
+                    )
+                  ) : Container()
+                )),
                 ElevatedButton(
                   onPressed: () async {
                     if(isCreating) {
@@ -952,7 +753,11 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
                       goToLocation();
                     }
                   },
-                  child: Icon(Icons.navigation_rounded, color: Get.isDarkMode ? Colors.white : Colors.black),
+                  // child: Icon(Icons.navigation_rounded, color: Get.isDarkMode ? Colors.white : Colors.black),
+                  child: CustomIcon(
+                    icon: 'assets/icons/target.svg',
+                    color: Get.isDarkMode ? Colors.white : Colors.black
+                  ),
                   style: ElevatedButton.styleFrom(
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     shape: CircleBorder(),
@@ -996,7 +801,10 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
                         onPressed: () {
                           controller.reverse();
                           widget.onAction!(MapOverlayAction.cancelCreatePin, null);
-                          setState(() => isCreating = false);
+                          setState(() {
+                            isCreating = false;
+                            category = null;
+                          });
                         },
                         child: Text(
                           "Cancel",
@@ -1026,6 +834,7 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
                           onPressed: () {
                             controller.reverse();
                             widget.onAction!(MapOverlayAction.continueCreation, null);
+                            setState(() => category = null);
                           },
                           child: Icon(Icons.arrow_forward_ios_rounded, color: Get.isDarkMode ? Colors.white : Colors.black),
                           style: ElevatedButton.styleFrom(

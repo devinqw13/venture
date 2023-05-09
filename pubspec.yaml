@@ -68,6 +68,7 @@ dependencies:
   custom_refresh_indicator: ^2.0.1
   flutter_native_splash: ^2.2.18
   visibility_detector: ^0.4.0+2
+  simple_animations: ^5.0.0+3
   # expandable_page_view: ^1.0.17
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

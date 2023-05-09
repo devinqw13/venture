@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Models/VenUser.dart';
+import 'package:venture/Models/PinCategory.dart';
 import 'package:venture/Screens/LoginScreen/LoginScreen.dart';
 
 FirebaseAuth? auth;
@@ -12,6 +13,7 @@ String apiBaseUrl = '';
 String googleMapsApi = '';
 String googleMapPreviewPin = '';
 String googleApi = '';
+List<PinCategory> defaultPinCategories = [];
 
 logout(BuildContext context) async {
   final storage = GetStorage();
