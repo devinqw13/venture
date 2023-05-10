@@ -17,6 +17,7 @@ import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/MapPreview.dart';
 import 'package:venture/Helpers/PinCategorySelector.dart';
+import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/PinCategory.dart';
 import 'package:venture/Models/VenUser.dart';
@@ -181,13 +182,22 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
     if(isLoading) return;
 
     if(nameTxtController.text.isEmpty) {
+      showToastV2(context: context, msg: "Pin must have a name.");
       return;
     }
 
     String location = "${widget.location.latitude},${widget.location.longitude}";
 
     setState(() => isLoading = true);
-    Pin? pin = await createPin(context, nameTxtController.text, descTxtController.text, location, VenUser().userKey.value, circleKeys: circleKeys.isNotEmpty ? circleKeys : null);
+    Pin? pin = await createPin(
+      context,
+      nameTxtController.text,
+      descTxtController.text,
+      location,
+      VenUser().userKey.value,
+      category != null ? category!.name : null,
+      circleKeys: circleKeys.isNotEmpty ? circleKeys : null);
+      
     if(content.isNotEmpty) {
       var _ = await handleContentUploadV2(context, content, VenUser().userKey.value, "post", pinKey: pin?.pinKey);
     }

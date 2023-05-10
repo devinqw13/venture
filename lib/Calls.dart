@@ -490,7 +490,7 @@ Future<List<Pin>> getMapPins(BuildContext context, {String? latlng = "", String?
   }
 }
 
-Future<Pin?> createPin(BuildContext context, String name, String desc, String location, int userKey, {List<int>? circleKeys}) async {
+Future<Pin?> createPin(BuildContext context, String name, String desc, String location, int userKey, String? category, {List<int>? circleKeys}) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
@@ -503,6 +503,7 @@ Future<Pin?> createPin(BuildContext context, String name, String desc, String lo
     "user_key": userKey
   };
 
+  if(category != null) jsonMap['category'] = category;
   if(circleKeys != null) jsonMap['circle_keys'] = circleKeys.toString();
 
   String url = "${globals.apiBaseUrl}/createPin";
@@ -513,7 +514,7 @@ Future<Pin?> createPin(BuildContext context, String name, String desc, String lo
   try {
     response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
   } on TimeoutException {
-    showToast(context: context, color: Colors.red, msg: "Connection timeout.");
+    showToastV2(context: context, msg: "Connection timeout.");
     return null;
   }
 
@@ -529,7 +530,7 @@ Future<Pin?> createPin(BuildContext context, String name, String desc, String lo
     return pin;
   }
   else {
-    showToast(context: context, color: Colors.red, msg: "An error has occured.");
+    showToastV2(context: context, msg: "An error has occured.");
     return null;
   }
 }

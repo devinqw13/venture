@@ -14,6 +14,7 @@ class Pin {
   int? distance;
   int? totalReviews;
   bool isSaved = false;
+  String? category;
 
   Pin(Map<String, dynamic> input) {
     var selectedPinContent = input['pin_content'] != null 
@@ -32,7 +33,8 @@ class Pin {
     featuredPhoto = input['featured_photo'] ?? selectedPhoto;
     rating = input['avg_rating'];
     totalReviews = input['total_reviews'];
-    isSaved = input['is_saved'];
+    isSaved = input['is_saved'] ?? false;
+    category = input['category'];
   }
 
   Pin.fromMap(Map<String, dynamic> input) {
@@ -54,6 +56,7 @@ class Pin {
     rating = input['avg_rating'];
     totalReviews = input['total_reviews'];
     distance = input['distance'] != null && input['distance'] != -1 ? input['distance'].toInt() : null;
-    isSaved = input['is_saved'];
+    isSaved = input['is_saved'] ?? false;
+    category = input['category'];
   }
 }

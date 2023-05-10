@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:venture/Calls.dart';
+import 'package:venture/Controllers/MapController.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/CustomPin.dart';
 import 'package:venture/Helpers/Dialog.dart';
@@ -31,12 +32,14 @@ class MapTab extends StatefulWidget {
 class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapTab>, TickerProviderStateMixin {
   final TextEditingController textController = TextEditingController();
   final ThemesController _themesController = Get.find();
-  // ValueNotifier<bool> displayCreatePin = ValueNotifier<bool>(false);
-  // late AnimationController controller;
-  // late Animation<Offset> offset;
-  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
-  MarkerId? createdMarker;
-  LatLng? createdMarkerPos;
+  final MapController _mapController = Get.put(MapController(), tag: "home_map_controller");
+  // final MapController = Get.put(MapController());
+  // Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  // MarkerId? createdMarker;
+  // LatLng? createdMarkerPos;
+  RxMap<MarkerId, Marker> markers = <MarkerId, Marker>{}.obs;
+  Rxn<MarkerId> createdMarker = Rxn<MarkerId>();
+  Rxn<LatLng?> createdMarkerPos = Rxn<LatLng>();
   Timer? mapFetchTimer;
   bool isLoading = false;
   bool isCreatingPin = false;
@@ -54,13 +57,14 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     switch(action) {
       case MapOverlayAction.initializeCreatePin:
         setState(() => isCreatingPin = true);
-        if(createdMarkerPos != null) {
-          generateInitMarker(createdMarkerPos!);
+        if(createdMarkerPos.value != null) {
+          generateInitMarker(createdMarkerPos.value!);
         }
         break;
       case MapOverlayAction.cancelCreatePin:
         setState(() => isCreatingPin = false);
-        if(createdMarker != null) _remove(createdMarker!);
+        if(createdMarker.value != null) _remove(createdMarker.value!);
+        _mapController.isPlaced.value = false;
         break;
       case MapOverlayAction.positionPin:
         generateInitMarker(value);
@@ -165,18 +169,19 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   // }
 
   handleContinueCreation() async {
-    if(createdMarker == null || createdMarkerPos == null) {
+    if(createdMarker.value == null || createdMarkerPos.value == null) {
       showToast(context: context, type: ToastType.INFO, msg: 'Place a marker to continue');
       return;
     }
 
-    final CreatePinScreen screen = CreatePinScreen(location: createdMarkerPos!, pinCategory: pinCategory);
+    final CreatePinScreen screen = CreatePinScreen(location: createdMarkerPos.value!, pinCategory: pinCategory);
     var result = await Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 400));
 
-    if(result != null) {
-      setState(() => isCreatingPin = false);
-      _remove(createdMarker!);
+    setState(() => isCreatingPin = false);
+    _remove(createdMarker.value!);
+    _mapController.isPlaced.value = false;
 
+    if(result != null) {
       final MarkerId markerKey = MarkerId(result.pinKey.toString());
       List loc = result.latLng.split(',');
       
@@ -200,12 +205,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
         onTap: () => _onMarkerTapped(markerKey),
       );
 
-      setState(() {
-        markers[markerKey] = marker;
-      });
-    }else {
-      setState(() => isCreatingPin = false);
-      _remove(createdMarker!);
+      markers[markerKey] = marker;
     }
   }
 
@@ -223,7 +223,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   }
 
   generateInitMarker(LatLng coords) async {
-    if(createdMarker != null) _remove(createdMarker!);
+    if(createdMarker.value != null) _remove(createdMarker.value!);
 
     final String key = '0';
     final MarkerId markerKey = MarkerId(key);
@@ -245,11 +245,10 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       onDrag: (LatLng position) => _onMarkerDrag(markerKey, position),
     );
 
-    setState(() {
-      markers[markerKey] = marker;
-      createdMarker = markerKey;
-      createdMarkerPos = coords;
-    });
+    markers[markerKey] = marker;
+    createdMarker.value = markerKey;
+    createdMarkerPos.value = coords;
+    _mapController.isPlaced.value = true;
   }
 
   displayGatheredPins(List<Pin> pins) async {
@@ -300,9 +299,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   }
 
   Future<void> _onMarkerDrag(MarkerId key, LatLng newPosition) async {
-    setState(() {
-      createdMarkerPos = newPosition;
-    });
+    createdMarkerPos.value = newPosition;
   }
 
   // Future<void> _onMarkerDragEnd(MarkerId key, LatLng newPosition) async {
@@ -335,17 +332,15 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   // }
 
   void _remove(MarkerId key) {
-    setState(() {
-      if (markers.containsKey(key)) {
-        markers.remove(key);
+    if (markers.containsKey(key)) {
+      markers.remove(key);
 
-        if(key.value == '0') {
-          createdMarker = null;
-          createdMarkerPos = null;
-          pinCategory = null;
-        }
+      if(key.value == '0') {
+        createdMarker.value = null;
+        createdMarkerPos.value = null;
+        pinCategory = null;
       }
-    });
+    }
   }
 
   // _showMapThemeModal(ThemeData theme) {
@@ -484,7 +479,6 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
           MapOverlay(
             controller: _themesController.googleMapController!,
             onAction: (action, value) => performAction(action, value),
-            isPlaced: createdMarker != null ? true : false,
           ) : Container(),
           isLoading ? Align(
             alignment: Alignment.bottomCenter,
@@ -511,11 +505,10 @@ enum MapOverlayAction {
 }
 
 class MapOverlay extends StatefulWidget {
-  final bool isPlaced;
   final GoogleMapController controller;
   final bool allowCreatePin;
   final Function(MapOverlayAction action, dynamic value)? onAction;
-  MapOverlay({Key? key, required this.controller, this.onAction, this.isPlaced = false, this.allowCreatePin = false}) : super(key: key);
+  MapOverlay({Key? key, required this.controller, this.onAction, this.allowCreatePin = false}) : super(key: key);
 
   @override
   _MapOverlay createState() => _MapOverlay();
@@ -523,11 +516,11 @@ class MapOverlay extends StatefulWidget {
 
 class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<MapOverlay>, TickerProviderStateMixin {
   final ThemesController _themesController = Get.find();
+  final MapController _mapController = Get.find(tag: "home_map_controller");
   final TextEditingController textController = TextEditingController();
   bool isCreating = false;
   late AnimationController controller, controller2;
   late Animation<Offset> offset, offset2;
-  RxBool isPlaced = false.obs;
   PinCategory? category;
 
   @override
@@ -616,7 +609,6 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    isPlaced.value = widget.isPlaced;
     return Padding(
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top,
@@ -707,7 +699,7 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
                 SizedBox(height: 15),
                 Obx(() => AnimatedSwitcher(
                   duration: Duration(milliseconds: 200),
-                  child: isPlaced.value ? Padding(
+                  child: _mapController.isPlaced.value ? Padding(
                     padding: EdgeInsets.only(bottom: 15),
                     child: ElevatedButton(
                       onPressed: () => openCategorySelector(),
@@ -826,15 +818,18 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
                       )
                       )
                     ),
-                    AnimatedSize(
+                    Obx(() => AnimatedSize(
                       duration: Duration(milliseconds: 200),
-                      child: isPlaced.value ? Padding(
+                      child: _mapController.isPlaced.value ? Padding(
                         padding: EdgeInsets.only(left: 10),
                         child: ElevatedButton(
                           onPressed: () {
                             controller.reverse();
                             widget.onAction!(MapOverlayAction.continueCreation, null);
-                            setState(() => category = null);
+                            setState(() {
+                              isCreating = false;
+                              category = null;
+                            });
                           },
                           child: Icon(Icons.arrow_forward_ios_rounded, color: Get.isDarkMode ? Colors.white : Colors.black),
                           style: ElevatedButton.styleFrom(
@@ -847,7 +842,7 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
                           ),
                         )
                       ) : SizedBox()
-                    )
+                    ))
                   ],
                 )
               ),
