@@ -90,10 +90,11 @@ class _CategorySelector extends State<CategorySelector> {
             CustomIcon(
               icon: category.iconPath,
               color: Get.isDarkMode ? Colors.white : Colors.black,
-              size: 75,
+              size: 55,
             ),
             SizedBox(height: 20),
-            Text(category.name, textAlign: TextAlign.center, style: TextStyle(fontSize: 20))
+            Text(category.name, textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+            category.desc != null ? Padding(padding:EdgeInsets.symmetric(vertical: 5), child: Text(category.desc!, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey, fontStyle: FontStyle.italic))) : Container(),
           ]
         ),
       ),

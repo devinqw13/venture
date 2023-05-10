@@ -4,6 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Globals.dart' as globals;
 import 'package:venture/Calls.dart';
 import 'package:venture/Controllers/MapController.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
@@ -184,10 +185,12 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     if(result != null) {
       final MarkerId markerKey = MarkerId(result.pinKey.toString());
       List loc = result.latLng.split(',');
+
+      String? iconPath = getIconPath(result);
       
       BitmapDescriptor mkr = await getMarkerIconV2(
         context,
-        null,
+        iconPath,
         pinColor: ColorConstants.gray25,
         text: result.title,
         textStyle: TextStyle(
@@ -251,6 +254,24 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     _mapController.isPlaced.value = true;
   }
 
+  String? getIconPath(Pin pin) {
+    String? path;
+
+    if(pin.category == null) {
+      path = 'assets/icons/venture-colored.svg';
+    }else {
+      var category = globals.defaultPinCategories.firstWhereOrNull((e) => e.name == pin.category);
+
+      if(category != null) {
+        path = category.iconPath;
+      }else {
+        path = 'assets/icons/venture-colored.svg';
+      }
+    }
+
+    return path;
+  }
+
   displayGatheredPins(List<Pin> pins) async {
     List<Pin> newPins = pins.where((e) => !markers.keys.map((f) => int.parse(f.value)).toList().contains(e.pinKey)).toList();
 
@@ -262,9 +283,11 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       final MarkerId markerKey = MarkerId(item.pinKey.toString());
       List loc = item.latLng.split(',');
 
+      String? iconPath = getIconPath(item);
+
       BitmapDescriptor mkr = await getMarkerIconV2(
         context,
-        null,
+        iconPath,
         pinColor: ColorConstants.gray25,
         text: item.title,
         textStyle: TextStyle(

@@ -44,7 +44,7 @@ Future<BitmapDescriptor> getMarkerIconV2(
   {
     Size size = const Size(130, 130),
     Color pinColor = const Color(0xFF000000),
-    Color imageColor = const Color(0xFF000000),
+    Color? imageColor,
     String? text,
     TextStyle? textStyle
   }
@@ -166,7 +166,7 @@ Future<ui.Image> getImageFromAsset(BuildContext context, String svgAssetLink, {S
   final PictureInfo pictureInfo = await vg.loadPicture(
     SvgAssetLoader(
       svgAssetLink,
-      theme: SvgTheme(currentColor: Colors.red)
+      // theme: SvgTheme(currentColor: Colors.red)
     ),
     null
   );
@@ -195,7 +195,7 @@ Future<Uint8List> createPinImageV2(
   String? imagePath,
   Size size,
   Color pinColor,
-  Color imageColor,
+  Color? imageColor,
   {
     String? text,
     TextStyle? textStyle
