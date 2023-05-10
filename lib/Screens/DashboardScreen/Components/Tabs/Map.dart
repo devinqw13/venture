@@ -623,7 +623,7 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
   }
 
   openCategorySelector() async {
-    var response = await showPinCategorySelectorSheet(context: context);
+    var response = await showPinCategorySelectorSheet(context: context, initCategory: category);
     // print(response);
     widget.onAction!(MapOverlayAction.updatePinCategory, response);
     setState(() => category = response);
@@ -729,8 +729,16 @@ class _MapOverlay extends State<MapOverlay> with AutomaticKeepAliveClientMixin<M
                       child: Text.rich(
                         TextSpan(
                           children: [
+                            if(category != null)
+                              WidgetSpan(
+                                child: CustomIcon(
+                                  icon: category!.iconPath,
+                                  color: Get.isDarkMode ? Colors.white : Colors.black,
+                                  size: 16
+                                )
+                              ),
                             TextSpan(
-                              text: category != null ? category!.name : "Select a category"
+                              text: category != null ? "  ${category!.name}" : "Select a category"
                             ),
                             WidgetSpan(
                               alignment: PlaceholderAlignment.middle,

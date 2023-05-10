@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
+import 'package:venture/Globals.dart' as globals;
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Components/DropShadow.dart';
 import 'package:venture/Components/VideoPlayer.dart';
@@ -400,6 +401,24 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
     var _ = await showRatePinSheet(context: context, title: pin.title!, pinKey: pin.pinKey, user: pin.user!, pin: pin);
   }
 
+  String getIconPath(Pin pin) {
+    String? path;
+
+    if(pin.category == null) {
+      path = 'assets/icons/venture-colored.svg';
+    }else {
+      var category = globals.defaultPinCategories.firstWhereOrNull((e) => e.name == pin.category);
+
+      if(category != null) {
+        path = category.iconPath;
+      }else {
+        path = 'assets/icons/venture-colored.svg';
+      }
+    }
+
+    return path;
+  }
+
   Widget _buildUpperDetailts(ThemeData theme) {
     if(widget.pin.featuredPhoto != null && !lookupMimeType(widget.pin.featuredPhoto!)!.contains('video')) {
       return Container(
@@ -487,6 +506,25 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                       )
                     ],
                   ),
+                  if(pin.category != null)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            WidgetSpan(
+                              child: CustomIcon(
+                                icon: getIconPath(pin),
+                                size: 25,
+                              )
+                            ),
+                            TextSpan(
+                              text: " ${pin.category}"
+                            )
+                          ]
+                        )
+                      ),
+                    ),
                   SizedBox(height: 10),
                   ZoomTapAnimation(
                     onTap: () => print("GO TO MAP"),
@@ -705,7 +743,37 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                       )
                     ],
                   ),
-                  SizedBox(height: 10),
+                  pin.category != null ? Padding(
+                    padding: EdgeInsets.symmetric(vertical: 5),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20)
+                      ),
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: CustomIcon(
+                                icon: getIconPath(pin),
+                                size: 12,
+                                color: Colors.white,
+                              )
+                            ),
+                            TextSpan(
+                              text: " ${pin.category}",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white
+                              )
+                            )
+                          ]
+                        )
+                      )
+                    ),
+                  ) : SizedBox(height: 10),
                   ZoomTapAnimation(
                     onTap: () => print("GO TO MAP"),
                     child: Container(
