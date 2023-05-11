@@ -557,6 +557,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
           minScale: 1,
           child: lookupMimeType(content.contentUrls[index].toString())!.contains("video") ?
           VideoContentPlayer(
+            setVideoAspectRatio: false,
             path: content.contentUrls[index].toString(),
             showPauseIndicator: true,
           )

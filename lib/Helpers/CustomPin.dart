@@ -42,14 +42,16 @@ Future<BitmapDescriptor> getMarkerIconV2(
   BuildContext context,
   String? imagePath,
   {
+    int cluster = 1,
     Size size = const Size(130, 130),
     Color pinColor = const Color(0xFF000000),
     Color? imageColor,
     String? text,
-    TextStyle? textStyle
+    TextStyle? textStyle,
+    Color? clusterTextColor
   }
 ) async {
-  var results = await createPinImageV2(context, imagePath, size, pinColor, imageColor, text: text, textStyle: textStyle);
+  var results = await createPinImageV2(context, imagePath, size, pinColor, imageColor, cluster, text: text, textStyle: textStyle, clusterTextColor: clusterTextColor);
 
   return BitmapDescriptor.fromBytes(results);
 }
@@ -196,9 +198,11 @@ Future<Uint8List> createPinImageV2(
   Size size,
   Color pinColor,
   Color? imageColor,
+  int cluster, 
   {
     String? text,
-    TextStyle? textStyle
+    TextStyle? textStyle,
+    Color? clusterTextColor
   }
 ) async {
   final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
@@ -214,7 +218,7 @@ Future<Uint8List> createPinImageV2(
 
   if(text != null && text.isNotEmpty){
     // Add tag text
-    TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
+    TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.center);
     textPainter.text = TextSpan(
       text: text,
       style: textStyle?.copyWith(
@@ -277,7 +281,27 @@ Future<Uint8List> createPinImageV2(
     );
     canvas.drawRRect(outer, paint);
 
-    if(imagePath != null) {
+    if(cluster > 1) {
+      double textScale = 0.5;
+      TextPainter textpainter2 = TextPainter(textDirection: TextDirection.ltr);
+      textpainter2.text = TextSpan(
+        text: cluster.toString(),
+        style: TextStyle(
+            fontSize: size.width * textScale,
+            color: clusterTextColor,
+            fontWeight: FontWeight.bold),
+      );
+      textpainter2.layout();
+      textpainter2.paint(
+        canvas,
+        Offset(
+          textIsLarger ?
+            (textPainter.width - (textpainter2.width)) * 0.5 :
+            (size.width - (textpainter2.width)) * 0.5,
+          ((size.height - (textpainter2.height)) * 0.5) + textPainter.height,
+        )
+      );
+    } else if(imagePath != null) {
       double imageScale = 0.7;
       // Oval for the image
       Rect oval = Rect.fromLTWH(
@@ -339,7 +363,25 @@ Future<Uint8List> createPinImageV2(
     );
     canvas.drawRRect(outer, paint);
 
-    if(imagePath != null) {
+    if(cluster > 1) {
+      double textScale = 0.5;
+      TextPainter textpainter = TextPainter(textDirection: TextDirection.ltr);
+      textpainter.text = TextSpan(
+        text: cluster.toString(),
+        style: TextStyle(
+            fontSize: size.width * textScale,
+            color: clusterTextColor,
+            fontWeight: FontWeight.bold),
+      );
+      textpainter.layout();
+      textpainter.paint(
+        canvas,
+        Offset(
+          (width - (textpainter.width)) * 0.5,
+          (height - (textpainter.height)) * 0.5,
+        )
+      );
+    } else if(imagePath != null) {
       // Oval for the image
       Rect oval = Rect.fromLTWH(
           (width * 0.4) * 0.5,
@@ -387,3 +429,37 @@ List<Shadow> outlinedText({double strokeWidth = 2, Color strokeColor = Colors.bl
   }
   return result.toList();
 }
+
+// Future<BitmapDescriptor> getCusterMarkerBitmap(int size, {String? text}) async {
+//     // if (kIsWeb) size = (size / 2).floor();
+
+//     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+//     final Canvas canvas = Canvas(pictureRecorder);
+//     final Paint paint1 = Paint()..color = Colors.orange;
+//     final Paint paint2 = Paint()..color = Colors.white;
+
+//     canvas.drawCircle(Offset(size / 2, size / 2), size / 2.0, paint1);
+//     canvas.drawCircle(Offset(size / 2, size / 2), size / 2.2, paint2);
+//     canvas.drawCircle(Offset(size / 2, size / 2), size / 2.8, paint1);
+
+//     if (text != null) {
+//       TextPainter painter = TextPainter(textDirection: TextDirection.ltr);
+//       painter.text = TextSpan(
+//         text: text,
+//         style: TextStyle(
+//             fontSize: size / 3,
+//             color: Colors.white,
+//             fontWeight: FontWeight.normal),
+//       );
+//       painter.layout();
+//       painter.paint(
+//         canvas,
+//         Offset(size / 2 - painter.width / 2, size / 2 - painter.height / 2),
+//       );
+//     }
+
+//     final img = await pictureRecorder.endRecording().toImage(size, size);
+//     final data = await img.toByteData(format: ui.ImageByteFormat.png) as ByteData;
+
+//     return BitmapDescriptor.fromBytes(data.buffer.asUint8List());
+//   }

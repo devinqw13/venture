@@ -127,7 +127,7 @@ class _RatePin extends State<RatePin> {
                 textAlign: TextAlign.center,
               )
             ),
-            if(widget.pin != null && !lookupMimeType(widget.pin!.featuredPhoto!)!.contains('video'))
+            if(widget.pin != null && widget.pin!.featuredPhoto != null && !lookupMimeType(widget.pin!.featuredPhoto!)!.contains('video'))
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 child: DropShadow(

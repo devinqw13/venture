@@ -506,26 +506,37 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                       )
                     ],
                   ),
-                  if(pin.category != null)
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
+                  pin.category != null ? Padding(
+                    padding: EdgeInsets.symmetric(vertical: 5),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20)
+                      ),
                       child: Text.rich(
                         TextSpan(
                           children: [
                             WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
                               child: CustomIcon(
                                 icon: getIconPath(pin),
-                                size: 25,
+                                size: 12,
+                                color: Colors.white,
                               )
                             ),
                             TextSpan(
-                              text: " ${pin.category}"
+                              text: " ${pin.category}",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white
+                              )
                             )
                           ]
                         )
-                      ),
+                      )
                     ),
-                  SizedBox(height: 10),
+                  ) : SizedBox(height: 10),
                   ZoomTapAnimation(
                     onTap: () => print("GO TO MAP"),
                     child: Container(
@@ -604,38 +615,71 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                           style: theme.textTheme.headline3!.copyWith(color: Colors.white),
                         )
                       ),
-                      Column(
-                        children: [
-                          Row(
-                            children: [
-                              CustomIcon(
-                                icon: 'assets/icons/star.svg',
-                                size: 30,
-                                color: Colors.white,
-                              ),
-                              Text(
-                                "${widget.pin.rating ?? 0.0}",
-                                style: TextStyle(
+                      GestureDetector(
+                        onTap: () => ratePin(pin),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                CustomIcon(
+                                  icon: 'assets/icons/star.svg',
+                                  size: 30,
                                   color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold
                                 ),
-                              )
-                            ],
-                          ),
-                          Text(
-                            "${widget.pin.totalReviews ?? 0} reviews",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold
+                                Text(
+                                  "${widget.pin.rating ?? 0.0}",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold
+                                  ),
+                                )
+                              ],
                             ),
-                          )
-                        ],
+                            Text(
+                              "${widget.pin.totalReviews ?? 0} ratings",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold
+                              ),
+                            )
+                          ],
+                        )
                       )
                     ],
                   ),
-                  SizedBox(height: 10),
+                  pin.category != null ? Padding(
+                    padding: EdgeInsets.symmetric(vertical: 5),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20)
+                      ),
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: CustomIcon(
+                                icon: getIconPath(pin),
+                                size: 12,
+                                color: Colors.white,
+                              )
+                            ),
+                            TextSpan(
+                              text: " ${pin.category}",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white
+                              )
+                            )
+                          ]
+                        )
+                      )
+                    ),
+                  ) : SizedBox(height: 10),
                   ZoomTapAnimation(
                     onTap: () => print("GO TO MAP"),
                     child: Container(
@@ -712,34 +756,37 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                           style: theme.textTheme.headline3!.copyWith(color: Colors.white),
                         )
                       ),
-                      Column(
-                        children: [
-                          Row(
-                            children: [
-                              CustomIcon(
-                                icon: 'assets/icons/star.svg',
-                                size: 30,
-                                color: Colors.white,
-                              ),
-                              Text(
-                                "${widget.pin.rating ?? 0.0}",
-                                style: TextStyle(
+                      GestureDetector(
+                        onTap: () => ratePin(pin),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                CustomIcon(
+                                  icon: 'assets/icons/star.svg',
+                                  size: 30,
                                   color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold
                                 ),
-                              )
-                            ],
-                          ),
-                          Text(
-                            "${widget.pin.totalReviews ?? 0} reviews",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold
+                                Text(
+                                  "${widget.pin.rating ?? 0.0}",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold
+                                  ),
+                                )
+                              ],
                             ),
-                          )
-                        ],
+                            Text(
+                              "${widget.pin.totalReviews ?? 0} ratings",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold
+                              ),
+                            )
+                          ],
+                        )
                       )
                     ],
                   ),

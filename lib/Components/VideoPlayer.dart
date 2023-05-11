@@ -171,7 +171,18 @@ class _VideoContentPlayer extends State<VideoContentPlayer> with TickerProviderS
   _buildVideoPlayer() {
     return Stack(
       children: [
-        VideoPlayer(_controller!),
+        // VideoPlayer(_controller!),
+        SizedBox.expand(
+          child: FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: _controller?.value.size.width ?? 0,
+              height: _controller?.value.size.height ?? 0,
+              child: VideoPlayer(_controller!),
+            ),
+          ),
+        ),
+
         widget.showPauseIndicator ? Align(
           alignment: Alignment.center,
           child: FadeTransition(

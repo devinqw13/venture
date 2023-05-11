@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -16,6 +18,7 @@ import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Models/PinCategory.dart';
+import 'package:venture/Models/Place.dart';
 import 'package:venture/Screens/CreatePinScreen/CreatePinScreen.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -39,15 +42,99 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
   // MarkerId? createdMarker;
   // LatLng? createdMarkerPos;
   RxMap<MarkerId, Marker> markers = <MarkerId, Marker>{}.obs;
+  RxMap<MarkerId, Marker> nonClusteringMarkers = <MarkerId, Marker>{}.obs;
   Rxn<MarkerId> createdMarker = Rxn<MarkerId>();
   Rxn<LatLng?> createdMarkerPos = Rxn<LatLng>();
   Timer? mapFetchTimer;
   bool isLoading = false;
   bool isCreatingPin = false;
   PinCategory? pinCategory;
+  late ClusterManager _manager;
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _manager = _initClusterManager();
+  }
+
+  ClusterManager _initClusterManager() {
+    return ClusterManager<Place>(
+      Iterable<Place>.empty(),
+      _updateMarkers,
+      markerBuilder: _markerBuilder,
+      extraPercent: 0.2,
+      levels: [1, 4.25, 6.75, 8.25, 11.5],
+      stopClusteringZoom: 14.0 // Does not cluster higher than this zoom
+    );
+  }
+
+  void _updateMarkers(Set<Marker> markers) {
+    var result = { for (var v in markers) v.markerId: v};
+    setState(() {
+      this.markers.value = result;
+    });
+  }
+
+  Future<Marker> Function(Cluster<Place>) get _markerBuilder =>
+    (cluster) async {
+      String? iconPath = getIconPath(cluster.items.first.pinCategory);
+      String? text = getMarkerText(cluster);
+
+      BitmapDescriptor mkr = await getMarkerIconV2(
+        context,
+        iconPath,
+        cluster: cluster.count,
+        clusterTextColor: primaryOrange,
+        pinColor: ColorConstants.gray25,
+        text: text,
+        textStyle: TextStyle(
+          fontSize: 30,
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+        )
+      );
+
+      return Marker(
+        markerId: cluster.isMultiple ? MarkerId(cluster.getId()) : cluster.items.first.markerId,
+        position: cluster.location,
+        draggable: cluster.isMultiple ? false : cluster.items.first.draggable,
+        onTap: () async {
+          if(!isCreatingPin) {
+            if(!cluster.isMultiple) {
+              _onMarkerTapped(cluster.items.first.markerId);
+            }else {
+              // create points for the bounds
+              double north = cluster.location.latitude;
+              double south = cluster.location.latitude;
+              double east = cluster.location.longitude;
+              double west = cluster.location.longitude;
+            
+              // extend the bound points with the markers in the cluster
+              for (var clusterMarker in cluster.items) {
+                south = min(south, clusterMarker.location.latitude);
+                north = max(north, clusterMarker.location.latitude);
+                west = min(west, clusterMarker.location.longitude);
+                east = max(east, clusterMarker.location.longitude);
+              }
+              
+              // create the CameraUpdate with LatLngBounds
+              CameraUpdate clusterView = CameraUpdate.newLatLngBounds(
+                  LatLngBounds(southwest: LatLng(south, west), northeast: LatLng(north, east)),
+                  100 // this is the padding to add on top of the bounds
+              );
+              
+              // set the new view
+              _themesController.googleMapController!.animateCamera(clusterView);
+            }
+          }
+        },
+        icon: mkr,
+      );
+    };
 
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
@@ -59,16 +146,18 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       case MapOverlayAction.initializeCreatePin:
         setState(() => isCreatingPin = true);
         if(createdMarkerPos.value != null) {
-          generateInitMarker(createdMarkerPos.value!);
+          // generateInitMarker(createdMarkerPos.value!);
+          generateInitMarkerV2(createdMarkerPos.value!);
         }
         break;
       case MapOverlayAction.cancelCreatePin:
         setState(() => isCreatingPin = false);
-        if(createdMarker.value != null) _remove(createdMarker.value!);
+        if(createdMarker.value != null) _remove(createdMarker.value!, nonCluster: true);
         _mapController.isPlaced.value = false;
         break;
       case MapOverlayAction.positionPin:
-        generateInitMarker(value);
+        // generateInitMarker(value);
+        generateInitMarkerV2(value);
         break;
       case MapOverlayAction.continueCreation: 
         handleContinueCreation();
@@ -77,97 +166,6 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
         setState(() => pinCategory = value);
     }
   }
-
-  // createPinAction(String action) async {
-  //   if(action.contains('goto')) {
-  //     final start = action.indexOf(':');
-  //     String location = action.substring(start + 1);
-
-  //     LatLng latLng = await mapNavigate(location);
-
-  //     generateInitMarker(latLng);
-  //     return;
-  //   }
-
-  //   switch (action) {
-  //     case "close":
-  //       setState(() => displayCreatePin.value = false);
-  //       if(createdMarker != null) _remove(createdMarker!);
-  //       break;
-  //     case "currentlocation":
-  //       var results = await LocationHandler.determineDeviceLocation();
-
-  //       if(results != null) {
-  //         final _kLoc = CameraPosition(
-  //           target: LatLng(results.latitude, results.longitude),
-  //           zoom: 15,
-  //         );
-
-  //         _themesController.googleMapController!.animateCamera(CameraUpdate.newCameraPosition(_kLoc));
-  //       }
-  //       break;
-  //     case "dragdrop":
-  //       final devicePixelRatio =
-  //         Platform.isAndroid ? MediaQuery.of(context).devicePixelRatio : 1.0;
-
-  //       final location = await _themesController.googleMapController!.getLatLng(
-  //         ScreenCoordinate(
-  //           x: (MediaQuery.of(context).size.width * devicePixelRatio) ~/
-  //               2.0,
-  //           y: (MediaQuery.of(context).size.height * devicePixelRatio) ~/
-  //               2.0,
-  //         )
-  //       );
-
-  //       generateInitMarker(location);
-
-  //       break;
-  //     case "removemarker":
-  //       _remove(createdMarker!);
-  //       break;
-  //     case "togglesatellite":
-  //       // if (_themesController.mapType == MapType.normal) {
-  //       //   setState(() => _themesController.mapType = MapType.satellite);
-  //       // } else {
-  //       //   setState(() => _themesController.mapType = MapType.normal);
-  //       // }
-  //       break;
-  //     case "continue":
-  //       if(createdMarker == null || createdMarkerPos == null) {
-  //         showToast(context: context, type: ToastType.INFO, msg: 'Place a marker to continue');
-  //         break;
-  //       }
-
-  //       final CreatePinScreen screen = CreatePinScreen(location: createdMarkerPos!);
-  //       var result = await Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 400));
-
-  //       if(result != null) {
-  //         setState(() => displayCreatePin.value = false);
-  //         _remove(createdMarker!);
-
-  //         final MarkerId markerKey = MarkerId(result.pinKey.toString());
-  //         List loc = result.latLng.split(',');
-          
-  //         BitmapDescriptor mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/pin-2.svg', color: Colors.green, size: Size(45, 45));
-
-  //         final Marker marker = Marker(
-  //           markerId: markerKey,
-  //           position: LatLng(double.parse(loc[0]), double.parse(loc[1])),
-  //           draggable: false,
-  //           icon: mkr,
-  //           // onTap: () => _onMarkerTapped(markerKey),
-  //         );
-
-  //         setState(() {
-  //           markers[markerKey] = marker;
-  //         });
-  //       }
-
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // }
 
   handleContinueCreation() async {
     if(createdMarker.value == null || createdMarkerPos.value == null) {
@@ -179,36 +177,46 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     var result = await Navigator.of(context).push(SlideUpDownPageRoute(page: screen, closeDuration: 400));
 
     setState(() => isCreatingPin = false);
-    _remove(createdMarker.value!);
+    _remove(createdMarker.value!, nonCluster: true);
     _mapController.isPlaced.value = false;
 
     if(result != null) {
-      final MarkerId markerKey = MarkerId(result.pinKey.toString());
-      List loc = result.latLng.split(',');
-
-      String? iconPath = getIconPath(result);
-      
-      BitmapDescriptor mkr = await getMarkerIconV2(
-        context,
-        iconPath,
-        pinColor: ColorConstants.gray25,
-        text: result.title,
-        textStyle: TextStyle(
-          fontSize: 30,
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-        )
-      );
-
-      final Marker marker = Marker(
+      Pin newPin = result;
+      final MarkerId markerKey = MarkerId(newPin.pinKey.toString());
+      var item = Place(
         markerId: markerKey,
-        position: LatLng(double.parse(loc[0]), double.parse(loc[1])),
-        draggable: false,
-        icon: mkr,
-        onTap: () => _onMarkerTapped(markerKey),
+        name: newPin.title!,
+        latLng: LatLng(double.parse(newPin.latLng.split(',')[0]), double.parse(newPin.latLng.split(',')[1])),
+        pinCategory: newPin.category
       );
 
-      markers[markerKey] = marker;
+      _manager.addItem(item);
+      // final MarkerId markerKey = MarkerId(result.pinKey.toString());
+      // List loc = result.latLng.split(',');
+
+      // String? iconPath = getIconPath(result.category);
+      
+      // BitmapDescriptor mkr = await getMarkerIconV2(
+      //   context,
+      //   iconPath,
+      //   pinColor: ColorConstants.gray25,
+      //   text: result.title,
+      //   textStyle: TextStyle(
+      //     fontSize: 30,
+      //     color: Colors.black,
+      //     fontWeight: FontWeight.bold,
+      //   )
+      // );
+
+      // final Marker marker = Marker(
+      //   markerId: markerKey,
+      //   position: LatLng(double.parse(loc[0]), double.parse(loc[1])),
+      //   draggable: false,
+      //   icon: mkr,
+      //   onTap: () => _onMarkerTapped(markerKey),
+      // );
+
+      // markers[markerKey] = marker;
     }
   }
 
@@ -225,8 +233,8 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     return LatLng(loc.first.latitude, loc.first.longitude);
   }
 
-  generateInitMarker(LatLng coords) async {
-    if(createdMarker.value != null) _remove(createdMarker.value!);
+  generateInitMarkerV2(LatLng coords) async {
+    if(createdMarker.value != null) _remove(createdMarker.value!, nonCluster: true);
 
     final String key = '0';
     final MarkerId markerKey = MarkerId(key);
@@ -239,6 +247,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     }
 
     final Marker marker = Marker(
+      zIndex: 99,
       markerId: markerKey,
       position: coords,
       draggable: isCreatingPin ? true : false,
@@ -248,22 +257,51 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
       onDrag: (LatLng position) => _onMarkerDrag(markerKey, position),
     );
 
-    markers[markerKey] = marker;
+    nonClusteringMarkers[markerKey] = marker;
     createdMarker.value = markerKey;
     createdMarkerPos.value = coords;
     _mapController.isPlaced.value = true;
   }
 
-  String? getIconPath(Pin pin) {
+  // generateInitMarker(LatLng coords) async {
+  //   if(createdMarker.value != null) _remove(createdMarker.value!);
+
+  //   final String key = '0';
+  //   final MarkerId markerKey = MarkerId(key);
+    
+  //   BitmapDescriptor mkr;
+  //   if(isCreatingPin) {
+  //     mkr = await getMarkerIconV2(context, 'assets/icons/bold-plus.svg', imageColor: Colors.white, pinColor: primaryOrange);
+  //   }else {
+  //     mkr = await bitmapDescriptorFromSvgAsset(context, 'assets/icons/map-pin.svg');
+  //   }
+
+  //   final Marker marker = Marker(
+  //     markerId: markerKey,
+  //     position: coords,
+  //     draggable: isCreatingPin ? true : false,
+  //     icon: mkr,
+  //     // onTap: () => _onMarkerTapped(markerKey),
+  //     // onDragEnd: (LatLng position) => _onMarkerDragEnd(markerKey, position),
+  //     onDrag: (LatLng position) => _onMarkerDrag(markerKey, position),
+  //   );
+
+  //   markers[markerKey] = marker;
+  //   createdMarker.value = markerKey;
+  //   createdMarkerPos.value = coords;
+  //   _mapController.isPlaced.value = true;
+  // }
+
+  String? getIconPath(String? pinCategory) {
     String? path;
 
-    if(pin.category == null) {
+    if(pinCategory == null) {
       path = 'assets/icons/venture-colored.svg';
     }else {
-      var category = globals.defaultPinCategories.firstWhereOrNull((e) => e.name == pin.category);
+      var c = globals.defaultPinCategories.firstWhereOrNull((e) => e.name == pinCategory);
 
-      if(category != null) {
-        path = category.iconPath;
+      if(c != null) {
+        path = c.iconPath;
       }else {
         path = 'assets/icons/venture-colored.svg';
       }
@@ -272,46 +310,82 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     return path;
   }
 
-  displayGatheredPins(List<Pin> pins) async {
-    List<Pin> newPins = pins.where((e) => !markers.keys.map((f) => int.parse(f.value)).toList().contains(e.pinKey)).toList();
+  String? getMarkerText(Cluster<Place> cluster) {
+    String? string;
 
-    setState(() {
-      markers.removeWhere((k, v) => !pins.map((e) => e.pinKey).toList().contains(int.parse(k.value)) && k.value != '0');
-    });
-
-    for(Pin item in newPins) {
-      final MarkerId markerKey = MarkerId(item.pinKey.toString());
-      List loc = item.latLng.split(',');
-
-      String? iconPath = getIconPath(item);
-
-      BitmapDescriptor mkr = await getMarkerIconV2(
-        context,
-        iconPath,
-        pinColor: ColorConstants.gray25,
-        text: item.title,
-        textStyle: TextStyle(
-          fontSize: 30,
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-        )
-      );
-
-      final Marker marker = Marker(
-        markerId: markerKey,
-        position: LatLng(double.parse(loc[0]), double.parse(loc[1])),
-        draggable: false,
-        icon: mkr,
-        onTap: () => _onMarkerTapped(markerKey),
-      );
-
-      setState(() {
-        markers[markerKey] = marker;
-      });
+    if(cluster.isMultiple) {
+      string = "${cluster.items.first.name} \n+${(cluster.count - 1)} more";
+    }else {
+      string = cluster.items.first.name;
     }
 
-    print("MARKERS DISPLAYED: ${markers.length}");
+    return string;
   }
+
+  displayGatheredPinsV2(List<Pin> gatheredPins) async {
+    // // List<Pin> newPins = gatheredPins.where((e) => !markers.keys.map((f) => int.parse(f.value)).toList().contains(e.pinKey)).toList();
+
+    // // markers.removeWhere((k, v) => !pins.map((e) => e.pinKey).toList().contains(int.parse(k.value)) && k.value != '0');
+    // var firstList = [2, 2, 2, 3];
+    // var secondList = [1, 2, 3];
+    // // print(firstList.toSet().intersection(secondList.toSet()));
+    // print(secondList.any((item) => item == 2));
+
+
+    List<Place> p = gatheredPins.map((e) {
+      final MarkerId markerKey = MarkerId(e.pinKey.toString());
+      var item = Place(
+        markerId: markerKey,
+        name: e.title!,
+        latLng: LatLng(double.parse(e.latLng.split(',')[0]), double.parse(e.latLng.split(',')[1])),
+        pinCategory: e.category
+      );
+      return item;
+    }).toList();
+
+    _manager.setItems(p);
+  }
+
+  // displayGatheredPins(List<Pin> pins) async {
+  //   List<Pin> newPins = pins.where((e) => !markers.keys.map((f) => int.parse(f.value)).toList().contains(e.pinKey)).toList();
+
+  //   setState(() {
+  //     markers.removeWhere((k, v) => !pins.map((e) => e.pinKey).toList().contains(int.parse(k.value)) && k.value != '0');
+  //   });
+
+  //   for(Pin item in newPins) {
+  //     final MarkerId markerKey = MarkerId(item.pinKey.toString());
+  //     List loc = item.latLng.split(',');
+
+  //     String? iconPath = getIconPath(item);
+
+  //     BitmapDescriptor mkr = await getMarkerIconV2(
+  //       context,
+  //       iconPath,
+  //       pinColor: ColorConstants.gray25,
+  //       text: item.title,
+  //       textStyle: TextStyle(
+  //         fontSize: 30,
+  //         color: Colors.black,
+  //         fontWeight: FontWeight.bold,
+  //       )
+  //     );
+
+  //     final Marker marker = Marker(
+  //       markerId: markerKey,
+  //       position: LatLng(double.parse(loc[0]), double.parse(loc[1])),
+  //       draggable: false,
+  //       icon: mkr,
+  //       onTap: () => _onMarkerTapped(markerKey),
+  //     );
+
+  //     setState(() {
+  //       markers[markerKey] = marker;
+  //     });
+  //   }
+
+  //   print("MARKERS DISPLAYED: ${markers.length}");
+  // }
 
   void _onMarkerTapped(MarkerId key) {
     final Marker? tappedMarker = markers[key];
@@ -325,43 +399,20 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
     createdMarkerPos.value = newPosition;
   }
 
-  // Future<void> _onMarkerDragEnd(MarkerId key, LatLng newPosition) async {
-  //   final Marker? tappedMarker = markers[key];
-  //   if (tappedMarker != null) {
-  //     setState(() {
-  //       initMarkerPosition = null;
-  //     });
-  //     await showDialog<void>(
-  //         context: context,
-  //         builder: (BuildContext context) {
-  //           return AlertDialog(
-  //               actions: <Widget>[
-  //                 TextButton(
-  //                   child: const Text('OK'),
-  //                   onPressed: () => Navigator.of(context).pop(),
-  //                 )
-  //               ],
-  //               content: Padding(
-  //                   padding: const EdgeInsets.symmetric(vertical: 66),
-  //                   child: Column(
-  //                     mainAxisSize: MainAxisSize.min,
-  //                     children: <Widget>[
-  //                       Text('Old position: ${tappedMarker.position}'),
-  //                       Text('New position: $newPosition'),
-  //                     ],
-  //                   )));
-  //         });
-  //   }
-  // }
+  void _remove(MarkerId key, {bool nonCluster = false}) {
+    if(nonCluster) {
+      if (nonClusteringMarkers.containsKey(key)) {
+        nonClusteringMarkers.remove(key);
 
-  void _remove(MarkerId key) {
-    if (markers.containsKey(key)) {
-      markers.remove(key);
-
-      if(key.value == '0') {
-        createdMarker.value = null;
-        createdMarkerPos.value = null;
-        pinCategory = null;
+        if(key.value == '0') {
+          createdMarker.value = null;
+          createdMarkerPos.value = null;
+          pinCategory = null;
+        }
+      }
+    }else {
+      if (markers.containsKey(key)) {
+        markers.remove(key);
       }
     }
   }
@@ -434,7 +485,13 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
             mapType: _themesController.mapType.value,
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
+            // markers: Set<Marker>.of(markers.values),
+            markers: {
+              ...Set<Marker>.of(nonClusteringMarkers.values),
+              ...Set<Marker>.of(markers.values)
+            },
             onMapCreated: (GoogleMapController controller) async {
+              _manager.setMapId(controller.mapId); // Used for clustering
               setState(() {
                 _themesController.googleMapController = controller;
               });
@@ -449,16 +506,11 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
 
                 _themesController.googleMapController!.animateCamera(CameraUpdate.newCameraPosition(_kLoc));
               }
-              // _customInfoWindowController.googleMapController = controller;
             },
-            markers: Set<Marker>.of(markers.values),
             onCameraMove: (position) {
               KeyboardUtil.hideKeyboard(context);
+              _manager.onCameraMove(position, forceUpdate: true); // Used for clustering
               if(mapFetchTimer != null) mapFetchTimer!.cancel();
-
-              // setState(() {
-              //   markers.removeWhere((key, value) => key.value != '0');
-              // });
             },
             onCameraIdle: () async {
               LatLngBounds visibleRegion = await _themesController.googleMapController!.getVisibleRegion();
@@ -481,17 +533,16 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
                 var results = await getMapPins(context, latlng: latlng, radius: double.parse(radiusInMiles.toString()));
                 setState(() => isLoading = false);
 
-                displayGatheredPins(results);
+                // displayGatheredPins(results);
+                displayGatheredPinsV2(results);
               });
 
             },
             onTap: (latlng) {
               KeyboardUtil.hideKeyboard(context);
-              // if(displayCreatePin.value) {
-              //   generateInitMarker(latlng);
-              // }
               if(isCreatingPin) {
-                generateInitMarker(latlng);
+                // generateInitMarker(latlng);
+                generateInitMarkerV2(latlng);
               }
             },
             onLongPress: (latlng) {
