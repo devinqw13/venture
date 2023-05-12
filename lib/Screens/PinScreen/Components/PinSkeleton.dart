@@ -14,10 +14,12 @@ import 'package:venture/Components/ExpandableText.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Keyboard.dart';
+import 'package:venture/Helpers/MapLauncher.dart';
 import 'package:venture/Helpers/MapPreview.dart';
 import 'package:venture/Helpers/PhotoHero.dart';
 import 'package:venture/Helpers/RatePinSheet.dart';
 import 'package:venture/Helpers/TimeFormat.dart';
+import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Controllers/ThemeController.dart';
@@ -25,6 +27,7 @@ import 'package:venture/Screens/PinSettingsScreen/PinSettingsScreen.dart';
 import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PinSkeleton extends StatefulWidget {
   final Pin pin;
@@ -70,6 +73,17 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
   goToSettings() {
     PinSettingsScreen screen = PinSettingsScreen(pin: widget.pin);
     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+  }
+
+  openMapDirections() async {
+    double lat = double.parse(widget.pin.latLng.split(',')[0]);
+    double lng = double.parse(widget.pin.latLng.split(',')[1]);
+
+    var uri = MapsLauncher.createCoordinatesUri(lat, lng, pin.title);
+
+    if (!await launchUrl(uri)) {
+      showToastV2(context: context, msg: 'There was an issue opening map directions.');
+    }
   }
 
   _handleSavePin() {
@@ -538,7 +552,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                     ),
                   ) : SizedBox(height: 10),
                   ZoomTapAnimation(
-                    onTap: () => print("GO TO MAP"),
+                    onTap: () => openMapDirections(),
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                       child: Text(
@@ -681,7 +695,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                     ),
                   ) : SizedBox(height: 10),
                   ZoomTapAnimation(
-                    onTap: () => print("GO TO MAP"),
+                    onTap: () => openMapDirections(),
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                       child: Text(
@@ -822,7 +836,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                     ),
                   ) : SizedBox(height: 10),
                   ZoomTapAnimation(
-                    onTap: () => print("GO TO MAP"),
+                    onTap: () => openMapDirections(),
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                       child: Text(

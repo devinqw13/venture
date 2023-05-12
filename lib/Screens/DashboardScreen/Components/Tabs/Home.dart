@@ -141,7 +141,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
         child: BackdropFilter(
           filter: Get.isDarkMode ? ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7) : ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            color: Get.isDarkMode ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.8),
+            color: Get.isDarkMode ? Colors.black.withOpacity(0.85) : Colors.white.withOpacity(0.8),
           ),
         ),
       ),

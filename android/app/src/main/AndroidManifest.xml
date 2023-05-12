@@ -2,6 +2,13 @@
     package="com.example.venture">
 
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sms" />
+        </intent>
+    </queries>
     
    <application
         android:label="venture"
