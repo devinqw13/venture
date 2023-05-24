@@ -27,9 +27,9 @@
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>Allow access to location to gain access to map features</string>
+		<string>Venture uses this to personalize content, access app features, and help people find pins on the map.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>Allow access to photo library to make media posts</string>
+		<string>Allow access to photo library to make content posts.</string>
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>fetch</string>

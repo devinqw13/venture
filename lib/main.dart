@@ -96,6 +96,9 @@ class _MyAppState extends State<MyApp> {
      globals.apiBaseUrl = remoteConfig.getString('api_base_url');
      globals.googleMapsApi = remoteConfig.getString('google_maps_api');
      globals.googleApi = remoteConfig.getString('google_api_key');
+     globals.ventureApi = remoteConfig.getString('venture_api_key');
+     globals.privacyPolicy = remoteConfig.getString('venture_privacy_policy');
+     globals.legalTerms = remoteConfig.getString('venture_terms');
 
      List<dynamic> categoryJsonList = json.decode(remoteConfig.getString('venture_default_pin_categories')) as List<dynamic>;
      globals.defaultPinCategories = [...categoryJsonList.map((e) => PinCategory.fromMap(e))];

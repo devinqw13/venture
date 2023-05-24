@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Globals.dart' as globals;
 import 'package:venture/Constants.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Helpers/Toast.dart';
-import 'package:venture/Models/VenUser.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -33,6 +34,20 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     super.initState();
     fToast = FToast();
     fToast!.init(context);
+  }
+
+  goToPrivacyPolicy() async {
+    Uri _url = Uri.parse(globals.privacyPolicy);
+    if (!await launchUrl(_url)) {
+      showToastV2(context: context, msg: 'Could not open link.');
+    }
+  }
+
+  goToLegalTerms() async {
+    Uri _url = Uri.parse(globals.legalTerms);
+    if (!await launchUrl(_url)) {
+      showToastV2(context: context, msg: 'Could not open link.');
+    }
   }
 
   onPasswordChanged(String password) {
@@ -371,6 +386,48 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                         hintText: "Repeat Password",
                         contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                       ),
+                    ),
+                    SizedBox(height: 30),
+                    // Text("Please create a secure password including the following criteria below.", 
+                    //   style: TextStyle(fontSize: 16, height: 1.5, color: Colors.grey.shade600)),
+                    Center(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.6,
+                        child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "By signing up, your agree to our "
+                            ),
+                            WidgetSpan(
+                              child: ZoomTapAnimation(
+                                onTap: () => goToLegalTerms(),
+                                child: Text(
+                                  "Terms",
+                                  style: TextStyle(
+                                    color: primaryOrange
+                                  ),
+                                )
+                              )
+                            ),
+                            TextSpan(
+                              text: " & "
+                            ),
+                            WidgetSpan(
+                              child: ZoomTapAnimation(
+                                onTap: () => goToPrivacyPolicy(),
+                                child: Text(
+                                  "Privacy Policy",
+                                  style: TextStyle(
+                                    color: primaryOrange
+                                  ),
+                                )
+                              )
+                            ),
+                          ]
+                        ),
+                        textAlign: TextAlign.center,
+                      ))
                     ),
                     SizedBox(height: 30),
                     ElevatedButton(

@@ -12,9 +12,9 @@ import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class LikedByScreen extends StatefulWidget {
-  final String? documentId;
+  final String contentKey;
   final int numOfLikes;
-  LikedByScreen({Key? key, required this.documentId, this.numOfLikes = 0}) : super(key: key);
+  LikedByScreen({Key? key, required this.contentKey, this.numOfLikes = 0}) : super(key: key);
 
   @override
   _LikedByScreen createState() => _LikedByScreen();
@@ -81,7 +81,7 @@ class _LikedByScreen extends State<LikedByScreen> {
             shrinkWrap: true,
             pageSize: 20,
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-            query: FirebaseAPI().likedByQuery(widget.documentId),
+            query: FirebaseAPI().likedByQueryV2(widget.contentKey),
             emptyBuilder: (context) {
               return Container(
                 padding: EdgeInsets.symmetric(vertical: 8),
@@ -96,7 +96,8 @@ class _LikedByScreen extends State<LikedByScreen> {
               );
             },
             itemBuilder: (context, documentSnapshot) {
-              String userFirebaseId = documentSnapshot.id;
+              Map<String, dynamic> docData = documentSnapshot.data()! as Map<String, dynamic>;
+              String userFirebaseId = docData['firebase_id'];
               return FutureBuilder(
                 future: FirebaseAPI().getUserFromFirebaseId(userFirebaseId),
                 builder: (context, snapshot) {

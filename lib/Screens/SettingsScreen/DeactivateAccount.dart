@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:venture/Helpers/Toast.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Globals.dart' as globals;
 import 'package:venture/Components/Avatar.dart';
@@ -41,7 +42,14 @@ class _DeactivateAccount extends State<DeactivateAccount> {
   }
 
   startDeactivation() async {
+    KeyboardUtil.hideKeyboard(context);
     if(isDeactivateLoading || isDeleteLoading) return;
+
+    if(pwdTextController.text.isEmpty) {
+      showToastV2(context: context, msg: 'Must enter your password.');
+      return;
+    }
+
     setState(() => isDeactivateLoading = true);
     bool didReauth = await FirebaseAPI().reauthenticate(
       context, 
@@ -86,7 +94,14 @@ class _DeactivateAccount extends State<DeactivateAccount> {
   }
 
   startDeletion() async {
+    KeyboardUtil.hideKeyboard(context);
     if(isDeactivateLoading || isDeleteLoading) return;
+
+    if(pwdTextController.text.isEmpty) {
+      showToastV2(context: context, msg: 'Must enter your password.');
+      return;
+    }
+
     setState(() => isDeleteLoading = true);
     bool didReauth = await FirebaseAPI().reauthenticate(
       context, 
@@ -96,7 +111,7 @@ class _DeactivateAccount extends State<DeactivateAccount> {
     setState(() => isDeleteLoading = false);
 
     if(didReauth) {
-      showCustomDialog(
+      var result = await showCustomDialog(
         context: context, 
         barrierDismissible: false,
         title: "Delete account", 
@@ -117,6 +132,14 @@ class _DeactivateAccount extends State<DeactivateAccount> {
           },
         }
       );
+
+      if(result) {
+        setState(() => isDeleteLoading = true);
+        var _ = terminateVentureAccount(context, VenUser().userKey.value, FirebaseAPI().firebaseId()!);
+        setState(() => isDeleteLoading = false);
+
+        globals.logout(context);
+      }
     }
   }
 
@@ -259,34 +282,13 @@ class _DeactivateAccount extends State<DeactivateAccount> {
             //   ),
             // ),
             SizedBox(height: 20),
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Deleting your account ",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18
-                    ),
-                  ),
-                  TextSpan(
-                    text: "(currently unavailable)",
-                    style: TextStyle(
-                      // fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                      fontSize: 18
-                    )
-                  )
-                ]
-              )
+            Text(
+              "Deleting your account",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18
+              ),
             ),
-            // Text(
-            //   "Deleting your account (currently unavailable)",
-            //   style: TextStyle(
-            //     fontWeight: FontWeight.bold,
-            //     fontSize: 18
-            //   ),
-            // ),
             SizedBox(height: 5),
             Text(
               "While deleting your Venture account your profile, pins, content (photo & videos), comments, likes, and followers will be deleted. Deleting your account is permanent and cannot be undone.",
@@ -333,7 +335,7 @@ class _DeactivateAccount extends State<DeactivateAccount> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => startDeactivation(),
-                    child: !isDeactivateLoading ? Text(
+                    child: !isDeactivateLoading && !isDeleteLoading ? Text(
                       "Deactivate",
                       style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
                     ) : CupertinoActivityIndicator(
@@ -353,14 +355,14 @@ class _DeactivateAccount extends State<DeactivateAccount> {
               ],
             ),
             SizedBox(height: 10),
-            // Center(
-            //   child: ZoomTapAnimation(
-            //     onTap: () => startDeletion(),
-            //     child: Text("Delete account",
-            //       style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold, color: Colors.red),
-            //     )
-            //   )
-            // )
+            Center(
+              child: ZoomTapAnimation(
+                onTap: () => startDeletion(),
+                child: Text("Delete account",
+                  style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold, color: Colors.red),
+                )
+              )
+            )
           ],
         ),
       )

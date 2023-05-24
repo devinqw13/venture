@@ -17,17 +17,15 @@ import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class CommentScreen extends StatefulWidget {
-  final String? documentId;
   final int? numOfComments;
   final Content content;
-  CommentScreen({Key? key, required this.documentId, this.numOfComments = 0, required this.content}) : super(key: key);
+  CommentScreen({Key? key, this.numOfComments = 0, required this.content}) : super(key: key);
 
   @override
   _CommentScreen createState() => _CommentScreen();
 }
 
 class _CommentScreen extends State<CommentScreen> {
-  String? documentId;
   late int numOfComments;
   var allowPost = false.obs;
   TextEditingController textController = TextEditingController();
@@ -37,7 +35,6 @@ class _CommentScreen extends State<CommentScreen> {
   @override
   void initState() {
     super.initState();
-    documentId = widget.documentId;
     numOfComments = widget.numOfComments ?? 0;
 
     textController.addListener(() {
@@ -64,22 +61,19 @@ class _CommentScreen extends State<CommentScreen> {
   submitComment() async {
     if(textController.text.isEmpty) return;
 
-    var result = await FirebaseAPI().addComment(
+    await FirebaseAPI().addCommentV2(
       context,
-      documentId,
-      widget.content.contentKey,
+      widget.content.contentKey.toString(),
+      widget.content.pinKey.toString(),
       textController.text,
       data: {
         "comment": textController.text,
         "content_key": widget.content.contentKey,
         "pin_key": widget.content.pinKey,
         "user_key": widget.content.user!.userKey.toString(),
-        "documentId": documentId,
         "content_image_url": widget.content.contentUrls.first
       }
     );
-
-    if(documentId == null) setState(() => documentId = result);
 
     textController.clear();
     scrollController.animateTo(
@@ -113,7 +107,7 @@ class _CommentScreen extends State<CommentScreen> {
     );
 
     if(result) {
-      FirebaseAPI().deleteComment(documentId!, commentId);
+      FirebaseAPI().deleteCommentV2(commentId);
       print("comment deleted...");
     }
   }
@@ -156,7 +150,7 @@ class _CommentScreen extends State<CommentScreen> {
                     child: FirestoreListView(
                       physics: NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
-                      query: FirebaseAPI().commentQuery(documentId),
+                      query: FirebaseAPI().commentQueryV2(widget.content.contentKey.toString()),
                       pageSize: 20,
                       emptyBuilder: (context) {
                         return Container(

@@ -13,6 +13,9 @@ String apiBaseUrl = '';
 String googleMapsApi = '';
 String googleMapPreviewPin = '';
 String googleApi = '';
+String ventureApi = '';
+String privacyPolicy = '';
+String legalTerms = '';
 List<PinCategory> defaultPinCategories = [];
 
 logout(BuildContext context) async {

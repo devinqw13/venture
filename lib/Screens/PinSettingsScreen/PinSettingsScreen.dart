@@ -8,6 +8,7 @@ import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Models/Pin.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class PinSettingsScreen extends StatefulWidget {
@@ -65,7 +66,7 @@ class _PinSettingsScreen extends State<PinSettingsScreen> {
     );
 
     if(result != null && result) {
-      deletePins(context, [pin.pinKey], FirebaseAPI().firebaseId()!);
+      deletePins(context, [pin.pinKey], FirebaseAPI().firebaseId()!, VenUser().userKey.value.toString());
       Navigator.of(context)..pop()..pop({"action": "deleted"});
       // LoginScreen loginController = LoginScreen();
       // Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => loginController), (Route<dynamic> route) => false);

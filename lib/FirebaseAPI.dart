@@ -43,6 +43,12 @@ class FirebaseAPI extends ChangeNotifier {
         .snapshots();
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>?> getReactionsV3(String contentKey) {
+    return _firestore.collection('content_reactions')
+      .where('content_key', isEqualTo: contentKey)
+      .snapshots();
+  }
+
   Future<dynamic> getContentFromKey(String contentKey) async {
     return await _firestore.collection('content')
       .where('content_key', isEqualTo: contentKey).get();
@@ -52,6 +58,12 @@ class FirebaseAPI extends ChangeNotifier {
     return await _firestore.collection('content')
       .doc(documentId)
       .collection('comments')
+      .get();
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>?> getCommentsV2(String contentKey) async {
+    return await _firestore.collection('content_comments')
+      .where('content_key', isEqualTo: contentKey)
       .get();
   }
 
@@ -188,18 +200,19 @@ class FirebaseAPI extends ChangeNotifier {
           'user_key': result['user_key'].toString(),
           'username': username,
           'display_name': null,
-          'email': userCredential.user!.email,
+          'email': userCredential.user!.email!,
           'firebase_id': FirebaseAuth.instance.currentUser!.uid,
           'photo_url': 'https://venture-content.s3.amazonaws.com/images/default-avatar.jpg',
           'biography': null,
           'verified': false,
           'user_deactivated': false,
-          'user_deleted': false
+          'user_terminated': false
         }, SetOptions(merge: true)).then((value) {
         }).catchError((error) {print("Failed to add message: $error");});
 
         final storage = GetStorage();
         VenUser().userKey.value = result['user_key'];
+        VenUser().email = userCredential.user!.email!;
         VenUser().onChange();
         storage.write('user_key', VenUser().userKey.value);
         storage.write('user_email', userCredential.user!.email);
@@ -252,6 +265,7 @@ class FirebaseAPI extends ChangeNotifier {
 
           if(result) {
             VenUser().userKey.value = userKey;
+            VenUser().email = userCredential.user!.email!;
             VenUser().onChange();
             storage.write('user_key', VenUser().userKey.value);
             storage.write('user_email', user);
@@ -260,6 +274,7 @@ class FirebaseAPI extends ChangeNotifier {
           }
         }else {
           VenUser().userKey.value = userKey;
+          VenUser().email = userCredential.user!.email!;
           VenUser().onChange();
           storage.write('user_key', VenUser().userKey.value);
           storage.write('user_email', user);
@@ -403,6 +418,22 @@ class FirebaseAPI extends ChangeNotifier {
     }
   }
 
+  Future<void> addReactionV3(BuildContext context, String contentKey, String pinKey, {Map<String, dynamic>? data}) async {
+    HapticFeedback.mediumImpact();
+
+    String documentId = FirebaseAPI().firebaseId()! + "-" + contentKey;
+    
+    _firestore.collection('content_reactions').doc(documentId).set({
+      'firebase_id': FirebaseAPI().firebaseId(),
+      'content_key': contentKey,
+      'pin_key': pinKey,
+      'timestamp': DateTime.now().toUtc()
+    }).then((v) async {
+      // SEND NOTIFICATION
+      reactionNotification(context, data);
+    });
+  }
+
   Future<void> addReactionFromKey(BuildContext context, int contentKey, {Map<String, dynamic>? data}) async {
     var content = await _firestore.collection('content').where('content_key', isEqualTo: contentKey.toString()).get();
 
@@ -460,12 +491,29 @@ class FirebaseAPI extends ChangeNotifier {
     var _ = _firestore.collection('content').doc(documentId).collection('reactions').doc(FirebaseAuth.instance.currentUser!.uid).delete().onError((error, stackTrace) => print("Failed to remove reaction: $error"));
   }
 
+  Future<void> removeReactionV3(String contentKey) async {
+    // HapticFeedback.lightImpact();
+    String documentId = FirebaseAPI().firebaseId()! + "-" + contentKey;
+
+    var _ = _firestore.collection('content_reactions').doc(documentId).delete().onError((error, stackTrace) => print("Failed to remove reaction: $error"));
+  }
+
   Query<Object?> likedByQuery(String? documentId) {
     return FirebaseFirestore.instance.collection('content').doc(documentId).collection('reactions').orderBy('timestamp', descending: true);
   }
 
+  Query<Object?> likedByQueryV2(String contentKey) {
+    return _firestore.collection('content_reactions').where('content_key', isEqualTo: contentKey).orderBy('timestamp', descending: true);
+  }
+
   Query<Object?> commentQuery(String? documentId) {
     return _firestore.collection('content').doc(documentId).collection('comments').orderBy('timestamp', descending: true);
+  }
+
+  Query<Object?> commentQueryV2(String contentKey) {
+    var res = _firestore.collection('content_comments').where(Filter('content_key', isEqualTo: contentKey));
+
+    return res;
   }
 
   Query<Object?> followersQuery(String? documentId) {
@@ -564,6 +612,10 @@ class FirebaseAPI extends ChangeNotifier {
     await _firestore.collection('content').doc(contentId).collection('comments').doc(commentId).delete();
   }
 
+  Future<void> deleteCommentV2(String commentId) async {
+    await _firestore.collection('content_comments').doc(commentId).delete();
+  }
+
   Future<String> addComment(BuildContext context, String? documentId, int contentKey, String comment, {Map<String, dynamic>? data}) async {
     // HapticFeedback.mediumImpact();
 
@@ -597,6 +649,21 @@ class FirebaseAPI extends ChangeNotifier {
     }
 
     return documentId;
+  }
+
+  Future<void> addCommentV2(BuildContext context, String contentKey, String pinKey, String comment, {Map<String, dynamic>? data}) async {
+    // HapticFeedback.mediumImpact();
+
+    _firestore.collection('content_comments').doc().set({
+      'firebase_id': FirebaseAuth.instance.currentUser!.uid,
+      'content_key': contentKey,
+      'pin_key': pinKey,
+      'comment': comment,
+      'timestamp': DateTime.now().toUtc(),
+    }).then((v) {
+      // SEND NOTIFICATION
+      // commentNotification(context, data);
+    });
   }
 
   Future<void> commentNotification(BuildContext context, Map<String, dynamic>? data) async {
@@ -807,10 +874,11 @@ class FirebaseAPI extends ChangeNotifier {
       jsonMap['pin_key'] = json.decode(data['rating_data'])['pin_key'];
       jsonMap['rating'] = json.decode(data['rating_data'])['rating'];
     }
-    // else if(type == 'convo_message') {
-    //   type = 'messages';
-    //   jsonMap['firebase_id'] = json.decode(data['message_by'])['firebase_id'];
-    // }
+    else if(type == 'convo_message') {
+      // type = 'messages';
+      // jsonMap['firebase_id'] = json.decode(data['message_by'])['firebase_id'];
+      return true;
+    }
 
     var notiRef = _firestore.collection('notifications').doc(firebaseId);
     var result = await notiRef.set({

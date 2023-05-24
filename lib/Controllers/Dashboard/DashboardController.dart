@@ -6,6 +6,7 @@ import 'package:venture/Screens/DashboardScreen/Components/Tabs/Notification.dar
 import 'package:venture/Screens/DashboardScreen/Components/Tabs/Profile.dart';
 import 'package:venture/Screens/DashboardScreen/Components/Tabs/Search.dart';
 import 'package:venture/Screens/DashboardScreen/Components/Tabs/Map.dart';
+import 'package:venture/Screens/DashboardScreen/Components/Tabs/SearchV2.dart';
 // import 'package:venture/Screens/DashboardScreen/Components/Tabs/Circle.dart';
 // import 'package:venture/Screens/DashboardScreen/Components/Tabs/Account.dart';
 
@@ -24,7 +25,8 @@ class HomeController extends GetxController {
 
   List<Widget> pages = [
    HomeTab(),
-   SearchTab(),
+  //  SearchTab(),
+   SearchTabV2(),
    MapTab(),
    NotificationTab(),
   //  CircleTab(),

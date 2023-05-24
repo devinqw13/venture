@@ -385,12 +385,12 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
     );
   }
 
-  goToLikedBy(String? documentId, int numOfLikes) {
-    LikedByScreen screen = LikedByScreen(documentId: documentId, numOfLikes: numOfLikes);
+  goToLikedBy(int numOfLikes, String contentKey) {
+    LikedByScreen screen = LikedByScreen(numOfLikes: numOfLikes, contentKey: contentKey);
     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 
-  Widget buildReactionButton(List<String>? reactions, String? documentId, Content content) {
+  Widget buildReactionButton(List<String>? reactions, Content content) {
     if(FirebaseAPI().firebaseId() == null) {
       return ZoomTapAnimation(
         onTap: () => showLogin(),
@@ -416,7 +416,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
       return Row(
         children: [
           ZoomTapAnimation(
-            onTap: () => goToLikedBy(documentId, reactions != null ? reactions.length : 0),
+            onTap: () => goToLikedBy(reactions != null ? reactions.length : 0, content.contentKey.toString()),
             child: Container(
               color: Colors.transparent,
               padding: EdgeInsets.symmetric(horizontal: 10),
@@ -431,17 +431,17 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
           ),
           // SizedBox(width: 10),
           reactions != null && reactions.contains(FirebaseAPI().firebaseId()) ? ZoomTapAnimation(
-              onTap: () => FirebaseAPI().removeReactionV2(documentId!),
+              onTap: () => FirebaseAPI().removeReactionV3(content.contentKey.toString()),
               child: CustomIcon(
                 icon: 'assets/icons/favorite-filled.svg',
                 size: 27,
                 color: Colors.red,
               ),
             ) : ZoomTapAnimation(
-            onTap: () => FirebaseAPI().addReactionV2(
+            onTap: () => FirebaseAPI().addReactionV3(
               context,
-              documentId,
-              content.contentKey,
+              content.contentKey.toString(),
+              content.pinKey.toString(),
               data: {
                 "content_key": content.contentKey,
                 "pin_key": content.pinKey,
@@ -460,14 +460,14 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
     }
   }
 
-  goToCommentScreen(String? documentId, int? numOfComments, int contentKey) {
-    CommentScreen screen = CommentScreen(documentId: documentId, numOfComments: numOfComments, content: widget.content);
+  goToCommentScreen(int? numOfComments, int contentKey) {
+    CommentScreen screen = CommentScreen(numOfComments: numOfComments, content: widget.content);
     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
   }
 
-  buildCommentButton(List<String>? comments, String? documentId, int contentKey) {
+  buildCommentButton(List<String>? comments, int contentKey) {
     return ZoomTapAnimation(
-      onTap: () => goToCommentScreen(documentId, comments?.length, contentKey),
+      onTap: () => goToCommentScreen(comments?.length, contentKey),
       child: Container(
         color: Colors.transparent,
         child: Row(
@@ -497,37 +497,30 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          StreamBuilder(
-            stream: FirebaseAPI().getContentDoc(content.contentKey.toString()),
-            builder: (context, contentDocSnapshot) {
-              Map<String, dynamic>? data = contentDocSnapshot.data as Map<String, dynamic>?;
-              String? documentId = data?['documentId'];
-              return Row(
-                children: [
-                  // build reactions amount & icon
-                  StreamBuilder(
-                    stream: FirebaseAPI().getReactionsV2(content.contentKey.toString(), documentId),
-                    builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>?> reactionSnapshot) {
-                      
-                      List<String>? reactions = reactionSnapshot.data?.docs.map((e) => e.id).toList();
+          Row(
+            children: [
+              // build reactions amount & icon
+              StreamBuilder(
+                stream: FirebaseAPI().getReactionsV3(content.contentKey.toString()),
+                builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>?> reactionSnapshot) {
 
-                      return buildReactionButton(reactions, documentId, content);
+                  List<String>? reactions = reactionSnapshot.data?.docs.map((e) => e.data()['firebase_id'] as String).toList();
 
-                    }
-                  ),
-                  SizedBox(width: 20),
-                  // build comment amount & icon
-                  FutureBuilder(
-                    future: FirebaseAPI().getComments(documentId),
-                    builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>?> commentSnapshot) {
-                      List<String>? comments = commentSnapshot.data?.docs.map((e) => e.id).toList();
+                  return buildReactionButton(reactions, content);
 
-                      return buildCommentButton(comments, documentId, content.contentKey);
-                    }
-                  )
-                ]
-              );
-            }
+                }
+              ),
+              SizedBox(width: 20),
+              // build comment amount & icon
+              FutureBuilder(
+                future: FirebaseAPI().getCommentsV2(content.contentKey.toString()),
+                builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>?> commentSnapshot) {
+                  List<String>? comments = commentSnapshot.data?.docs.map((e) => e.id).toList();
+
+                  return buildCommentButton(comments, content.contentKey);
+                }
+              )
+            ]
           ),
 
           VenUser().userKey.value != 0 ? CustomOptionsPopupMenu(
@@ -563,10 +556,10 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
           )
           : GestureDetector(
             onDoubleTap: () async {
-              await FirebaseAPI().addReactionV2(
+              await FirebaseAPI().addReactionV3(
                 context,
-                null,
-                content.contentKey,
+                content.contentKey.toString(),
+                content.pinKey.toString(),
                 data: {
                   "content_key": content.contentKey,
                   "pin_key": content.pinKey,

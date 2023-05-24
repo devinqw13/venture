@@ -66,7 +66,7 @@ void showToastV2({
       child: Container(
         // alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: forcedBrightness != null ? forcedBrightness == Brightness.dark ? Colors.grey[350]!.withOpacity(0.5) : ColorConstants.gray600.withOpacity(0.8) : Get.isDarkMode ? Colors.grey[350]!.withOpacity(0.5) : ColorConstants.gray600.withOpacity(0.8),
+          color: forcedBrightness != null ? forcedBrightness == Brightness.dark ? Colors.grey[350]!.withOpacity(0.5) : ColorConstants.gray600.withOpacity(0.8) : Get.isDarkMode ? ColorConstants.gray600.withOpacity(0.8) : Colors.grey[350]!.withOpacity(0.5),
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),

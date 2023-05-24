@@ -485,7 +485,7 @@ Future<List<Pin>> getMapPins(BuildContext context, {String? latlng = "", String?
     return pins;
   }
   else {
-    showToast(context: context, color: Colors.red, msg: "An error has occured.");
+    showToastV2(context: context, msg: "An error has occured.");
     return [];
   }
 }
@@ -747,7 +747,7 @@ Future<List<Pin>> getSuggestions(BuildContext context, String latLng, double rad
   }
 }
 
-Future<void> deletePins(BuildContext context, List<int> pinKeys, String firebaseId) async {
+Future<void> deletePins(BuildContext context, List<int> pinKeys, String firebaseId, String userKey) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
@@ -755,6 +755,7 @@ Future<void> deletePins(BuildContext context, List<int> pinKeys, String firebase
 
   Map jsonMap = {
     "pin_keys": pinKeys,
+    "user_key": userKey,
     "firebase_id" : firebaseId
   };
 
@@ -948,4 +949,43 @@ Future<bool> reactivateVentureAccount(BuildContext context, int userKey, String 
     showToastV2(context: context, msg: "An error has occurred.");
     return false;
   }
+}
+
+Future<void> terminateVentureAccount(BuildContext context, int userKey, String firebaseId) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+    'x-api-key': globals.ventureApi
+  };
+
+  print(headers);
+
+  Map jsonMap = {
+    "user_key": userKey,
+    "firebase_id": firebaseId,
+  };
+
+  String url = "${globals.apiBaseUrl}/delete/account";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToastV2(context: context, msg: "Connection timeout.");
+    return;
+  } catch(e) {
+    showToastV2(context: context, msg: "An error has occurred.");
+    return;
+  }
+
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  print(jsonResponse);
 }
