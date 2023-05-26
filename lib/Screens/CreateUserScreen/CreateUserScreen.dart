@@ -397,7 +397,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                         TextSpan(
                           children: [
                             TextSpan(
-                              text: "By signing up, your agree to our "
+                              text: "By signing up, you agree to our "
                             ),
                             WidgetSpan(
                               child: ZoomTapAnimation(

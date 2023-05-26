@@ -958,14 +958,51 @@ Future<void> terminateVentureAccount(BuildContext context, int userKey, String f
     'x-api-key': globals.ventureApi
   };
 
-  print(headers);
-
   Map jsonMap = {
     "user_key": userKey,
     "firebase_id": firebaseId,
   };
 
   String url = "${globals.apiBaseUrl}/delete/account";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToastV2(context: context, msg: "Connection timeout.");
+    return;
+  } catch(e) {
+    showToastV2(context: context, msg: "An error has occurred.");
+    return;
+  }
+
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  print(jsonResponse);
+}
+
+Future<void> report(BuildContext context, int userKey, String reportType, String? desc, int reportee, String? userNotes) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "reporter_user_key": userKey,
+    "reportee_key": reportee,
+    "report_type": reportType,
+    "report_desc": desc,
+    "report_notes": userNotes
+  };
+
+  String url = "${globals.apiBaseUrl}/report";
 
   Map jsonResponse = {};
   http.Response response;

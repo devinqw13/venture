@@ -11,6 +11,7 @@ import 'package:venture/Calls.dart';
 import 'package:venture/Components/CustomOptionsPopupMenu.dart';
 import 'package:venture/Components/DropShadow.dart';
 import 'package:venture/Components/FadeOverlay.dart';
+import 'package:venture/Components/ReportSheet.dart';
 import 'package:venture/Components/VideoPlayer.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
@@ -53,6 +54,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
   CarouselController controller = CarouselController();
   int currentIndex = 0;
   late Offset doubleTapPosition;
+  GlobalKey _key = GlobalKey();
 
   @override
   bool get wantKeepAlive => true;
@@ -491,6 +493,49 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
     );
   }
 
+  bookmarkPin(Content content) async {
+    await FirebaseAPI().setPinSaved(
+      context,
+      FirebaseAPI().firebaseId()!,
+      content.pinKey.toString(),
+      true
+    );
+
+    RenderBox box = _key.currentContext!.findRenderObject() as RenderBox;
+    Offset position = box.localToGlobal(Offset.zero);
+    double y = position.dy;
+    double x = position.dx;
+    Offset offset = Offset(
+      x + (box.size.width / 2),
+      y + (box.size.height / 2)
+    );
+
+    showOverlayMessage(context: context, offset: offset, message: "Bookmarked");
+  }
+
+  reportContent(Content content) async {
+    var result = await showReportSheet(
+      context: context,
+      reportee: content.contentKey,
+      type: "C"
+    );
+
+    if(result != null && result) {
+      RenderBox box = _key.currentContext!.findRenderObject() as RenderBox;
+      Offset position = box.localToGlobal(Offset.zero);
+      double y = position.dy;
+      double x = position.dx;
+      Offset offset = Offset(
+        x + (box.size.width / 2),
+        y + (box.size.height / 2)
+      );
+
+      Future.delayed(Duration(seconds: 1), () {
+        showOverlayMessage(context: context, offset: offset, message: "Report Submitted", duration: Duration(milliseconds: 1500));
+      });
+    }
+  }
+
   _buildContentActions(ThemeData theme, Content content) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 18, vertical: 5),
@@ -533,7 +578,14 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
                 ),
               CustomOptionPopupMenuItem(
                 text: Text("Add to bookmarks"),
-              )
+                onTap: () => bookmarkPin(content)
+              ),
+              if(content.user!.userKey != VenUser().userKey.value)
+                CustomOptionPopupMenuItem(
+                  text: Text("Report", style: TextStyle(color: Colors.red)),
+                  icon: CustomIcon(icon: 'assets/icons/caution.svg' ,color: Colors.red, size: 27),
+                  onTap: () => reportContent(content)
+                )
             ]
           ) : Container()
         ],
@@ -622,6 +674,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
 
   _buildContent(Content content) {
     return Expanded(
+      key: _key,
       child: Stack(
         children: [
           Positioned.fill(
@@ -798,6 +851,69 @@ class LikeHeartWidget extends StatelessWidget {
           )
         ),
       )
+    );
+  }
+}
+
+void showOverlayMessage({
+  required BuildContext context,
+  required Offset offset,
+  required String message,
+  Duration duration = const Duration(milliseconds: 1000)
+}) {
+  OverlayEntry overlayEntry;
+  overlayEntry = OverlayEntry(
+      builder: (context) => OverlayMessageWidget(offset: offset, msg: message)
+  );
+  Overlay.of(context).insert(overlayEntry);
+  Timer(duration, () =>  overlayEntry.remove());
+}
+
+class OverlayMessageWidget extends StatelessWidget {
+  final Offset offset;
+  final String msg;
+  OverlayMessageWidget({Key? key, required this.offset, required this.msg}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final textSpan = TextSpan(
+      text: msg,
+      style: TextStyle(
+        fontSize: 16,
+        color: Colors.white
+      )
+    );
+    final Size size = (TextPainter(
+        text: textSpan,
+        // maxLines: 1,
+        textDirection: TextDirection.ltr)
+      ..layout())
+    .size;
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      child: Transform.translate(
+        offset: Offset(offset.dx - (size.width / 2), offset.dy - (size.height / 2)),
+        child: IgnorePointer(
+          child: DropShadow(
+            child: Container(
+              decoration: BoxDecoration(
+                color: ColorConstants.gray600.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(10)
+              ),
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              child: DefaultTextStyle(
+                style: TextStyle(),
+                child: Text.rich(
+                  textSpan,
+                  textAlign: TextAlign.center,
+                ),
+              )
+            )
+          )
+        )
+      ),
     );
   }
 }
