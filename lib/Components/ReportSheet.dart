@@ -84,7 +84,6 @@ class _ReportSheet extends State<ReportSheet> {
         ),
         child: Navigator(
           onPopPage: (route, result) {
-            print(route.settings.name);
             if(route.settings.name == '/report-additional-info') {
               setState(() => _selectedAdditionalInfo = false);
             }else if(route.settings.name == '/report-additional-info-submit') {

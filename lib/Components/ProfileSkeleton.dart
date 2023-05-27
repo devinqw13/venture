@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,6 +10,9 @@ import 'package:get/get.dart';
 import 'package:swipeable_page_route/swipeable_page_route.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Components/Avatar.dart';
+import 'package:venture/Components/CustomOptionsPopupMenu.dart';
+import 'package:venture/Components/DropShadow.dart';
+import 'package:venture/Components/ReportSheet.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/CustomIcon.dart';
 import 'package:venture/Helpers/Dialog.dart';
@@ -99,6 +103,27 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
 
     if(result != null) {
       setState(() => userData = result);
+    }
+  }
+
+  reportUser(UserModel u) async {
+    var result = await showReportSheet(
+      context: context,
+      reportee: u.userKey!,
+      type: "U"
+    );
+
+    if(result != null && result) {
+      double y = MediaQuery.of(context).size.height;
+      double x = MediaQuery.of(context).size.width;
+      Offset offset = Offset(
+        x / 2,
+        y / 2
+      );
+
+      Future.delayed(Duration(seconds: 1), () {
+        showOverlayMessage(context: context, offset: offset, message: "Report Submitted", duration: Duration(milliseconds: 1500));
+      });
     }
   }
 
@@ -255,7 +280,19 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                               backgroundColor: _themesController.getContainerBgColor(),
                               shape: CircleBorder(),
                             ),
-                          ) : Container()
+                          ) : VenUser().userKey.value != 0 ? CustomOptionsPopupMenu(
+                            backgroundColor: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.7),
+                            shape: BoxShape.circle,
+                            padding: EdgeInsets.all(6),
+                            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            popupItems: [
+                              CustomOptionPopupMenuItem(
+                                text: Text("Report", style: TextStyle(color: Colors.red)),
+                                icon: CustomIcon(icon: 'assets/icons/caution.svg' ,color: Colors.red, size: 27),
+                                onTap: () => reportUser(userData)
+                              )
+                            ]
+                          ) : Container(),
                         ],
                       )
                     ),
@@ -1345,6 +1382,69 @@ class PinContentBuilder extends StatelessWidget {
           ) : Container()
         ]
       )
+    );
+  }
+}
+
+void showOverlayMessage({
+  required BuildContext context,
+  required Offset offset,
+  required String message,
+  Duration duration = const Duration(milliseconds: 1000)
+}) {
+  OverlayEntry overlayEntry;
+  overlayEntry = OverlayEntry(
+      builder: (context) => OverlayMessageWidget(offset: offset, msg: message)
+  );
+  Overlay.of(context).insert(overlayEntry);
+  Timer(duration, () =>  overlayEntry.remove());
+}
+
+class OverlayMessageWidget extends StatelessWidget {
+  final Offset offset;
+  final String msg;
+  OverlayMessageWidget({Key? key, required this.offset, required this.msg}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final textSpan = TextSpan(
+      text: msg,
+      style: TextStyle(
+        fontSize: 16,
+        color: Colors.white
+      )
+    );
+    final Size size = (TextPainter(
+        text: textSpan,
+        // maxLines: 1,
+        textDirection: TextDirection.ltr)
+      ..layout())
+    .size;
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      child: Transform.translate(
+        offset: Offset(offset.dx - (size.width / 2), offset.dy - (size.height / 2)),
+        child: IgnorePointer(
+          child: DropShadow(
+            child: Container(
+              decoration: BoxDecoration(
+                color: ColorConstants.gray600.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(10)
+              ),
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              child: DefaultTextStyle(
+                style: TextStyle(),
+                child: Text.rich(
+                  textSpan,
+                  textAlign: TextAlign.center,
+                ),
+              )
+            )
+          )
+        )
+      ),
     );
   }
 }

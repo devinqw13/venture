@@ -14,9 +14,19 @@ class CustomOptionPopupMenuItem {
 
 class CustomOptionsPopupMenu extends StatefulWidget {
   final List<CustomOptionPopupMenuItem>? popupItems;
+  final bool zoomEnabled;
+  final EdgeInsetsGeometry? margin;
+  final EdgeInsetsGeometry? padding;
+  final Color? backgroundColor;
+  final BoxShape shape;
   const CustomOptionsPopupMenu({
     Key? key,
-    required this.popupItems
+    required this.popupItems,
+    this.margin,
+    this.padding,
+    this.backgroundColor,
+    this.shape = BoxShape.rectangle,
+    this.zoomEnabled = true
   })  :
         super(key: key);
   @override
@@ -91,7 +101,8 @@ class _CustomOptionsPopupMenu extends State<CustomOptionsPopupMenu> with TickerP
 
   @override
   Widget build(BuildContext context) {
-    return ZoomTapAnimation(
+    return widget.zoomEnabled ? 
+    ZoomTapAnimation(
       key: _key,
       onTap: () {
         setState(() {
@@ -100,12 +111,38 @@ class _CustomOptionsPopupMenu extends State<CustomOptionsPopupMenu> with TickerP
 
         _showPopupMenu();
       },
-      child: Center(
-        child:Icon(
+      child: Container(
+        margin: widget.margin,
+        padding: widget.padding,
+        decoration: BoxDecoration(
+          color: widget.backgroundColor,
+          shape: widget.shape
+        ),
+        child: Icon(
           Icons.more_horiz,
           color: color,
         )
       ),
+    ) : GestureDetector(
+      onTap: () {
+        setState(() {
+          color = primaryOrange;
+        });
+
+        _showPopupMenu();
+      },
+      child: Container(
+        margin: widget.margin,
+        padding: widget.padding,
+        decoration: BoxDecoration(
+          color: widget.backgroundColor,
+          shape: widget.shape
+        ),
+        child: Icon(
+          Icons.more_horiz,
+          color: color,
+        ),
+      )
     );
   }
 }

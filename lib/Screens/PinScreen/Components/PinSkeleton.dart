@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:mime/mime.dart';
+import 'package:venture/Components/CustomOptionsPopupMenu.dart';
+import 'package:venture/Components/ReportSheet.dart';
 import 'package:venture/Globals.dart' as globals;
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Components/DropShadow.dart';
@@ -73,6 +77,27 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
   goToSettings() {
     PinSettingsScreen screen = PinSettingsScreen(pin: widget.pin);
     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+  }
+
+  reportPin(Pin p) async {
+    var result = await showReportSheet(
+      context: context,
+      reportee: p.pinKey,
+      type: "P"
+    );
+
+    if(result != null && result) {
+      double y = MediaQuery.of(context).size.height;
+      double x = MediaQuery.of(context).size.width;
+      Offset offset = Offset(
+        x / 2,
+        y / 2
+      );
+
+      Future.delayed(Duration(seconds: 1), () {
+        showOverlayMessage(context: context, offset: offset, message: "Report Submitted", duration: Duration(milliseconds: 1500));
+      });
+    }
   }
 
   openMapDirections() async {
@@ -184,7 +209,7 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
           ),
           SizedBox(height: 5),
           Text(
-            "at " + DateFormat.yMMMd().add_jm().format(widget.pin.created!.toLocal()),
+            "at " + intl.DateFormat.yMMMd().add_jm().format(widget.pin.created!.toLocal()),
             style: TextStyle(
               color: Colors.grey
             ),
@@ -898,10 +923,22 @@ class _PinSkeleton extends State<PinSkeleton> with TickerProviderStateMixin {
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
                   shadowColor: primaryOrange,
-                  primary: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.7),
+                  backgroundColor: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.7),
                   shape: CircleBorder(),
                 ),
-              ): Container(),
+              ): VenUser().userKey.value != 0 ? CustomOptionsPopupMenu(
+                backgroundColor: Get.isDarkMode ? ColorConstants.gray800 : ColorConstants.gray25.withOpacity(0.7),
+                shape: BoxShape.circle,
+                padding: EdgeInsets.all(6),
+                margin: EdgeInsets.symmetric(horizontal: 16),
+                popupItems: [
+                  CustomOptionPopupMenuItem(
+                    text: Text("Report", style: TextStyle(color: Colors.red)),
+                    icon: CustomIcon(icon: 'assets/icons/caution.svg' ,color: Colors.red, size: 27),
+                    onTap: () => reportPin(pin)
+                  )
+                ]
+              ) : Container(),
             ],
           ),
         ),
@@ -1197,5 +1234,68 @@ class SliverChildDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(SliverChildDelegate oldDelegate) {
     return false;
+  }
+}
+
+void showOverlayMessage({
+  required BuildContext context,
+  required Offset offset,
+  required String message,
+  Duration duration = const Duration(milliseconds: 1000)
+}) {
+  OverlayEntry overlayEntry;
+  overlayEntry = OverlayEntry(
+      builder: (context) => OverlayMessageWidget(offset: offset, msg: message)
+  );
+  Overlay.of(context).insert(overlayEntry);
+  Timer(duration, () =>  overlayEntry.remove());
+}
+
+class OverlayMessageWidget extends StatelessWidget {
+  final Offset offset;
+  final String msg;
+  OverlayMessageWidget({Key? key, required this.offset, required this.msg}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final textSpan = TextSpan(
+      text: msg,
+      style: TextStyle(
+        fontSize: 16,
+        color: Colors.white
+      )
+    );
+    final Size size = (TextPainter(
+        text: textSpan,
+        // maxLines: 1,
+        textDirection: TextDirection.ltr)
+      ..layout())
+    .size;
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      child: Transform.translate(
+        offset: Offset(offset.dx - (size.width / 2), offset.dy - (size.height / 2)),
+        child: IgnorePointer(
+          child: DropShadow(
+            child: Container(
+              decoration: BoxDecoration(
+                color: ColorConstants.gray600.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(10)
+              ),
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              child: DefaultTextStyle(
+                style: TextStyle(),
+                child: Text.rich(
+                  textSpan,
+                  textAlign: TextAlign.center,
+                ),
+              )
+            )
+          )
+        )
+      ),
+    );
   }
 }
