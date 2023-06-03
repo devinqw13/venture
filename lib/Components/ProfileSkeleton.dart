@@ -58,7 +58,9 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
   late UserModel userData;
   List<Content>? pins = [];
   List<Content>? pinContent = [];
+  List<Pin> savedPins = [];
   bool _isLoadingContent = false;
+  bool _isLoadingSavedPins = false;
   // bool _refreshing = false;
   
   @override
@@ -73,17 +75,40 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
     super.dispose();
   }
 
-  Future<void> _initializeAsyncDependencies([bool showLoading = true]) async {
+  Future<void> _initializeAsyncDependencies([bool showLoadingContent = true, bool showLoadingSavedPins = true]) async {
     // TODO: Incorporate user content caching
+    getUserContent(showLoadingContent);
+    getSavedPins(showLoadingSavedPins);
+  }
+
+  getUserContent([bool showLoading = true]) async {
     if(showLoading) setState(() => _isLoadingContent = true);
     var results = await getContent(context, [userData.userKey!], 1);
-    setState(() => _isLoadingContent = false);
+    if(showLoading) setState(() => _isLoadingContent = false);
 
     setState(() {
       pinContent = results.where((e) => e.contentFormat == ContentFormat.pinContent).toList();
       pins = results.where((e) => e.contentFormat == ContentFormat.pin).toList();
       userData.pinCount = pins!.length;
     });
+  }
+
+  getSavedPins([bool showLoading = true]) async {
+    if(showLoading) setState(() => _isLoadingSavedPins = true);
+    var result = await FirebaseAPI().getSavedPins(FirebaseAPI().firebaseId()!);
+    List<Pin> sPins = [];
+    for(var item in result!.docs) {
+      Map<String, dynamic> savedPin = item.data();
+
+      var results = await getMapPins(context, pinKey: savedPin['pin_key'], ventureCurrentUser: VenUser().userKey.value);
+
+      if(results.isNotEmpty) {
+        Pin pin = results.first;
+        sPins.add(pin);
+      }
+    }
+    if(showLoading) setState(() => _isLoadingSavedPins = false);
+    setState(() => savedPins = sPins);
   }
 
   void goToSettings() {
@@ -198,13 +223,6 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
       MessagingScreen screen = MessagingScreen(conversation: newConversation, newSendToUser: messageUser, owners: owners);
       Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
     }
-    // var messageQuerySnapshot = await FirebaseAPI().getConvoMessagesStream(owners);
-
-    // Conversation conversation = getConversationFromSnapshot(convo, messageQuerySnapshot);
-
-    // MessagingScreen messagingDetailScreen = MessagingScreen(conversation: conversation, key: widget.detailScreenKey, owners: owners, existingConvoUser: messageUser);
-
-    // Navigator.of(context).push(CupertinoPageRoute(builder: (context) => messagingDetailScreen));
   }
 
   Future<void> _refreshUser() async {
@@ -287,77 +305,20 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                             margin: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                             popupItems: [
                               CustomOptionPopupMenuItem(
+                                text: Text(!userData.isBlocked ? "Block" : "Unblock", style: TextStyle(color: Colors.red)),
+                                icon: !userData.isBlocked ? CustomIcon(icon: 'assets/icons/block-user.svg' ,color: Colors.red, size: 27) : null,
+                                onTap: () => updateBlockStatus()
+                              ),
+                              CustomOptionPopupMenuItem(
                                 text: Text("Report", style: TextStyle(color: Colors.red)),
                                 icon: CustomIcon(icon: 'assets/icons/caution.svg' ,color: Colors.red, size: 27),
-                                onTap: () => reportUser(userData)
+                                onTap: () => reportUser(user)
                               )
                             ]
                           ) : Container(),
                         ],
                       )
                     ),
-                    // child: Padding(
-                    //   padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.06),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //     crossAxisAlignment: CrossAxisAlignment.start,
-                    //     children: [
-                    //       widget.enableBackButton ? Expanded(
-                    //         child: Column(
-                    //           crossAxisAlignment: CrossAxisAlignment.start,
-                    //           children: [
-                    //             ElevatedButton(
-                    //               onPressed: () => Navigator.of(context).pop(),
-                    //               child: Icon(
-                    //                 IconlyLight.arrow_left,
-                    //                 color: primaryOrange,
-                    //                 size: 25,
-                    //               ),
-                    //               style: ElevatedButton.styleFrom(
-                    //                 elevation: 0,
-                    //                 shadowColor: Colors.transparent,
-                    //                 primary: _themesController.getContainerBgColor(),
-                    //                 shape: CircleBorder(),
-                    //                 splashFactory: NoSplash.splashFactory,
-                    //               ),
-                    //             )
-                    //           ]
-                    //         )
-                    //       ) : Expanded(child:Container()),
-
-                    //       _refreshing ? Expanded(
-                    //         child: Column(
-                    //           children: [
-                    //             CupertinoActivityIndicator(
-                    //               radius: 13,
-                    //             ) 
-                    //           ],
-                    //         )
-                    //       ) : Expanded(child:Container()),
-
-                    //       widget.enableSettingsButton ? Expanded(
-                    //         child: Column(
-                    //           crossAxisAlignment: CrossAxisAlignment.end,
-                    //           children: [
-                    //             ElevatedButton(
-                    //               onPressed: () => goToSettings(),
-                    //               child: Icon(
-                    //                 IconlyLight.setting,
-                    //                 color: primaryOrange,
-                    //               ),
-                    //               style: ElevatedButton.styleFrom(
-                    //                 elevation: 0,
-                    //                 primary: _themesController.getContainerBgColor(),
-                    //                 shape: CircleBorder(),
-                    //                 splashFactory: NoSplash.splashFactory,
-                    //               ),
-                    //             )
-                    //           ],
-                    //         )
-                    //       ) : Expanded(child:Container()),
-                    //     ],
-                    //   )
-                    // ),
                   )
                 )
               )
@@ -479,24 +440,6 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
               ],
             )
           ),
-          // Center(
-          //   child: Padding(
-          //     padding: EdgeInsets.only(top: 10.0),
-          //     // child: Text(
-          //     //   user.displayName != null && user.displayName != '' ? user.displayName! : user.userName!,
-          //     //   style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
-          //     // )
-          //     child: Row(
-          //       mainAxisAlignment: MainAxisAlignment.center,
-          //       children: [
-          //         Text(
-          //           user.displayName != null && user.displayName != '' ? user.displayName! : user.userName!,
-          //           style: theme.textTheme.headline6!.copyWith(fontWeight: FontWeight.bold),
-          //         ),
-          //       ],
-          //     )
-          //   )
-          // ),
           user.userBio == null || user.userBio == '' ? 
           Container(
             padding: EdgeInsets.symmetric(vertical: 10),
@@ -520,7 +463,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                   Expanded(
                     child: Center(
                       child: ZoomTapAnimation(
-                        onTap: () => goToUserFollowInfo(0),
+                        onTap: () => FirebaseAPI().firebaseId() == userData.fid || !userData.isBlocked ? goToUserFollowInfo(0) : null,
                         child: Column(
                           children: [
                             Text(
@@ -547,7 +490,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
                   Expanded(
                     child: Center(
                       child: ZoomTapAnimation(
-                        onTap: () => goToUserFollowInfo(1),
+                        onTap: () => FirebaseAPI().firebaseId() == userData.fid || !userData.isBlocked ?  goToUserFollowInfo(1) : null,
                           child: Column(
                           children: [
                             Text(
@@ -596,6 +539,25 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
         ],
       )
     );
+  }
+
+  updateBlockStatus() {
+    var _ = updateUserRelationship(
+      context,
+      userKey: VenUser().userKey.value,
+      userFirebaseId: FirebaseAPI().firebaseId()!,
+      relUserKey: userData.userKey!,
+      relUserFirebaseId: userData.fid,
+      blocked: userData.isBlocked ? false : true
+    );
+
+    setState(() {
+      userData.isBlocked = !userData.isBlocked;
+      if(userData.isFollowing! && userData.isBlocked){
+        userData.isFollowing = false;
+      }
+
+    });
   }
 
   handleFollowStatus() async {
@@ -656,12 +618,11 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
             ),
 
             ElevatedButton(
-              onPressed: () => widget.isUser ? goToEditProfile() : handleFollowStatus(),
+              onPressed: () => widget.isUser ? goToEditProfile() : userData.isBlocked ? updateBlockStatus() : handleFollowStatus(),
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 child: Text(
-                  widget.isUser ? "Edit Profile" :
-                  userData.isFollowing! ? "Following" : "Follow",
+                  widget.isUser ? "Edit Profile" : userData.isBlocked ? "Unblock" : userData.isFollowing! ? "Following" : "Follow",
                   style: TextStyle(
                     color: Get.isDarkMode ? Colors.white : Colors.black,
                   ),
@@ -688,7 +649,7 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
             ),
 
             Expanded(
-              child: !widget.isUser ? ElevatedButton(
+              child: !widget.isUser && !userData.isBlocked ? ElevatedButton(
                 onPressed: () => openMessages(),
                 child: Padding(
                   padding: EdgeInsets.all(8),
@@ -845,166 +806,213 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
   SliverFillRemaining _buildUserContents(UserModel user) {
     return SliverFillRemaining(
       hasScrollBody: true,
-      child: !_isLoadingContent ?
-        _buildTabView() :
-        GridView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.all(0),
-          itemCount: 3,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 1.0,
-            crossAxisSpacing: 1.0,
-            childAspectRatio: 0.9
-          ),
-          itemBuilder: (context, i) {
-            return Container(
-              child: Skeleton.rectangular(height: 40)
-            );
-          }
-        )
+      child: _buildTabView()
+      // child: !_isLoadingContent ?
+      //   _buildTabView() :
+      //   GridView.builder(
+      //     physics: NeverScrollableScrollPhysics(),
+      //     padding: EdgeInsets.all(0),
+      //     itemCount: 3,
+      //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      //       crossAxisCount: 3,
+      //       mainAxisSpacing: 1.0,
+      //       crossAxisSpacing: 1.0,
+      //       childAspectRatio: 0.9
+      //     ),
+      //     itemBuilder: (context, i) {
+      //       return Container(
+      //         child: Skeleton.rectangular(height: 40)
+      //       );
+      //     }
+      //   )
     );
+  }
+
+  _contentTab() {
+    if(_isLoadingContent) {
+      return GridView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.all(0),
+        itemCount: 3,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 1.0,
+          crossAxisSpacing: 1.0,
+          childAspectRatio: 0.9
+        ),
+        itemBuilder: (context, i) {
+          return Container(
+            child: Skeleton.rectangular(height: 40)
+          );
+        }
+      );
+    }else if(pinContent != null && pinContent!.isNotEmpty && !userData.isBlocked){
+      return GridView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.all(0),
+        itemCount: pinContent!.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 1.0,
+          crossAxisSpacing: 1.0,
+          childAspectRatio: 1.0
+        ),
+        itemBuilder: (context, i) {
+          return PinContentBuilder(pinContent: pinContent![i], user: userData, pinContents: pinContent!);
+        }
+      );
+    }else {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+              child: CustomIcon(
+                size: MediaQuery.of(context).size.height * 0.1,
+                color: Get.isDarkMode ? Colors.white : Colors.black,
+                icon: 'assets/icons/photo.svg'
+              )
+            ),
+            Text(
+              "No pin content yet",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20
+              ),
+            )
+          ],
+        )
+      );
+    }
+  }
+
+  _pinsTab() {
+    if(_isLoadingContent) {
+      return GridView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.all(0),
+        itemCount: 3,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 1.0,
+          crossAxisSpacing: 1.0,
+          childAspectRatio: 0.9
+        ),
+        itemBuilder: (context, i) {
+          return Container(
+            child: Skeleton.rectangular(height: 40)
+          );
+        }
+      );
+    }else if(pins != null && pins!.isNotEmpty && !userData.isBlocked) {
+      return GridView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.all(0),
+        itemCount: pins!.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 1.0,
+          crossAxisSpacing: 1.0,
+          childAspectRatio: 1.0
+        ),
+        itemBuilder: (context, i) {
+          // return Text(pins![i].pinName!);
+          return PinBuilder(pin: pins![i]);
+        },
+      );
+    }else {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+              child: CustomIcon(
+                size: MediaQuery.of(context).size.height * 0.1,
+                color: Get.isDarkMode ? Colors.white : Colors.black,
+                icon: 'assets/icons/location2.svg'
+              )
+            ),
+            Text(
+              "No pins yet",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20
+              ),
+            )
+          ],
+        )
+      );
+    }
+  }
+
+  _savedPinsTab() {
+    if(_isLoadingSavedPins) {
+      return GridView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.all(0),
+        itemCount: 3,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 1.0,
+          crossAxisSpacing: 1.0,
+          childAspectRatio: 0.9
+        ),
+        itemBuilder: (context, i) {
+          return Container(
+            child: Skeleton.rectangular(height: 40)
+          );
+        }
+      );
+    }else if(savedPins.isNotEmpty) {
+      return GridView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.all(0),
+        itemCount: savedPins.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 1.0,
+          crossAxisSpacing: 1.0,
+          childAspectRatio: 1.0
+        ),
+        itemBuilder: (context, i) {
+          return PinBuilderV2(pin: savedPins[i]);
+        },
+      );
+    }else {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+              child: CustomIcon(
+                size: MediaQuery.of(context).size.height * 0.1,
+                color: Get.isDarkMode ? Colors.white : Colors.black,
+                icon: 'assets/icons/location2.svg'
+              )
+            ),
+            Text(
+              "No saved pins",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20
+              ),
+            )
+          ],
+        )
+      );
+    }
   }
 
   _buildTabView() {
     return TabBarView(
       children: [
-        pinContent != null && pinContent!.isNotEmpty ? GridView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.all(0),
-          itemCount: pinContent!.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 1.0,
-            crossAxisSpacing: 1.0,
-            childAspectRatio: 1.0
-          ),
-          itemBuilder: (context, i) {
-            return PinContentBuilder(pinContent: pinContent![i], user: userData, pinContents: pinContent!);
-          }
-        ) : Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: CustomIcon(
-                    size: MediaQuery.of(context).size.height * 0.1,
-                    color: Get.isDarkMode ? Colors.white : Colors.black,
-                    icon: 'assets/icons/photo.svg'
-                  )
-                ),
-                Text(
-                  "No pin content yet",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20
-                  ),
-                )
-              ],
-            )
-          ),
-        pins != null && pins!.isNotEmpty ? GridView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.all(0),
-          itemCount: pins!.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 1.0,
-            crossAxisSpacing: 1.0,
-            childAspectRatio: 1.0
-          ),
-          itemBuilder: (context, i) {
-            // return Text(pins![i].pinName!);
-            return PinBuilder(pin: pins![i]);
-          },
-        ) : Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: EdgeInsets.all(10),
-                child: CustomIcon(
-                  size: MediaQuery.of(context).size.height * 0.1,
-                  color: Get.isDarkMode ? Colors.white : Colors.black,
-                  icon: 'assets/icons/location2.svg'
-                )
-              ),
-              Text(
-                "No pins yet",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20
-                ),
-              )
-            ],
-          )
-        ),
+        _contentTab(),
+        _pinsTab(),
         if(FirebaseAPI().firebaseId() == userData.fid)
-          FutureBuilder(
-            future: FirebaseAPI().getSavedPins(FirebaseAPI().firebaseId()!),
-            builder: (context, snapshot) {
-              var data = snapshot.data?.docs;
-              if(data != null && data.isNotEmpty) {
-                return GridView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.all(0),
-                  itemCount: data.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 1.0,
-                    crossAxisSpacing: 1.0,
-                    childAspectRatio: 1.0
-                  ),
-                  itemBuilder: (context, i) {
-                    Map<String, dynamic> savedPin = data[i].data();
-                    // return Text(pins![i].pinName!);
-                    // return Text(savedPin['pin_key']);
-                    return FutureBuilder(
-                      future: getMapPins(context, pinKey: savedPin['pin_key']),
-                      builder: (context, snapshot) {
-                        if(snapshot.connectionState == ConnectionState.done) {
-                          if(snapshot.hasData) {
-                            Pin vpin = snapshot.data!.first;
-                            return PinBuilderV2(pin: vpin);
-                          }else {
-                            return Text("Error occurred");
-                          }
-                        }else {
-                          return Container(
-                            child: Skeleton.rectangular(height: 40)
-                          );
-                        }
-                      }
-                    );
-                  },
-                );
-              }else {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(10),
-                        child: CustomIcon(
-                          size: MediaQuery.of(context).size.height * 0.1,
-                          color: Get.isDarkMode ? Colors.white : Colors.black,
-                          icon: 'assets/icons/location2.svg'
-                        )
-                      ),
-                      Text(
-                        "No saved pins",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20
-                        ),
-                      )
-                    ],
-                  )
-                );
-              }
-            }
-          )
+          _savedPinsTab()
       ]
     );
   }
@@ -1012,21 +1020,6 @@ class _ProfileSkeleton extends State<ProfileSkeleton> with TickerProviderStateMi
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // return  DefaultTabController(
-    //   length: 2,
-    //   child:CustomScrollView(
-    //     shrinkWrap: true,
-    //     // physics: BouncingScrollPhysics(),
-    //     slivers: [
-    //       _buildHeaderWithAvatar(widget.user),
-    //       _buildUserDetails(theme, widget.user),
-    //       _buildRowButtons(widget.user, theme),
-    //       _buildUserSubDetails(widget.user),
-    //       _buildTabs(),
-    //       _buildUserContents(widget.user),
-    //     ],
-    //   ),
-    // );
     return Scaffold(
       body: DefaultTabController(
         length: FirebaseAPI().firebaseId() == userData.fid ? 3 : 2,

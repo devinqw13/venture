@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:venture/Calls.dart';
 import 'package:venture/Constants.dart';
 import 'package:venture/Models/Pin.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/PinScreen/Components/PinSkeleton.dart';
 
 class PinScreen extends StatefulWidget {
@@ -22,7 +23,7 @@ class _PinScreenState extends State<PinScreen> {
       body: Stack(
         children: [
           widget.pin == null ? FutureBuilder<List<Pin>>(
-            future: getMapPins(context, pinKey: widget.pinKey.toString()),
+            future: getMapPins(context, pinKey: widget.pinKey.toString(), ventureCurrentUser: VenUser().userKey.value),
             builder: (context, snapshot) {
               if(!snapshot.hasData) {
                 return CircularProgressIndicator(color: primaryOrange);

@@ -1,12 +1,9 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:iconly/iconly.dart';
-import 'package:venture/Models/VenUser.dart';
-import 'package:venture/Screens/SettingsScreen/ChangePassword.dart';
-import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:get/get.dart';
-import 'package:venture/FirebaseAPI.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:venture/Screens/SettingsScreen/BlockedUsersScreen.dart';
 
 class PrivacySettingsScreen extends StatefulWidget {
   PrivacySettingsScreen({Key? key}) : super(key: key);
@@ -16,6 +13,17 @@ class PrivacySettingsScreen extends StatefulWidget {
 }
 
 class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>  {
+
+  @override
+  void initState() {
+    super.initState();
+
+  }
+
+  goToBlockedUsers() {
+    BlockedUsersScreen screen = BlockedUsersScreen();
+    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+  }
 
   Widget _buildListTile(String title, IconData icon, String trailing, Color color, theme, {onTab}) {
     return ListTile(
@@ -69,7 +77,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>  {
         ),
         centerTitle: false,
         title: Text(
-          'Your account',
+          'Privacy',
           style: theme.textTheme.headline6,
         )
       ),
@@ -77,7 +85,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>  {
         padding: EdgeInsets.symmetric(horizontal: 16.0),
         child: ListView(
           children: [
-            _buildListTile('Change your password', Icons.key_rounded, "", Colors.grey, theme, onTab: () => print("")),
+            _buildListTile('Blocked', Icons.block, "", Colors.grey, theme, onTab: () => goToBlockedUsers()),
 
           ],
         )

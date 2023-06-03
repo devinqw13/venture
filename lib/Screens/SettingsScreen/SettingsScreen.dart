@@ -10,6 +10,7 @@ import 'package:venture/Constants.dart';
 import 'package:venture/Helpers/string_extension.dart';
 import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/SettingsScreen/AccountSettingsScreen.dart';
+import 'package:venture/Screens/SettingsScreen/PrivacySettings.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:venture/Models/MapThemes.dart';
 
@@ -23,6 +24,11 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen>  {
   final ThemesController _themesController = Get.find();
   final storage = GetStorage();
+
+  goToPrivacy() {
+    PrivacySettingsScreen screen = PrivacySettingsScreen();
+    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => screen));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen>  {
                   //   // return Text(_.theme);
                   // }),
                   // SizedBox(height: 8),
-                  // _buildListTile('Language', Icons.language, 'English', Colors.orange, theme, onTab: () {}),
+                  _buildListTile('Privacy', Icons.private_connectivity, '', Colors.grey, theme, onTab: () => goToPrivacy()),
                   // SizedBox(height: 8),
                   // _buildListTile('Notifications', Icons.notifications_outlined, '', Colors.blue, theme, onTab: () {}),
                   // SizedBox(height: 8),

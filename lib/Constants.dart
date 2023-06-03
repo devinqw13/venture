@@ -10,7 +10,8 @@ const Color backgroundGrey = Color.fromARGB(255, 238, 238, 243);
 const Color darkBackgroundGrey = Color(0xff121212);
 // const Color primaryOrange = Color.fromRGBO(255, 85, 0, 1);
 const Color primaryOrange = Color(0xfff57a2c);
-const Color primaryBlue = Color(0xff0a0c2a);
+const Color primaryBlue = Color(0xff2CA7F5);
+const Color primaryBlueAlt = Color(0xff0a0c2a);
 const Color accentBlue = Color(0xff232540);
 const Color primaryGrey = Color.fromARGB(255, 138, 139, 138);
 

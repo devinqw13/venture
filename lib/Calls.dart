@@ -386,7 +386,7 @@ Future<dynamic> createContentDetails(BuildContext context, Map<String, dynamic> 
   }
 }
 
-Future<List<Content>> getContent(BuildContext context, List<int> userKey, int dataFormat, {int? contentKey}) async {
+Future<List<Content>> getContent(BuildContext context, List<int> userKey, int dataFormat, {int? ventureCurrentUser, int? contentKey}) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
@@ -394,6 +394,7 @@ Future<List<Content>> getContent(BuildContext context, List<int> userKey, int da
 
   String url = "${globals.apiBaseUrl}/getContent?user_key=$userKey&type=$dataFormat";
 
+  if(ventureCurrentUser != null) url += '&venture_current_user=$ventureCurrentUser';
   if(contentKey != null) url += '&content_key=$contentKey';
 
   Map jsonResponse = {};
@@ -447,13 +448,15 @@ Future<List<Content>> getContent(BuildContext context, List<int> userKey, int da
   }
 }
 
-Future<List<Pin>> getMapPins(BuildContext context, {String? latlng = "", String? pinKey = "", double radius = 2}) async {
+Future<List<Pin>> getMapPins(BuildContext context, {int? ventureCurrentUser, String? latlng = "", String? pinKey = "", double radius = 2}) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
   };
 
   String url = "${globals.apiBaseUrl}/getPins?pinKey=$pinKey&latlng=$latlng&radius=$radius";
+
+  if(ventureCurrentUser != null) url += '&ventureCurrentUser=$ventureCurrentUser';
   
   Map jsonResponse = {};
   http.Response response;
@@ -535,7 +538,7 @@ Future<Pin?> createPin(BuildContext context, String name, String desc, String lo
   }
 }
 
-Future<List<VentureItem>?> searchVenture(BuildContext context, String text, List<String>? filter) async {
+Future<List<VentureItem>?> searchVenture(BuildContext context, String text, List<String>? filter, {int? ventureCurrentUser}) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
@@ -546,6 +549,8 @@ Future<List<VentureItem>?> searchVenture(BuildContext context, String text, List
     "text": text,
     "filters": filter
   };
+
+  if(ventureCurrentUser != null) jsonMap['venture_current_user'] = ventureCurrentUser;
 
   String url = "${globals.apiBaseUrl}/search";
 
@@ -705,13 +710,15 @@ Future<void> pushNotification(BuildContext context, String type, Map<String, Lis
   // }
 }
 
-Future<List<Pin>> getSuggestions(BuildContext context, String latLng, double radius) async {
+Future<List<Pin>> getSuggestions(BuildContext context, String latLng, double radius, {int? ventureCurrentUser}) async {
   Map<String, String> headers = {
     'Content-type' : 'application/json', 
     'Accept': 'application/json',
   };
 
   String url = "${globals.apiBaseUrl}/suggestions?latlng=$latLng&radius=$radius";
+
+  if(ventureCurrentUser != null) url += '&ventureCurrentUser=$ventureCurrentUser';
 
   Map jsonResponse = {};
   http.Response response;
@@ -1003,6 +1010,57 @@ Future<void> report(BuildContext context, int userKey, String reportType, String
   };
 
   String url = "${globals.apiBaseUrl}/report";
+
+  Map jsonResponse = {};
+  http.Response response;
+
+  try {
+    response = await http.post(Uri.parse(url), body: json.encode(jsonMap), headers: headers).timeout(Duration(seconds: 60));
+  } on TimeoutException {
+    showToastV2(context: context, msg: "Connection timeout.");
+    return;
+  } catch(e) {
+    showToastV2(context: context, msg: "An error has occurred.");
+    return;
+  }
+
+  if (json.decode(response.body) is List) {
+    var responseBody = response.body.substring(1, response.body.length - 1);
+    jsonResponse = json.decode(responseBody);
+  } else {
+    jsonResponse = json.decode(response.body);
+  }
+
+  print(jsonResponse);
+}
+
+Future<void> updateUserRelationship(
+  BuildContext context,
+  {
+    required int userKey,
+    required String userFirebaseId,
+    required int relUserKey,
+    required String relUserFirebaseId,
+    bool? followed,
+    bool? blocked
+  }
+) async {
+  Map<String, String> headers = {
+    'Content-type' : 'application/json', 
+    'Accept': 'application/json',
+  };
+
+  Map jsonMap = {
+    "user_key": userKey,
+    "user_firebase_id": userFirebaseId,
+    "rel_user_key": relUserKey,
+    "rel_user_firebase_id": relUserFirebaseId,
+  };
+
+  if(followed != null) jsonMap['followed'] = followed;
+  if(blocked != null) jsonMap['blocked'] = blocked ? "Y" : "N";
+
+  String url = "${globals.apiBaseUrl}/modifyUserRelationship";
 
   Map jsonResponse = {};
   http.Response response;

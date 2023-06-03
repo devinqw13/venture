@@ -38,7 +38,7 @@ class _DeactivateAccount extends State<DeactivateAccount> {
     setState(() => isUserLoading = true);
     var result = await FirebaseAPI().getUserFromFirebaseId(FirebaseAPI().firebaseId()!);
     setState(() => isUserLoading = false);
-    setState(() => user = result);
+    setState(() => user = result!);
   }
 
   startDeactivation() async {

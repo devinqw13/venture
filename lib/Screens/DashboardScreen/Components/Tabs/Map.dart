@@ -19,6 +19,7 @@ import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/NavigationSlideAnimation.dart';
 import 'package:venture/Models/PinCategory.dart';
 import 'package:venture/Models/Place.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/CreatePinScreen/CreatePinScreen.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -530,7 +531,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
                 var radiusInMiles = LocationHandler().calculateZoomRadius(zoom, centerLatLng.latitude, screenCoord.y);
 
                 setState(() => isLoading = true);
-                var results = await getMapPins(context, latlng: latlng, radius: double.parse(radiusInMiles.toString()));
+                var results = await getMapPins(context, latlng: latlng, radius: double.parse(radiusInMiles.toString()), ventureCurrentUser: VenUser().userKey.value);
                 setState(() => isLoading = false);
 
                 // displayGatheredPins(results);

@@ -7,6 +7,7 @@ class UserModel {
   bool? isPrivate;
   bool? isVerified;
   bool? isFollowing;
+  bool isBlocked = false;
   String? userName;
   String? displayName;
   String? userBio;
@@ -25,6 +26,7 @@ class UserModel {
     isPrivate = input['user_is_private'] == 'Y' ? true : false;
     isVerified = input['verified'];
     isFollowing = input['isFollowing'];
+    isBlocked = input['isBlocked'] ?? false;
     // isFollowing = 
     //   FirebaseAPI().firebaseId() != input['firebase_id'] ? input['followers'].contains(FirebaseAPI().firebaseId()) : null;
     userName = input['username'];
@@ -54,6 +56,23 @@ class UserModel {
     'following_count': followingCount,
     'follower_count': followerCount,
     'pin_count': pinCount
+  };
+
+  Map<String, Object?> toFirebaseJson() => 
+  {
+    'firebase_id': fid,
+    'user_key': userKey.toString(),
+    'email': userEmail,
+    // 'user_is_private': isPrivate == null ? 'N' : isPrivate! ? 'Y' : 'N',
+    'verified': isVerified,
+    // 'isFollowing': isFollowing,
+    'username': userName,
+    'display_name': displayName,
+    'biography': userBio,
+    'photo_url': userAvatar,
+    // 'following_count': followingCount,
+    // 'follower_count': followerCount,
+    // 'pin_count': pinCount
   };
 
   UserModel(Map<String, dynamic> input) {

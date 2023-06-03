@@ -12,6 +12,7 @@ import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/PhotoHero.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/UserModel.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
@@ -72,13 +73,13 @@ class _SearchTabV2State extends State<SearchTabV2> with AutomaticKeepAliveClient
       latLng = "${position.latitude},${position.longitude}";
     }
 
-    var result = await getSuggestions(context, latLng, 50);
+    var result = await getSuggestions(context, latLng, 50, ventureCurrentUser: VenUser().userKey.value);
     setState(() => suggestedPins = result);
   }
 
   performSearch(String text) async {
     setState(() => isSearching = true);
-    List<VentureItem>? results = await searchVenture(context, text, ["users", "pins"]);
+    List<VentureItem>? results = await searchVenture(context, text, ["users", "pins"], ventureCurrentUser: VenUser().userKey.value);
     setState(() => isSearching = false);
 
     if(results != null) {
@@ -384,7 +385,7 @@ class _SliverScaffoldState extends State<SliverScaffold> {
 
   performSearch(String text) async {
     setState(() => isSearching = true);
-    List<VentureItem>? results = await searchVenture(context, text, ["users", "pins"]);
+    List<VentureItem>? results = await searchVenture(context, text, ["users", "pins"], ventureCurrentUser: VenUser().userKey.value);
     setState(() => isSearching = false);
 
     if(results != null) {

@@ -10,6 +10,7 @@ import 'package:venture/Helpers/LocationHandler.dart';
 import 'package:venture/Helpers/PhotoHero.dart';
 import 'package:venture/Models/Pin.dart';
 import 'package:venture/Models/UserModel.dart';
+import 'package:venture/Models/VenUser.dart';
 import 'package:venture/Screens/PinScreen/PinScreen.dart';
 import 'package:venture/Screens/ProfileScreen/ProfileScreen.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -69,7 +70,7 @@ class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixi
       latLng = "${position.latitude},${position.longitude}";
     }
 
-    var result = await getSuggestions(context, latLng, 50);
+    var result = await getSuggestions(context, latLng, 50, ventureCurrentUser: VenUser().userKey.value);
     setState(() => suggestedPins = result);
   }
 

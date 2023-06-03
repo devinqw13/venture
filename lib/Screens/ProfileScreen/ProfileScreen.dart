@@ -6,6 +6,7 @@ import 'package:venture/Constants.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/FirebaseAPI.dart';
 import 'package:venture/Helpers/SizeConfig.dart';
+import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Components/ProfileSkeleton.dart';
 import 'package:venture/Models/VenUser.dart';
@@ -33,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen>  {
         var user = UserModel.fromFirebaseMap(res);
         return user;
       }else {
+        showToastV2(context: context, msg: 'User not found.');
         return null;
       }
     });

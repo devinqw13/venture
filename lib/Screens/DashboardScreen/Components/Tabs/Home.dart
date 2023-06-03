@@ -66,10 +66,10 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
     List<int> userKeys = [];
     for(var id in firebaseIds) {
       var user = await FirebaseAPI().getUserFromFirebaseId(id);
-      userKeys.add(int.parse(user['user_key']));
+      userKeys.add(int.parse(user!['user_key']));
     }
 
-    List<Content> results = await getContent(context, userKeys, 0);
+    List<Content> results = await getContent(context, userKeys, 0, ventureCurrentUser: VenUser().userKey.value);
     setState(() {
       isFollowingLoading = false;
       followingContent = results;
@@ -80,7 +80,7 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   Future<void> _getExploreContent() async {
     // await _fetchCache();
     setState(() => isExploreLoading = true);
-    List<Content> results = await getContent(context, [0], 0);
+    List<Content> results = await getContent(context, [0], 0, ventureCurrentUser: VenUser().userKey.value);
     setState(() => isExploreLoading = false);
 
     setState(() {

@@ -397,13 +397,13 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                         TextSpan(
                           children: [
                             TextSpan(
-                              text: "By signing up, you agree to our "
+                              text: "By signing up, you agree to Venture's "
                             ),
                             WidgetSpan(
                               child: ZoomTapAnimation(
                                 onTap: () => goToLegalTerms(),
                                 child: Text(
-                                  "Terms",
+                                  "Terms of Service",
                                   style: TextStyle(
                                     color: primaryOrange
                                   ),

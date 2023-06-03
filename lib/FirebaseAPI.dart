@@ -12,6 +12,7 @@ import 'package:venture/Calls.dart';
 import 'package:venture/Helpers/Dialog.dart';
 import 'package:venture/Helpers/Toast.dart';
 import 'package:venture/Models/Notification.dart';
+import 'package:venture/Models/UserModel.dart';
 import 'package:venture/Models/VenUser.dart';
 
 class FirebaseAPI extends ChangeNotifier {
@@ -159,9 +160,20 @@ class FirebaseAPI extends ChangeNotifier {
           Map<String, dynamic> data = v.docs.first.data();
 
           if(FirebaseAuth.instance.currentUser != null && v.docs.first.id != FirebaseAuth.instance.currentUser!.uid) {
-            bool isFollowing = await checkIfFollowing(v.docs.first.id);
+            bool isBlockingYou = await checkIfBlocked(v.docs.first.id);
+            if(isBlockingYou) return null;
+
+            bool blocked = await checkIfYouBlockingUser(v.docs.first.id);
+            bool isFollowing;
+            if(blocked) {
+              isFollowing = false;
+            }else {
+              isFollowing = await checkIfFollowing(v.docs.first.id);
+            }
 
             data.update('isFollowing', (value) => value, ifAbsent: () => isFollowing);
+
+            data.update('isBlocked', (value) => value, ifAbsent: () => blocked);
           }
           int followingCount = await getUserFollowingCount(v.docs.first.id);
           data.update('following_count', (value) => value, ifAbsent: () => followingCount);
@@ -238,7 +250,7 @@ class FirebaseAPI extends ChangeNotifier {
     if(!user.contains("@")) {
       var result = await getUserDetails(username: user.toLowerCase());
       if(result == null || result.docs.isEmpty) {
-        showToastV2(context: context, msg: "User was not found", forcedBrightness: Brightness.light);
+        showToastV2(context: context, msg: "User not found", forcedBrightness: Brightness.light);
         return null;
       }
       user = result.docs.first.data()['email'];
@@ -282,7 +294,7 @@ class FirebaseAPI extends ChangeNotifier {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        showToastV2(context: context, msg: "User was not found", forcedBrightness: Brightness.dark);
+        showToastV2(context: context, msg: "User not found", forcedBrightness: Brightness.dark);
         return null;
       } else if (e.code == 'wrong-password') {
         showToast(context: context, msg: "Username/email or password did not match");
@@ -421,7 +433,7 @@ class FirebaseAPI extends ChangeNotifier {
   Future<void> addReactionV3(BuildContext context, String contentKey, String pinKey, {Map<String, dynamic>? data}) async {
     HapticFeedback.mediumImpact();
 
-    String documentId = FirebaseAPI().firebaseId()! + "-" + contentKey;
+    String documentId = FirebaseAPI().firebaseId()! + ":" + contentKey;
     
     _firestore.collection('content_reactions').doc(documentId).set({
       'firebase_id': FirebaseAPI().firebaseId(),
@@ -468,7 +480,7 @@ class FirebaseAPI extends ChangeNotifier {
 
     if(data != null) notiData['content_data'] = json.encode(data);
 
-    if(results['user_key'] != data!['user_key'].toString()) {
+    if(results!['user_key'] != data!['user_key'].toString()) {
       sendNotification(
         context,
         "reactions",
@@ -493,7 +505,7 @@ class FirebaseAPI extends ChangeNotifier {
 
   Future<void> removeReactionV3(String contentKey) async {
     // HapticFeedback.lightImpact();
-    String documentId = FirebaseAPI().firebaseId()! + "-" + contentKey;
+    String documentId = FirebaseAPI().firebaseId()! + ":" + contentKey;
 
     var _ = _firestore.collection('content_reactions').doc(documentId).delete().onError((error, stackTrace) => print("Failed to remove reaction: $error"));
   }
@@ -524,18 +536,19 @@ class FirebaseAPI extends ChangeNotifier {
     return _firestore.collection('users').doc(documentId).collection('following');
   }
 
-  Future<Map<String, dynamic>> getUserFromFirebaseId(String id) async {
+  Future<Map<String, dynamic>?> getUserFromFirebaseId(String id) async {
     return await _firestore.collection('users')
       .doc(id)
       .get().then((v) async {
         Map<String, dynamic>? data = v.data();
         if(id != FirebaseAuth.instance.currentUser!.uid) {
           bool isFollowing = await checkIfFollowing(id);
-
+          bool isBlocked = await checkIfBlocked(id);
+          if(isBlocked) return null;
           data!.update('isFollowing', (value) => value, ifAbsent: () => isFollowing);
         }
 
-        return data!;
+        return data;
       });
   }
 
@@ -570,6 +583,30 @@ class FirebaseAPI extends ChangeNotifier {
         }).catchError((error) {print("Failed to add message: $error");});
 
       });
+    }
+  }
+
+  Future<bool> checkIfBlocked(String firebaseId) async {
+    try {
+      // Get reference to Firestore collection
+      // var doc = await _firestore.collection('users').doc(firebaseId).collection('followers').doc(FirebaseAuth.instance.currentUser!.uid).get();
+      var doc = await _firestore.collection('users').doc(firebaseId).collection('blocked_users').doc(FirebaseAuth.instance.currentUser!.uid).get();
+
+      return doc.exists;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  Future<bool> checkIfYouBlockingUser(String firebaseId) async {
+    try {
+      var doc = await _firestore.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('blocked_users').doc(firebaseId).get();
+
+      return doc.exists;
+    } catch (e) {
+      print(e);
+      return false;
     }
   }
 
@@ -673,7 +710,7 @@ class FirebaseAPI extends ChangeNotifier {
 
     if(data != null) notiData['comment_data'] = json.encode(data);
 
-    if(results['user_key'] != data!['user_key'].toString()) {
+    if(results!['user_key'] != data!['user_key'].toString()) {
       sendNotification(
         context,
         "content_comment",
@@ -817,7 +854,7 @@ class FirebaseAPI extends ChangeNotifier {
 
     if(data != null) notiData['message_data'] = json.encode(data);
 
-    if(results['user_key'] != data!['user_key'].toString()) {
+    if(results!['user_key'] != data!['user_key'].toString()) {
       sendNotification(
         context,
         "convo_message",
@@ -947,7 +984,7 @@ class FirebaseAPI extends ChangeNotifier {
       _firestore.collection('users').doc(firebaseId).collection('saved_pins').doc().set({
         'pin_key': pinKey,
         'timestamp': DateTime.now().toUtc()
-      }).onError((error, stackTrace) => showToastV2(context: context, msg: "An error has occurred."));
+      }, SetOptions(merge: true)).onError((error, stackTrace) => showToastV2(context: context, msg: "An error has occurred."));
     }else {
       var spRef = await _firestore.collection('users').doc(firebaseId).collection('saved_pins').where('pin_key', isEqualTo: pinKey).get();
       spRef.docs.first.reference.delete().onError((error, stackTrace) => showToastV2(context: context, msg: "An error has occurred."));
@@ -978,7 +1015,7 @@ class FirebaseAPI extends ChangeNotifier {
 
     if(data != null) notiData['rating_data'] = json.encode(data);
 
-    if(results['user_key'] != data!['user_key'].toString()) {
+    if(results!['user_key'] != data!['user_key'].toString()) {
       sendNotification(
         context,
         "rate_pin",
@@ -986,5 +1023,14 @@ class FirebaseAPI extends ChangeNotifier {
         userKey: data['user_key'].toString()
       );
     }
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> getBlockedUsers(String firebaseId) async {
+    // var result = await _firestore.collection('users').doc(firebaseId).collection('blocked_users').withConverter(
+    //   fromFirestore: (snapshot, _) => UserModel.fromFirebaseMap(snapshot.data()!), 
+    //   toFirestore: (model, _) => model.toFirebaseJson()).get();
+    var result = await _firestore.collection('users').doc(firebaseId).collection('blocked_users').get();
+
+    return result;
   }
 }
