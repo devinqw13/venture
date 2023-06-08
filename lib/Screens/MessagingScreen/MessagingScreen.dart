@@ -6,6 +6,7 @@ import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:venture/Calls.dart';
 import 'package:venture/Components/Avatar.dart';
 import 'package:venture/Helpers/Keyboard.dart';
 import 'package:venture/Constants.dart';
@@ -42,12 +43,15 @@ class MessagingScreenState extends State<MessagingScreen> {
   List<Message>? messages = [];
   // late Conversation conversation;
   var isVisible = false;
+  MessageUser? newSendToUser;
+  MessageUser? existingConvoUser;
 
   @override
   void initState() {
     super.initState();
     // conversation = widget.conversation;
     messages = widget.conversation.messages;
+    existingConvoUser = widget.existingConvoUser;
     if (messages!.isNotEmpty) {
       owners = widget.conversation.owners;
     }
@@ -243,6 +247,19 @@ class MessagingScreenState extends State<MessagingScreen> {
     return Future.value(true);
   }
 
+  updateBlockStatus() {
+    var _ = updateUserRelationship(
+      context,
+      userKey: VenUser().userKey.value,
+      userFirebaseId: FirebaseAPI().firebaseId()!,
+      relUserKey: int.parse(existingConvoUser!.key!),
+      relUserFirebaseId: existingConvoUser!.firebaseID!,
+      blocked: existingConvoUser!.isBlocked ? false : true
+    );
+
+    setState(() => existingConvoUser!.isBlocked = !existingConvoUser!.isBlocked);
+  }
+
   buildPaginatedMessages() {
     return FirestoreListView(
       reverse: true,
@@ -364,7 +381,52 @@ class MessagingScreenState extends State<MessagingScreen> {
                         padding: EdgeInsets.only(right: 8, left: 8, bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 15 : 28, top: 8),
                         child: Stack(
                           children: [
-                            Row(
+                            (widget.existingConvoUser == null && widget.newSendToUser == null) || (widget.existingConvoUser != null && existingConvoUser!.isBlocked) ? 
+                            Column(
+                              children: [
+                                Text(
+                                  widget.existingConvoUser == null && widget.newSendToUser == null ? "User unavailable" : widget.existingConvoUser != null && widget.existingConvoUser!.isBlocked ? "You blocked ${widget.existingConvoUser!.username}" : "",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "You can't message them, and you won't receive their messages.",
+                                  style: TextStyle(
+                                    color: Colors.grey
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () => updateBlockStatus(),
+                                        child: Text(
+                                          "Unblock",
+                                          style: TextStyle(
+                                            color: Colors.white
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          elevation: 0,
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          minimumSize: Size.zero,
+                                          padding: EdgeInsets.symmetric( vertical: 8, horizontal: 16),
+                                          backgroundColor: primaryOrange,
+                                          foregroundColor: Colors.transparent
+                                        )
+                                      )
+                                    )
+                                  ],
+                                )
+                              ],
+                            )
+                            : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [

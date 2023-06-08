@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MessageUser {
   String? username;
@@ -6,6 +5,7 @@ class MessageUser {
   String? key;
   String? firebaseID;
   String? photoUrl;
+  bool isBlocked = false;
 
   // MessageUser(QueryDocumentSnapshot doc) {
   //   var data = doc.data() as Map;
@@ -26,5 +26,6 @@ class MessageUser {
     if (doc.containsKey('photo_url')) {
       photoUrl = doc['photo_url'];
     }
+    isBlocked = doc['isBlocked'] ?? false;
   }
 }

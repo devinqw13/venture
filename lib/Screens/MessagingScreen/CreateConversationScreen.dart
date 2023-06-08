@@ -46,7 +46,7 @@ class _CreateConversationScreenState extends State<CreateConversationScreen> {
 
   performSearch(String text) async {
     setState(() => isSearching = true);
-    List<VentureItem>? results = await searchVenture(context, text, ["users"]);
+    List<VentureItem>? results = await searchVenture(context, text, ["users"], ventureCurrentUser: VenUser().userKey.value);
     setState(() => isSearching = false);
 
     if(results != null) {
@@ -71,7 +71,10 @@ class _CreateConversationScreenState extends State<CreateConversationScreen> {
         }
       ) : 
       Center(
-        child: Text("No results found!"),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 10),
+          child: Text("No user found!"),
+        )
       );
     }
   }
