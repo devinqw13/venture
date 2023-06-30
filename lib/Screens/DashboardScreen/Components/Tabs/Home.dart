@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:preload_page_view/preload_page_view.dart';
 import 'package:venture/Components/NotificationBadge.dart';
 import 'package:venture/Controllers/Dashboard/DashboardController.dart';
 import 'package:venture/Controllers/ThemeController.dart';
@@ -33,8 +34,10 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
   bool isFollowingLoading = false;
   int tabIndex = 1;
   late TabController tabController;
-  PageController exploreController = PageController(keepPage: true);
-  PageController followingController = PageController(keepPage: true);
+  // PageController followingController = PageController(keepPage: true);
+  // PageController followingController = PageController(keepPage: true);
+  PreloadPageController exploreController = PreloadPageController(keepPage: true);
+  PreloadPageController followingController = PreloadPageController(keepPage: true);
   IndicatorController exploreRefreshController = IndicatorController();
   IndicatorController followingRefreshController = IndicatorController();
   final exploreRefreshKey = GlobalKey<CustomRefreshIndicatorState>();
@@ -258,8 +261,8 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
                 controller: followingRefreshController,
                 edgeOffset: topPadding,
                 onAction: _refreshFollowing,
-                child: PageView.builder(
-                  allowImplicitScrolling: true, // Preload next items
+                child: PreloadPageView.builder(
+                  // allowImplicitScrolling: true, // Preload next items
                   controller: followingController,
                   physics: AlwaysScrollableScrollPhysics(),
                   scrollDirection: Axis.vertical,
@@ -289,14 +292,13 @@ class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin<Ho
                   }
                 ),
               ),
-
               CustomRefresh(
                 indicatorKey: exploreRefreshKey,
                 controller: exploreRefreshController,
                 edgeOffset: topPadding,
                 onAction: _refreshExplore,
-                child: PageView.builder(
-                  allowImplicitScrolling: true, // Preload next items
+                child: PreloadPageView.builder(
+                  // allowImplicitScrolling: true, // Preload next items
                   controller: exploreController,
                   physics: AlwaysScrollableScrollPhysics(),
                   scrollDirection: Axis.vertical,

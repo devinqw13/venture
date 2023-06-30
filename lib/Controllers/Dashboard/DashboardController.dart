@@ -7,6 +7,7 @@ import 'package:venture/Screens/DashboardScreen/Components/Tabs/Profile.dart';
 import 'package:venture/Screens/DashboardScreen/Components/Tabs/Search.dart';
 import 'package:venture/Screens/DashboardScreen/Components/Tabs/Map.dart';
 import 'package:venture/Screens/DashboardScreen/Components/Tabs/SearchV2.dart';
+import 'package:preload_page_view/preload_page_view.dart';
 // import 'package:venture/Screens/DashboardScreen/Components/Tabs/Circle.dart';
 // import 'package:venture/Screens/DashboardScreen/Components/Tabs/Account.dart';
 
@@ -15,7 +16,8 @@ class HomeController extends GetxController {
 
   late PageController pageController;
   late CarouselController carouselController;
-  PageController? homeFeedController;
+  // PageController? homeFeedController;
+  PreloadPageController? homeFeedController;
 
   var currentPage = 2.obs;
   var currentBanner = 0.obs;

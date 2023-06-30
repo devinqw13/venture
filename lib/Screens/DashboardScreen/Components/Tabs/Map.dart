@@ -486,6 +486,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin<MapT
             mapType: _themesController.mapType.value,
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
             // markers: Set<Marker>.of(markers.values),
             markers: {
               ...Set<Marker>.of(nonClusteringMarkers.values),

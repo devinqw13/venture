@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "566742036968",
+    "project_id": "venture-3aebd",
+    "storage_bucket": "venture-3aebd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:566742036968:android:8978905d60c9e559edf45d",
+        "android_client_info": {
+          "package_name": "com.ven.venture"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "566742036968-l0jab4jv5rauh1j83n7uerhneh4ubqg3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACMh__NI_VRF4SwfmvuQhXSdDuWPo36iU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "566742036968-l0jab4jv5rauh1j83n7uerhneh4ubqg3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "566742036968-8au3lberefovij1iphntj0jchm84k3pq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.venture.venture"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

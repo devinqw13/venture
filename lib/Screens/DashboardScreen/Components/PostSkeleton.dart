@@ -11,6 +11,7 @@ import 'package:venture/Calls.dart';
 import 'package:venture/Components/CustomOptionsPopupMenu.dart';
 import 'package:venture/Components/DropShadow.dart';
 import 'package:venture/Components/FadeOverlay.dart';
+import 'package:venture/Components/MediaCarousel.dart';
 import 'package:venture/Components/ReportSheet.dart';
 import 'package:venture/Components/VideoPlayer.dart';
 import 'package:venture/Constants.dart';
@@ -57,7 +58,7 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
   GlobalKey _key = GlobalKey();
 
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => false;
 
   @override
   void initState() {
@@ -675,52 +676,35 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
   _buildContent(Content content) {
     return Expanded(
       key: _key,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: widget.heroTag != null ? Hero(
-              transitionOnUserGestures: true,
-              tag: widget.heroTag!,
-              child: Material(
-                color: Colors.transparent,
-                child: buildCarouselSlider(content)
-              )
-            ) : buildCarouselSlider(content)
-          ),
-          content.contentUrls.length > 1 ? IgnorePointer(
-            child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 5),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Indicator(
-                    length: content.contentUrls.length,
-                    index: currentIndex
-                  )
-                ],
-              )
-            )
-          ): Container()
-        ]
-      )
-      // child: ZoomOverlay(
-      //   twoTouchOnly: true,
-      //   minScale: 1,
-      //   child: ClipRRect(
-      //     // borderRadius: BorderRadius.circular(20.0),
-      //     child: CachedNetworkImage(
-      //       // width: double.infinity,
-      //       fit: BoxFit.cover,
-      //       imageUrl: content.contentUrl,
-      //       progressIndicatorBuilder: (context, url, downloadProgress) {
-      //         return Skeleton.rectangular(
-      //           height: 250,
-      //           borderRadius: 20.0
-      //         );
-      //       }
-      //     )
-      //   )
+      child: MediaCarousel(contentUrls: content.contentUrls)
+      // child: Stack(
+      //   children: [
+      //     Positioned.fill(
+      //       child: widget.heroTag != null ? Hero(
+      //         transitionOnUserGestures: true,
+      //         tag: widget.heroTag!,
+      //         child: Material(
+      //           color: Colors.transparent,
+      //           child: buildCarouselSlider(content)
+      //         )
+      //       ) : buildCarouselSlider(content)
+      //     ),
+      //     content.contentUrls.length > 1 ? IgnorePointer(
+      //       child: Padding(
+      //       padding: EdgeInsets.symmetric(vertical: 5),
+      //         child: Row(
+      //           mainAxisSize: MainAxisSize.max,
+      //           mainAxisAlignment: MainAxisAlignment.center,
+      //           children: [
+      //             Indicator(
+      //               length: content.contentUrls.length,
+      //               index: currentIndex
+      //             )
+      //           ],
+      //         )
+      //       )
+      //     ): Container()
+      //   ]
       // )
     );
   }

@@ -15,7 +15,7 @@ class Content {
   int? pinKey;
   int? circleKey;
   String? pinName;
-  List contentUrls = [];
+  List<String> contentUrls = [];
   String? contentUrl;
   bool? active;
   String? contentType;
@@ -37,7 +37,8 @@ class Content {
     pinName = input['title'];
     contentUrl = input['content_url'];
     // contentUrls = input['content_urls'].map((item) => item as String)?.toList();
-    contentUrls = input['content_urls'] ?? [];
+    // contentUrls = input['content_urls'] ?? [];
+    contentUrls = List<String>.from(input['content_urls']);
     active = input['content_active'] == "N" ? false : true;
     contentType = input['content_type'];
     // timestamp = input['created_ts'];
@@ -86,7 +87,8 @@ class Content {
       // timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toUtc());
       timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.parse(input['created_ts']).toLocal());
       pinName = input['title'];
-      contentUrls = input['content_urls'];
+      // contentUrls = input['content_urls'];
+      contentUrls = List<String>.from(input['content_urls']);
       active = input['content_active'] == "N" ? false : true;
       contentType = input['content_type'];
       contentCaption = input['content_caption'];
@@ -117,7 +119,8 @@ class Content {
       pinName = input['title'];
       contentUrl = input['content_url'];
       // contentUrls = input['content_urls'].map((item) => item as String)?.toList();
-      contentUrls = input['content_urls'];
+      // contentUrls = input['content_urls'];
+      contentUrls = List<String>.from(input['content_urls']);
       active = input['content_active'] == "N" ? false : true;
       contentType = input['content_type'];
       // timestamp = input['created_ts'];
