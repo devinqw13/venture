@@ -8,7 +8,9 @@ import 'package:venture/Components/CarouselIndicator/carousel_indicator.dart';
 import 'package:venture/Components/DropShadow.dart';
 import 'package:venture/Components/Skeleton.dart';
 import 'package:get/get.dart';
+// ignore: implementation_imports
 import 'package:better_player/src/video_player/video_player.dart';
+// ignore: implementation_imports
 import 'package:better_player/src/video_player/video_player_platform_interface.dart';
 
 class MediaCarousel extends StatefulWidget {
@@ -16,7 +18,9 @@ class MediaCarousel extends StatefulWidget {
   final bool touchToMute;
   final bool showPauseIndicator;
   final bool initMute;
-  MediaCarousel({Key? key, required this.contentUrls, this.touchToMute = false, this.showPauseIndicator = true, this.initMute = false}) : super(key: key);
+  final bool setVideoAspectRatio;
+  final bool showProgressIndicator;
+  MediaCarousel({Key? key, required this.contentUrls, this.touchToMute = false, this.showPauseIndicator = true, this.initMute = false, this.setVideoAspectRatio = true, this.showProgressIndicator = true}) : super(key: key);
 
   @override
   _MediaCarousel createState() => _MediaCarousel();
@@ -24,8 +28,8 @@ class MediaCarousel extends StatefulWidget {
 
 class _MediaCarousel extends State<MediaCarousel> with TickerProviderStateMixin {
   int index = 0;
-  double _position = 0;
-  double _buffer = 0;
+  // double _position = 0;
+  // double _buffer = 0;
   bool _lock = true;
   Map<String, BetterPlayerController> _controllers = {};
   Map<int, Function(BetterPlayerEvent)> _listeners = {};
@@ -83,18 +87,18 @@ class _MediaCarousel extends State<MediaCarousel> with TickerProviderStateMixin 
 
   Function(BetterPlayerEvent) _listenerSpawner(index) {
     return (BetterPlayerEvent event) {
-      int dur = _controller(index).videoPlayerController?.value.duration?.inMilliseconds ?? 0;
-      int pos = _controller(index).videoPlayerController?.value.position.inMilliseconds ?? 0;
-      int buf = _controller(index).videoPlayerController?.value.buffered.last.end.inMilliseconds ?? 0;
+      // int dur = _controller(index).videoPlayerController?.value.duration?.inMilliseconds ?? 0;
+      // int pos = _controller(index).videoPlayerController?.value.position.inMilliseconds ?? 0;
+      // int buf = _controller(index).videoPlayerController?.value.buffered.last.end.inMilliseconds ?? 0;
 
-      setState(() {
-        if (dur <= pos) {
-          _position = 0;
-          return;
-        }
-        _position = pos / dur;
-        _buffer = buf / dur;
-      });
+      // setState(() {
+      //   if (dur <= pos) {
+      //     _position = 0;
+      //     return;
+      //   }
+      //   _position = pos / dur;
+      //   _buffer = buf / dur;
+      // });
 
       if(event.betterPlayerEventType == BetterPlayerEventType.pause && _pauseAnimationController != null) {
         _pauseAnimationController!.forward();
@@ -119,6 +123,8 @@ class _MediaCarousel extends State<MediaCarousel> with TickerProviderStateMixin 
   Future<void> _initController(int index) async {
     BetterPlayerConfiguration betterPlayerConfiguration = BetterPlayerConfiguration(
       // aspectRatio: 16 / 9,
+      fit: widget.setVideoAspectRatio ? BoxFit.contain : BoxFit.cover,
+      expandToFill: false,
       looping: true,
       autoPlay: false,
       autoDispose: false,
@@ -134,12 +140,6 @@ class _MediaCarousel extends State<MediaCarousel> with TickerProviderStateMixin 
         showControls: false,
         showControlsOnInitialize: false
       )
-      // controlsConfiguration: BetterPlayerControlsConfiguration(
-      //   loadingColor: Colors.deepOrange,
-      //   progressBarBufferedColor: Colors.red, //very useful
-      //   progressBarHandleColor: Colors.blue,
-      //   progressBarBackgroundColor: Colors.white
-      // )
     );
     final bufferConfig = BetterPlayerBufferingConfiguration(
       minBufferMs: 1000,
@@ -265,23 +265,36 @@ class _MediaCarousel extends State<MediaCarousel> with TickerProviderStateMixin 
       if(_controllers.keys.contains(_urls.elementAt(i))) {
         return Stack(
           children: [
-            Center(
-              child: AspectRatio(
-                aspectRatio: _controller(i).videoPlayerController!.value.aspectRatio,
-                child: Center(child: BetterPlayer(controller: _controller(i)))
-              ),
+            Positioned.fill(
+              child: BetterPlayer(controller: _controller(i))
             ),
+            // Center(
+            //   child: widget.setVideoAspectRatio ? AspectRatio(
+            //     aspectRatio: _controller(i).videoPlayerController!.value.aspectRatio,
+            //     child: BetterPlayer(controller: _controller(i))
+            //   ) : SizedBox.expand(
+            //     child: FittedBox(
+            //       fit: BoxFit.cover,
+            //       child: SizedBox(
+            //         width: _controller(i).videoPlayerController?.value.size?.width ?? 0,
+            //         height: _controller(i).videoPlayerController?.value.size?.height ?? 0,
+            //         child: BetterPlayer(controller: _controller(i)),
+            //       )
+            //     )
+            //   )
+            // ),
 
-            widget.showPauseIndicator ? Align(
+            widget.showPauseIndicator || !widget.touchToMute ? Align(
               alignment: Alignment.center,
               child: FadeTransition(
                 opacity: _pauseAnimation!,
                 child: DropShadow(
-                  offset: Offset(1, 1),
+                  offset: Offset(0.5, 0.5),
+                  color: Colors.black.withOpacity(0.4),
                   child: Icon(
                     Icons.play_arrow,
                     size: 70,
-                    color: Colors.grey[50]!.withOpacity(0.8),
+                    color: Colors.grey[50]!.withOpacity(0.7),
                   )
                 ),
               )
@@ -290,20 +303,22 @@ class _MediaCarousel extends State<MediaCarousel> with TickerProviderStateMixin 
             Column(
               mainAxisSize: MainAxisSize.max,
               children: [
-                _controller(i).isVideoInitialized()! ? VideoProgressBar(
+                widget.showProgressIndicator && _controller(i).isVideoInitialized()! ? VideoProgressBar(
                   _controller(i).videoPlayerController, 
                   _controller(i),
                   handleHeight: 2.5,
                   barHeight: 2.5,
                   colors: ProgressColors(
-                    playedColor: Colors.grey.withOpacity(0.8),
-                    handleColor: Colors.grey.withOpacity(0.8),
+                    playedColor: Colors.white,
+                    handleColor: Colors.white,
                     bufferedColor: Colors.transparent,
-                    backgroundColor: Colors.grey.withOpacity(0.2)
+                    backgroundColor: Colors.grey.withOpacity(0.5)
                   ),
                 ) : Container(),
                 Expanded(
                   child: GestureDetector(
+                    onLongPressStart: (_) => widget.touchToMute ? _controller(index).pause() : null,
+                    onLongPressEnd: (_) => widget.touchToMute ? _controller(index).play() : null,
                     onTap: () {
                       if(widget.touchToMute) {
                         _controller(index).videoPlayerController!.value.volume == 1.0 ? _controller(index).setVolume(0.0) : _controller(index).setVolume(1.0);
@@ -454,14 +469,6 @@ class _Indicator extends State<Indicator> {
             spacing: 6,
             activeDotScale: 1.0
           ),
-          // effect: ExpandingDotsEffect(
-          //   activeDotColor: Colors.white,
-          //   dotColor: Colors.grey.shade500,
-          //   dotHeight: 6,
-          //   dotWidth: 6,
-          //   spacing: 3,
-          //   expansionFactor: 8
-          // ),  
         ),
       )
     );

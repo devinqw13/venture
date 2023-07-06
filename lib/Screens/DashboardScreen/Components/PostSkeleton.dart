@@ -676,7 +676,10 @@ class _PostSkeleton extends State<PostSkeleton> with AutomaticKeepAliveClientMix
   _buildContent(Content content) {
     return Expanded(
       key: _key,
-      child: MediaCarousel(contentUrls: content.contentUrls)
+      child: MediaCarousel(
+        contentUrls: content.contentUrls,
+        setVideoAspectRatio: false,
+      )
       // child: Stack(
       //   children: [
       //     Positioned.fill(
