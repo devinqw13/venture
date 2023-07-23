@@ -137,29 +137,35 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   fonts:
-    - family: Montserrat
-      fonts:
-        - asset: assets/fonts/Montserrat-Regular.ttf
-    
     - family: ProximaNova
       fonts:
         - asset: assets/fonts/Proxima-Nova.otf
 
-    - family: SegoeUI
+    - family: Araboto-Thin
       fonts:
-        - asset: assets/fonts/Segoe-UI.ttf
-        - asset: assets/fonts/Segoe-UI-Bold.ttf
+        - asset: assets/fonts/Araboto/Araboto-Thin.ttf
+        - asset: assets/fonts/Araboto/Araboto-Medium.ttf
           weight: 700
-        - asset: assets/fonts/Segoe-UI-Italic.ttf
-          style: italic
 
-    # - family: LeagueSpartan
+    - family: Araboto-Light
+      fonts:
+        - asset: assets/fonts/Araboto/Araboto-Light.ttf
+        - asset: assets/fonts/Araboto/Araboto-Medium.ttf
+          weight: 700
+
+    - family: Araboto-Normal
+      fonts:
+        - asset: assets/fonts/Araboto/Araboto-Normal.ttf
+        - asset: assets/fonts/Araboto/Araboto-Medium.ttf
+          weight: 700
+
+    # - family: SegoeUI
     #   fonts:
-    #     - asset: assets/fonts/LeagueSpartan-Bold.ttf
-    
-    # - family: GrandHotel
-    #   fonts:
-    #     - asset: assets/fonts/GrandHotel-Regular.ttf
+    #     - asset: assets/fonts/Segoe-UI.ttf
+    #     - asset: assets/fonts/Segoe-UI-Bold.ttf
+    #       weight: 700
+    #     - asset: assets/fonts/Segoe-UI-Italic.ttf
+    #       style: italic
 
     - family: Coolvetica
       fonts:
@@ -174,10 +180,7 @@ flutter:
     - family: CoolveticaCondensed
       fonts:
         - asset: assets/fonts/coolvetica-condensed-rg.otf
-
-    - family:
-      fonts:
-        - asset: assets/fonts/coolvetica-compressed-hv.otf
+  
   # example:
   # fonts:
   #   - family: Schyler
